@@ -41,9 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login successful!')),
-      );
+      // Navigate to dashboard
+      Navigator.pushReplacementNamed(context, '/dashboard');
     }
   }
 
