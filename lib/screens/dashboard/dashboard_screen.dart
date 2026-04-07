@@ -156,6 +156,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -178,6 +179,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
+                    color: Color(0xFF374151),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -205,10 +207,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 4),
                 Text(
                   '$percentage%',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: color,
+                    color: Color(0xFF1F2937),
                   ),
                 ),
               ],
@@ -223,6 +225,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -298,10 +301,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               width: 40,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('100%', style: TextStyle(fontSize: 10)),
-                  const Text('50%', style: TextStyle(fontSize: 10)),
-                  const Text('0%', style: TextStyle(fontSize: 10)),
+                children: const [
+                  Text('100%', style: TextStyle(fontSize: 10, color: Color(0xFF1F2937), fontWeight: FontWeight.w600)),
+                  Text('50%', style: TextStyle(fontSize: 10, color: Color(0xFF1F2937), fontWeight: FontWeight.w600)),
+                  Text('0%', style: TextStyle(fontSize: 10, color: Color(0xFF1F2937), fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -331,7 +334,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         const SizedBox(height: 8),
                         Text(
                           days[index],
-                          style: const TextStyle(fontSize: 10),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF1F2937),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     );
@@ -339,19 +346,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
-            // Right Y-axis
-            SizedBox(
-              width: 30,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: const [
-                  Text('100', style: TextStyle(fontSize: 10)),
-                  Text('50', style: TextStyle(fontSize: 10)),
-                  Text('0', style: TextStyle(fontSize: 10)),
-                ],
-              ),
-            ),
+            // Right Y-axis removed
           ],
         ),
       ],
@@ -361,7 +356,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildBottomNavBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1E3A8A),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -373,6 +368,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: BottomNavigationBar(
         currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed,
+        backgroundColor: const Color(0xFF1E3A8A),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white.withOpacity(0.6),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
