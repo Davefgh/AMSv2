@@ -29,21 +29,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header
               _buildHeader(),
-              // Content
               Expanded(
-                child: SingleChildScrollView(
+                child: ListView(
                   padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      // Stats Grid
-                      _buildStatsGrid(),
-                      const SizedBox(height: 20),
-                      // Attendance Overview
-                      _buildAttendanceOverview(),
-                    ],
-                  ),
+                  children: [
+                    _buildStatsGrid(),
+                    const SizedBox(height: 24),
+                    _buildAttendanceOverview(),
+                    const SizedBox(height: 20),
+                  ],
                 ),
               ),
             ],
@@ -55,8 +50,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildHeader() {
+    final isMobile = MediaQuery.of(context).size.width < 600;
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isMobile ? 12 : 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -64,12 +60,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Image.asset(
                 'aclc_logo.png',
-                height: 40,
-                width: 40,
+                height: isMobile ? 32 : 40,
+                width: isMobile ? 32 : 40,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    height: 40,
-                    width: 40,
+                    height: isMobile ? 32 : 40,
+                    width: isMobile ? 32 : 40,
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(8),
@@ -79,10 +75,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 },
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Dashboard',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: isMobile ? 18 : 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -113,46 +109,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
+      childAspectRatio: 0.9,
       children: [
-        _buildStatCard(
-          '32',
-          'Total Registered',
-          Colors.blue,
-          Icons.people,
-          100,
-        ),
-        _buildStatCard(
-          '19',
-          'Total Students',
-          Colors.green,
-          Icons.school,
-          59,
-        ),
-        _buildStatCard(
-          '12',
-          'Total Teachers',
-          Colors.orange,
-          Icons.person,
-          37,
-        ),
-        _buildStatCard(
-          '1',
-          'Admins',
-          Colors.purple,
-          Icons.admin_panel_settings,
-          3,
-        ),
+        _buildStatCard('32', 'Total Registered', Colors.blue, Icons.people, 100),
+        _buildStatCard('19', 'Total Students', Colors.green, Icons.school, 59),
+        _buildStatCard('12', 'Total Teachers', Colors.orange, Icons.person, 37),
+        _buildStatCard('1', 'Admins', Colors.purple, Icons.admin_panel_settings, 3),
       ],
     );
   }
 
-  Widget _buildStatCard(
-    String value,
-    String label,
-    Color color,
-    IconData icon,
-    int percentage,
-  ) {
+  Widget _buildStatCard(String value, String label, Color color, IconData icon, int percentage) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -185,10 +152,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -254,7 +218,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            _buildChart(),
+            SizedBox(
+              height: 200,
+              child: _buildChart(),
+            ),
           ],
         ),
       ),
@@ -288,66 +255,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildChart() {
     final data = [100, 85, 90, 95, 88, 92, 0];
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', ''];
-    final maxHeight = 150.0;
+    final maxHeight = 120.0;
 
-    return Column(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        // Y-axis labels and bars
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            // Y-axis
-            SizedBox(
-              width: 40,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text('100%', style: TextStyle(fontSize: 10, color: Color(0xFF1F2937), fontWeight: FontWeight.w600)),
-                  Text('50%', style: TextStyle(fontSize: 10, color: Color(0xFF1F2937), fontWeight: FontWeight.w600)),
-                  Text('0%', style: TextStyle(fontSize: 10, color: Color(0xFF1F2937), fontWeight: FontWeight.w600)),
-                ],
-              ),
-            ),
-            // Bars
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(
-                  data.length,
-                  (index) {
-                    final height = (data[index] / 100) * maxHeight;
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          width: 20,
-                          height: height,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6),
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(4),
-                              topRight: Radius.circular(4),
-                            ),
-                          ),
+        SizedBox(
+          width: 40,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text('100%', style: TextStyle(fontSize: 9, color: Color(0xFF1F2937), fontWeight: FontWeight.w600)),
+              Text('50%', style: TextStyle(fontSize: 9, color: Color(0xFF1F2937), fontWeight: FontWeight.w600)),
+              Text('0%', style: TextStyle(fontSize: 9, color: Color(0xFF1F2937), fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(
+              data.length,
+              (index) {
+                final height = (data[index] / 100) * maxHeight;
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      width: 18,
+                      height: height,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(4),
+                          topRight: Radius.circular(4),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          days[index],
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFF1F2937),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      days[index],
+                      style: const TextStyle(
+                        fontSize: 9,
+                        color: Color(0xFF1F2937),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
-            // Right Y-axis removed
-          ],
+          ),
         ),
       ],
     );
@@ -372,25 +331,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white.withOpacity(0.6),
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_add),
-            label: 'Enrollment',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.class_),
-            label: 'Classes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Users',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_add), label: 'Enrollment'),
+          BottomNavigationBarItem(icon: Icon(Icons.class_), label: 'Classes'),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
         ],
         onTap: (index) {
           setState(() => _selectedIndex = index);
+          if (index == 1) {
+            Navigator.pushNamed(context, '/enrollment');
+          } else if (index == 2) {
+            Navigator.pushNamed(context, '/classes');
+          } else if (index == 3) {
+            Navigator.pushNamed(context, '/users');
+          }
         },
       ),
     );
