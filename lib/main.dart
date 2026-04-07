@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'config/theme/app_theme.dart';
 import 'config/routes/app_routes.dart';
 import 'providers/app_provider.dart';
+import 'screens/auth/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,8 +24,9 @@ class MyApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: const HomePage(),
+        home: const LoginScreen(),
         routes: AppRoutes.routes,
+        debugShowCheckedModeBanner: false,
       ),
     );
   }
