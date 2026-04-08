@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class ClassesScreen extends StatefulWidget {
@@ -59,63 +60,99 @@ class _ClassesScreenState extends State<ClassesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1E3A8A),
-              Color(0xFF3B82F6),
-              Color(0xFF60A5FA),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              _buildTabs(),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    if (_selectedTab == 'Classroom') ...[
-                      _buildClassroomsOverview(),
-                      const SizedBox(height: 24),
-                      _buildClassroomsList(),
-                    ] else if (_selectedTab == 'Courses') ...[
-                      _buildCoursesOverview(),
-                      const SizedBox(height: 24),
-                      _buildCoursesList(),
-                    ] else if (_selectedTab == 'Sections') ...[
-                      _buildSectionsOverview(),
-                      const SizedBox(height: 24),
-                      _buildSectionsList(),
-                    ] else if (_selectedTab == 'Subjects') ...[
-                      _buildSubjectsOverview(),
-                      const SizedBox(height: 24),
-                      _buildSubjectsList(),
-                    ] else if (_selectedTab == 'Schedule') ...[
-                      _buildScheduleOverview(),
-                      const SizedBox(height: 24),
-                      _buildScheduleList(),
-                    ],
-                  ],
-                ),
+      backgroundColor: const Color(0xFF0F172A), // Slate 900
+      body: Stack(
+        children: [
+          // Background Glowing Orbs for ambiance
+          Positioned(
+            top: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF38BDF8).withOpacity(0.3), // Sky Blue
+                boxShadow: [
+                  BoxShadow(
+                      color: const Color(0xFF38BDF8).withOpacity(0.3),
+                      blurRadius: 100,
+                      spreadRadius: 50)
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            bottom: 100,
+            right: -150,
+            child: Container(
+              width: 400,
+              height: 400,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF1E3A8A).withOpacity(0.5), // Navy Blue
+                boxShadow: [
+                  BoxShadow(
+                      color: const Color(0xFF1E3A8A).withOpacity(0.5),
+                      blurRadius: 120,
+                      spreadRadius: 60)
+                ],
+              ),
+            ),
+          ),
+          // Backdrop blur for the glowing orbs
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+            child: Container(color: Colors.transparent),
+          ),
+          
+          SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                _buildTabs(),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    children: [
+                      if (_selectedTab == 'Classroom') ...[
+                        _buildClassroomsOverview(),
+                        const SizedBox(height: 32),
+                        _buildClassroomsList(),
+                      ] else if (_selectedTab == 'Courses') ...[
+                        _buildCoursesOverview(),
+                        const SizedBox(height: 32),
+                        _buildCoursesList(),
+                      ] else if (_selectedTab == 'Sections') ...[
+                        _buildSectionsOverview(),
+                        const SizedBox(height: 32),
+                        _buildSectionsList(),
+                      ] else if (_selectedTab == 'Subjects') ...[
+                        _buildSubjectsOverview(),
+                        const SizedBox(height: 32),
+                        _buildSubjectsList(),
+                      ] else if (_selectedTab == 'Schedule') ...[
+                        _buildScheduleOverview(),
+                        const SizedBox(height: 32),
+                        _buildScheduleList(),
+                      ],
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }
 
   Widget _buildHeader() {
-    final isMobile = MediaQuery.of(context).size.width < 600;
     return Padding(
-      padding: EdgeInsets.all(isMobile ? 12 : 16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -123,34 +160,32 @@ class _ClassesScreenState extends State<ClassesScreen> {
             children: [
               Image.asset(
                 'aclc_logo.png',
-                height: isMobile ? 32 : 40,
-                width: isMobile ? 32 : 40,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: isMobile ? 32 : 40,
-                    width: isMobile ? 32 : 40,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.school, color: Colors.white),
-                  );
-                },
+                height: 48,
+                width: 48,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.shield, color: Colors.white, size: 40),
               ),
-              const SizedBox(width: 12),
-              Text(
+              const SizedBox(width: 16),
+              const Text(
                 'Classes',
                 style: TextStyle(
-                  fontSize: isMobile ? 18 : 24,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
                   color: Colors.white,
+                  letterSpacing: 0.5,
                 ),
               ),
             ],
           ),
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.white, size: 28),
-            onPressed: () {},
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF38BDF8).withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.add, color: Color(0xFF38BDF8)),
+              onPressed: () {},
+            ),
           ),
         ],
       ),
@@ -160,47 +195,116 @@ class _ClassesScreenState extends State<ClassesScreen> {
   Widget _buildTabs() {
     final tabs = ['Classroom', 'Courses', 'Sections', 'Subjects', 'Schedule'];
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(13),
+        color: Colors.white.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.15),
+          width: 1.0,
+        ),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Row(
-          children: List.generate(tabs.length, (index) {
-            final tab = tabs[index];
-            final isSelected = _selectedTab == tab;
-            return GestureDetector(
-              onTap: () {
-                setState(() => _selectedTab = tab);
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: isSelected ? Colors.white : Colors.transparent,
-                      width: 3,
+        physics: const BouncingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Row(
+            children: List.generate(tabs.length, (index) {
+              final tab = tabs[index];
+              final isSelected = _selectedTab == tab;
+              return GestureDetector(
+                onTap: () {
+                  setState(() => _selectedTab = tab);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFF38BDF8).withOpacity(0.2) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    border: isSelected ? Border.all(color: const Color(0xFF38BDF8).withOpacity(0.5)) : null,
+                  ),
+                  child: Text(
+                    tab,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontSize: 14,
                     ),
                   ),
                 ),
-                child: Text(
-                  tab,
-                  style: TextStyle(
-                    color: isSelected
-                        ? Colors.white
-                        : Colors.white.withOpacity(0.6),
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 14,
-                  ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOverviewCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+    int percentage,
+  ) {
+    return _GlassCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: color.withOpacity(0.3)),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              Text(
+                '$percentage%',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white70,
                 ),
               ),
-            );
-          }),
-        ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: percentage / 100,
+              minHeight: 6,
+              backgroundColor: Colors.white.withOpacity(0.1),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -215,213 +319,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            letterSpacing: 0.5,
           ),
         ),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard(
-                'Total Classrooms',
-                '27',
-                Icons.meeting_room,
-                Colors.blue,
-                100,
-              ),
+              child: _buildOverviewCard('Total Classrooms', '27', Icons.meeting_room, const Color(0xFF60A5FA), 100),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard(
-                'Active Classrooms',
-                '27',
-                Icons.check_circle,
-                Colors.green,
-                100,
-              ),
+              child: _buildOverviewCard('Active Classrooms', '27', Icons.check_circle, const Color(0xFF34D399), 100),
             ),
           ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildOverviewCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-    int percentage,
-  ) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF374151),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: percentage / 100,
-                minHeight: 6,
-                backgroundColor: Colors.grey[300],
-                valueColor: AlwaysStoppedAnimation<Color>(color),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '$percentage%',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1F2937),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildClassroomsList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Classrooms List',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            PopupMenuButton(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit, color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Edit', style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.delete, color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Delete',
-                          style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.select_all,
-                          color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Select All',
-                          style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-              ],
-              color: const Color(0xFF2D2D2D),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.grey, width: 1),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Column(
-          children: List.generate(_classrooms.length, (index) {
-            final classroom = _classrooms[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              color: Colors.white.withOpacity(0.95),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.meeting_room,
-                        color: Color(0xFF3B82F6),
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            classroom['name'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1F2937),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'ID: ${classroom['id']}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
         ),
       ],
     );
@@ -437,147 +348,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            letterSpacing: 0.5,
           ),
         ),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard(
-                'Total Courses',
-                '${_courses.length}',
-                Icons.book,
-                Colors.purple,
-                100,
-              ),
+              child: _buildOverviewCard('Total Courses', '${_courses.length}', Icons.book, const Color(0xFFA78BFA), 100),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard(
-                'Active Courses',
-                '${_courses.length}',
-                Icons.check_circle,
-                Colors.green,
-                100,
-              ),
+              child: _buildOverviewCard('Active Courses', '${_courses.length}', Icons.check_circle, const Color(0xFF34D399), 100),
             ),
           ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCoursesList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Courses List',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            PopupMenuButton(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit, color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Edit', style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.delete, color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Delete',
-                          style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.select_all,
-                          color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Select All',
-                          style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-              ],
-              color: const Color(0xFF2D2D2D),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.grey, width: 1),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Column(
-          children: List.generate(_courses.length, (index) {
-            final course = _courses[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              color: Colors.white.withOpacity(0.95),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.book,
-                        color: Colors.purple,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            course['name'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1F2937),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Code: ${course['code']}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
         ),
       ],
     );
@@ -593,147 +377,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            letterSpacing: 0.5,
           ),
         ),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard(
-                'Total Sections',
-                '${_sections.length}',
-                Icons.layers,
-                Colors.orange,
-                100,
-              ),
+              child: _buildOverviewCard('Total Sections', '${_sections.length}', Icons.layers, const Color(0xFFFBBF24), 100),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard(
-                'Active Sections',
-                '${_sections.length}',
-                Icons.check_circle,
-                Colors.green,
-                100,
-              ),
+              child: _buildOverviewCard('Active Sections', '${_sections.length}', Icons.check_circle, const Color(0xFF34D399), 100),
             ),
           ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSectionsList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Sections List',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            PopupMenuButton(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit, color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Edit', style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.delete, color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Delete',
-                          style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.select_all,
-                          color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Select All',
-                          style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-              ],
-              color: const Color(0xFF2D2D2D),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.grey, width: 1),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Column(
-          children: List.generate(_sections.length, (index) {
-            final section = _sections[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              color: Colors.white.withOpacity(0.95),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.layers,
-                        color: Colors.orange,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            section['name'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1F2937),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Capacity: ${section['capacity']}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
         ),
       ],
     );
@@ -749,147 +406,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            letterSpacing: 0.5,
           ),
         ),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard(
-                'Total Subjects',
-                '${_subjects.length}',
-                Icons.subject,
-                Colors.red,
-                100,
-              ),
+              child: _buildOverviewCard('Total Subjects', '${_subjects.length}', Icons.subject, const Color(0xFFF87171), 100),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard(
-                'Active Subjects',
-                '${_subjects.length}',
-                Icons.check_circle,
-                Colors.green,
-                100,
-              ),
+              child: _buildOverviewCard('Active Subjects', '${_subjects.length}', Icons.check_circle, const Color(0xFF34D399), 100),
             ),
           ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSubjectsList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Subjects List',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            PopupMenuButton(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit, color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Edit', style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.delete, color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Delete',
-                          style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.select_all,
-                          color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Select All',
-                          style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-              ],
-              color: const Color(0xFF2D2D2D),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.grey, width: 1),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Column(
-          children: List.generate(_subjects.length, (index) {
-            final subject = _subjects[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              color: Colors.white.withOpacity(0.95),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.subject,
-                        color: Colors.red,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            subject['name'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1F2937),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Code: ${subject['code']}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
         ),
       ],
     );
@@ -905,31 +435,220 @@ class _ClassesScreenState extends State<ClassesScreen> {
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            letterSpacing: 0.5,
           ),
         ),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard(
-                'Total Schedules',
-                '${_schedules.length}',
-                Icons.schedule,
-                Colors.teal,
-                100,
+              child: _buildOverviewCard('Total Schedules', '${_schedules.length}', Icons.schedule, const Color(0xFF14B8A6), 100),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildOverviewCard('Active Schedules', '${_schedules.length}', Icons.check_circle, const Color(0xFF34D399), 100),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // --- List Builders ---
+
+  Widget _buildListHeader(String title) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 0.5,
+          ),
+        ),
+        _buildListPopupMenu(),
+      ],
+    );
+  }
+
+  Widget _buildListPopupMenu() {
+    return PopupMenuButton<String>(
+      icon: Icon(Icons.more_vert, color: Colors.white.withOpacity(0.6)),
+      color: const Color(0xFF1E293B), // Dark slate
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      itemBuilder: (context) => <PopupMenuEntry<String>>[
+        const PopupMenuItem<String>(
+          value: 'edit',
+          child: Row(
+            children: [
+              Icon(Icons.edit, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Text('Edit', style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(Icons.delete, color: Colors.redAccent, size: 20),
+              SizedBox(width: 12),
+              Text('Delete', style: TextStyle(color: Colors.redAccent)),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(height: 1),
+        const PopupMenuItem<String>(
+          value: 'select_all',
+          child: Row(
+            children: [
+              Icon(Icons.select_all, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Text('Select All', style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGlassListItem({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: _GlassCard(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: iconColor.withOpacity(0.3)),
+              ),
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 24,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard(
-                'Active Schedules',
-                '${_schedules.length}',
-                Icons.check_circle,
-                Colors.green,
-                100,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.6),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildClassroomsList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildListHeader('Classrooms List'),
+        const SizedBox(height: 16),
+        Column(
+          children: List.generate(_classrooms.length, (index) {
+            final classroom = _classrooms[index];
+            return _buildGlassListItem(
+              icon: Icons.meeting_room,
+              iconColor: const Color(0xFF60A5FA),
+              title: classroom['name'] ?? '',
+              subtitle: 'ID: ${classroom['id']}',
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCoursesList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildListHeader('Courses List'),
+        const SizedBox(height: 16),
+        Column(
+          children: List.generate(_courses.length, (index) {
+            final course = _courses[index];
+            return _buildGlassListItem(
+              icon: Icons.book,
+              iconColor: const Color(0xFFA78BFA),
+              title: course['name'] ?? '',
+              subtitle: 'Code: ${course['code']}',
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionsList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildListHeader('Sections List'),
+        const SizedBox(height: 16),
+        Column(
+          children: List.generate(_sections.length, (index) {
+            final section = _sections[index];
+            return _buildGlassListItem(
+              icon: Icons.layers,
+              iconColor: const Color(0xFFFBBF24),
+              title: section['name'] ?? '',
+              subtitle: 'Capacity: ${section['capacity']}',
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubjectsList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildListHeader('Subjects List'),
+        const SizedBox(height: 16),
+        Column(
+          children: List.generate(_subjects.length, (index) {
+            final subject = _subjects[index];
+            return _buildGlassListItem(
+              icon: Icons.subject,
+              iconColor: const Color(0xFFF87171),
+              title: subject['name'] ?? '',
+              subtitle: 'Code: ${subject['code']}',
+            );
+          }),
         ),
       ],
     );
@@ -939,111 +658,16 @@ class _ClassesScreenState extends State<ClassesScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Schedule List',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            PopupMenuButton(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit, color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Edit', style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.delete, color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Delete',
-                          style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.select_all,
-                          color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      const Text('Select All',
-                          style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-              ],
-              color: const Color(0xFF2D2D2D),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.grey, width: 1),
-              ),
-            ),
-          ],
-        ),
+        _buildListHeader('Schedule List'),
         const SizedBox(height: 16),
         Column(
           children: List.generate(_schedules.length, (index) {
             final schedule = _schedules[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              color: Colors.white.withOpacity(0.95),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.teal.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.schedule,
-                        color: Colors.teal,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            schedule['day'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1F2937),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${schedule['time']} - ${schedule['room']}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            return _buildGlassListItem(
+              icon: Icons.schedule,
+              iconColor: const Color(0xFF14B8A6),
+              title: schedule['day'] ?? '',
+              subtitle: '${schedule['time']} • ${schedule['room']}',
             );
           }),
         ),
@@ -1054,28 +678,35 @@ class _ClassesScreenState extends State<ClassesScreen> {
   Widget _buildBottomNavBar() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1E3A8A),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+        color: const Color(0xFF0F172A),
+        border: Border(
+           top: BorderSide(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
           ),
-        ],
+        ),
       ),
       child: BottomNavigationBar(
         currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1E3A8A),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white.withOpacity(0.6),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        selectedItemColor: const Color(0xFF38BDF8),
+        unselectedItemColor: Colors.white.withOpacity(0.4),
+        showUnselectedLabels: true,
+        selectedLabelStyle:
+            const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        unselectedLabelStyle:
+            const TextStyle(fontWeight: FontWeight.normal, fontSize: 11),
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard), label: 'Dashboard'),
+              icon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.person_add), label: 'Enrollment'),
-          BottomNavigationBarItem(icon: Icon(Icons.class_), label: 'Classes'),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
+              icon: Icon(Icons.person_add_rounded), label: 'Enrollment'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.class_rounded), label: 'Classes'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.people_rounded), label: 'Users'),
         ],
         onTap: (index) {
           if (index == 0) {
@@ -1083,11 +714,46 @@ class _ClassesScreenState extends State<ClassesScreen> {
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/enrollment');
           } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/classes');
+            // Already on classes
           } else if (index == 3) {
             Navigator.pushReplacementNamed(context, '/users');
           }
         },
+      ),
+    );
+  }
+}
+
+class _GlassCard extends StatelessWidget {
+  final Widget child;
+  final double? height;
+  final EdgeInsetsGeometry padding;
+
+  const _GlassCard({
+    required this.child,
+    this.height,
+    this.padding = const EdgeInsets.all(20),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          height: height,
+          padding: padding,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.15),
+              width: 1.0,
+            ),
+          ),
+          child: child,
+        ),
       ),
     );
   }
