@@ -447,6 +447,10 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
           setState(() => _selectedIndex = index);
           if (index == 0) {
             Navigator.pushNamed(context, '/dashboard');
+          } else if (index == 2) {
+            Navigator.pushNamed(context, '/classes');
+          } else if (index == 3) {
+            Navigator.pushNamed(context, '/users');
           }
         },
       ),
