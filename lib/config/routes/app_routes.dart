@@ -3,8 +3,8 @@ import '../../screens/dashboard/dashboard_screen.dart';
 import '../../screens/profile/profile_screen.dart';
 import '../../screens/settings/settings_screen.dart';
 import '../../screens/enrollment/enrollment_screen.dart';
-import '../../screens/classes/classes_screen.dart';
 import '../../screens/users/users_screen.dart';
+import '../../screens/classes/classes_screen.dart';
 
 class AppRoutes {
   static const String home = '/';

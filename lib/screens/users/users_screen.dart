@@ -8,15 +8,6 @@ class UsersScreen extends StatefulWidget {
 }
 
 class _UsersScreenState extends State<UsersScreen> {
-  int _selectedIndex = 3;
-  String _searchQuery = '';
-  final List<Map<String, String>> _users = [
-    {'name': 'John Doe', 'email': 'john@example.com', 'role': 'Admin'},
-    {'name': 'Jane Smith', 'email': 'jane@example.com', 'role': 'Teacher'},
-    {'name': 'Mike Johnson', 'email': 'mike@example.com', 'role': 'Student'},
-    {'name': 'Sarah Williams', 'email': 'sarah@example.com', 'role': 'Teacher'},
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,9 +27,33 @@ class _UsersScreenState extends State<UsersScreen> {
           child: Column(
             children: [
               _buildHeader(),
-              _buildSearchBar(),
               Expanded(
-                child: _buildUsersList(),
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    const Text(
+                      'User Overview',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildUserGrowthChart(),
+                    const SizedBox(height: 32),
+                    const Text(
+                      'Users List',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildUserCards(),
+                  ],
+                ),
               ),
             ],
           ),
@@ -49,40 +64,34 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Widget _buildHeader() {
-    final isMobile = MediaQuery.of(context).size.width < 600;
     return Padding(
-      padding: EdgeInsets.all(isMobile ? 12 : 16),
+      padding: const EdgeInsets.all(16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Image.asset(
-                'aclc_logo.png',
-                height: isMobile ? 32 : 40,
-                width: isMobile ? 32 : 40,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: isMobile ? 32 : 40,
-                    width: isMobile ? 32 : 40,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.school, color: Colors.white),
-                  );
-                },
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Users',
-                style: TextStyle(
-                  fontSize: isMobile ? 18 : 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+          Image.asset(
+            'aclc_logo.png', // Fallback handled in errorBuilder
+            height: 40,
+            width: 40,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-            ],
+                child: const Icon(Icons.school, color: Colors.white),
+              );
+            },
+          ),
+          const Text(
+            'Users',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.add, color: Colors.white, size: 28),
@@ -93,84 +102,210 @@ class _UsersScreenState extends State<UsersScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.3),
-            width: 1.5,
+  Widget _buildUserGrowthChart() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2864C6), // Darker blue card
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'User Growth',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+            ),
           ),
-        ),
-        child: TextField(
-          onChanged: (value) {
-            setState(() => _searchQuery = value);
-          },
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            hintText: 'Search users...',
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-            prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.7)),
-            suffixIcon: Icon(Icons.filter_list, color: Colors.white.withOpacity(0.7)),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          const SizedBox(height: 8),
+          const Text(
+            '32 Total',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
+          const SizedBox(height: 24),
+          // Chart implementation mimicking the image
+          SizedBox(
+            height: 140,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Y-axis labels
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    Text('5',
+                        style: TextStyle(color: Colors.white70, fontSize: 10)),
+                    Text('3',
+                        style: TextStyle(color: Colors.white70, fontSize: 10)),
+                    Text('2',
+                        style: TextStyle(color: Colors.white70, fontSize: 10)),
+                    Text('1',
+                        style: TextStyle(color: Colors.white70, fontSize: 10)),
+                    Text('0',
+                        style: TextStyle(color: Colors.white70, fontSize: 10)),
+                  ],
+                ),
+                const SizedBox(width: 12),
+                // Graph area
+                Expanded(
+                    child: Column(children: [
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        // Horizontal grid lines
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: List.generate(
+                              5,
+                              (index) => Divider(
+                                  color: Colors.white.withOpacity(0.1),
+                                  height: 1)),
+                        ),
+                        // Line near 0
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                              height: 2,
+                              decoration: BoxDecoration(
+                                  color: Colors.cyanAccent,
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color:
+                                            Colors.cyanAccent.withOpacity(0.5),
+                                        blurRadius: 4)
+                                  ])),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // X-axis labels
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      'Jan',
+                      'Feb',
+                      'Mar',
+                      'Apr',
+                      'May',
+                      'Jun',
+                      'Jul',
+                      'Aug',
+                      'Sep',
+                      'Oct',
+                      'Nov',
+                      'Dec'
+                    ]
+                        .map((e) => Text(e,
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 10)))
+                        .toList(),
+                  ),
+                ])),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildUsersList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _users.length,
-      itemBuilder: (context, index) {
-        final user = _users[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: ListTile(
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.person, color: Color(0xFF3B82F6)),
-            ),
-            title: Text(
-              user['name'] ?? 'Unknown',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(user['email'] ?? ''),
-                Text(
-                  user['role'] ?? '',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+  Widget _buildUserCards() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildRoleCard(
+            'Students',
+            '19',
+            Icons.school,
+            const Color(0xFF34D399), // Greenish
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildRoleCard(
+            'Teacher',
+            '12',
+            Icons.person,
+            const Color(0xFF60A5FA), // Blueish
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildRoleCard(
+            'Admin',
+            '1',
+            Icons.admin_panel_settings,
+            const Color(0xFFA78BFA), // Purple
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoleCard(
+      String title, String count, IconData icon, Color color) {
+    return Container(
+      height: 140,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.4),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Flexible(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
-            ),
-            trailing: PopupMenuButton(
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  child: Text('Edit'),
+              ),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const PopupMenuItem(
-                  child: Text('Delete'),
-                ),
-              ],
+                child: Icon(icon, color: Colors.white, size: 16),
+              ),
+            ],
+          ),
+          Text(
+            count,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -187,25 +322,28 @@ class _UsersScreenState extends State<UsersScreen> {
         ],
       ),
       child: BottomNavigationBar(
-        currentIndex: _selectedIndex,
+        currentIndex: 3, // Users tab
         type: BottomNavigationBarType.fixed,
         backgroundColor: const Color(0xFF1E3A8A),
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white.withOpacity(0.6),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_add), label: 'Enrollment'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_add), label: 'Enrollment'),
           BottomNavigationBarItem(icon: Icon(Icons.class_), label: 'Classes'),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
         ],
         onTap: (index) {
-          setState(() => _selectedIndex = index);
           if (index == 0) {
-            Navigator.pushNamed(context, '/dashboard');
+            Navigator.pushReplacementNamed(context, '/dashboard');
           } else if (index == 1) {
-            Navigator.pushNamed(context, '/enrollment');
+            Navigator.pushReplacementNamed(context, '/enrollment');
           } else if (index == 2) {
-            Navigator.pushNamed(context, '/classes');
+            Navigator.pushReplacementNamed(context, '/classes');
+          } else if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/users');
           }
         },
       ),

@@ -202,234 +202,220 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF1E3A8A),
-                      Color(0xFF3B82F6),
-                      Color(0xFF60A5FA),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: const EdgeInsets.all(24),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Enroll Student',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      const Text(
-                        'Student *',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          underline: const SizedBox(),
-                          icon: const Padding(
-                            padding: EdgeInsets.only(right: 12),
-                            child: Icon(Icons.arrow_drop_down, color: Color(0xFF1E3A8A), size: 28),
-                          ),
-                          hint: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16),
-                            child: Text('Select a student'),
-                          ),
-                          value: selectedStudent,
-                          items: students.map((student) {
-                            return DropdownMenuItem(
-                              value: student,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  student,
-                                  style: const TextStyle(color: Colors.black),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() => selectedStudent = value);
-                          },
-                          dropdownColor: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Section *',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          underline: const SizedBox(),
-                          icon: const Padding(
-                            padding: EdgeInsets.only(right: 12),
-                            child: Icon(Icons.arrow_drop_down, color: Color(0xFF1E3A8A), size: 28),
-                          ),
-                          value: selectedSection,
-                          items: sections.map((section) {
-                            return DropdownMenuItem(
-                              value: section,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  section,
-                                  style: const TextStyle(color: Colors.black),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() => selectedSection = value);
-                          },
-                          dropdownColor: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Subject *',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          underline: const SizedBox(),
-                          icon: const Padding(
-                            padding: EdgeInsets.only(right: 12),
-                            child: Icon(Icons.arrow_drop_down, color: Color(0xFF1E3A8A), size: 28),
-                          ),
-                          hint: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16),
-                            child: Text('Select a subject'),
-                          ),
-                          value: selectedSubject,
-                          items: subjects.map((subject) {
-                            return DropdownMenuItem(
-                              value: subject,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  subject,
-                                  style: const TextStyle(color: Colors.black),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() => selectedSubject = value);
-                          },
-                          dropdownColor: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.pop(context),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Colors.white, width: 2),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                if (selectedStudent != null &&
-                                    selectedSection != null &&
-                                    selectedSubject != null) {
-                                  this.setState(() {
-                                    _enrollments.add({
-                                      'name': selectedStudent!,
-                                      'classCode': selectedSection!,
-                                      'subject': selectedSubject!,
-                                    });
-                                  });
-                                  Navigator.pop(context);
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'Enroll',
-                                style: TextStyle(
-                                  color: Color(0xFF1E3A8A),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1E3A8A),
+                Color(0xFF3B82F6),
+                Color(0xFF60A5FA),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Enroll Student',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      },
+                const SizedBox(height: 24),
+                // Student Dropdown
+                const Text(
+                  'Student *',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButton<String>(
+                    isExpanded: true,
+                    underline: const SizedBox(),
+                    icon: const Padding(
+                      padding: EdgeInsets.only(right: 12),
+                      child: Icon(Icons.arrow_drop_down, color: Color(0xFF1E3A8A), size: 28),
+                    ),
+                    hint: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('Select a student'),
+                    ),
+                    value: selectedStudent,
+                    items: students.map((student) {
+                      return DropdownMenuItem(
+                        value: student,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(student),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      selectedStudent = value;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Section Dropdown
+                const Text(
+                  'Section *',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButton<String>(
+                    isExpanded: true,
+                    underline: const SizedBox(),
+                    icon: const Padding(
+                      padding: EdgeInsets.only(right: 12),
+                      child: Icon(Icons.arrow_drop_down, color: Color(0xFF1E3A8A), size: 28),
+                    ),
+                    value: selectedSection,
+                    items: sections.map((section) {
+                      return DropdownMenuItem(
+                        value: section,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(section),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      selectedSection = value;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Subject Dropdown
+                const Text(
+                  'Subject *',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButton<String>(
+                    isExpanded: true,
+                    underline: const SizedBox(),
+                    icon: const Padding(
+                      padding: EdgeInsets.only(right: 12),
+                      child: Icon(Icons.arrow_drop_down, color: Color(0xFF1E3A8A), size: 28),
+                    ),
+                    hint: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('Select a subject'),
+                    ),
+                    value: selectedSubject,
+                    items: subjects.map((subject) {
+                      return DropdownMenuItem(
+                        value: subject,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(subject),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      selectedSubject = value;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 32),
+                // Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.white, width: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (selectedStudent != null &&
+                              selectedSection != null &&
+                              selectedSubject != null) {
+                            setState(() {
+                              _enrollments.add({
+                                'name': selectedStudent!,
+                                'classCode': selectedSection!,
+                                'subject': selectedSubject!,
+                              });
+                            });
+                            Navigator.pop(context);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Enroll',
+                          style: TextStyle(
+                            color: Color(0xFF1E3A8A),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -458,13 +444,14 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
         ],
         onTap: (index) {
-          setState(() => _selectedIndex = index);
           if (index == 0) {
-            Navigator.pushNamed(context, '/dashboard');
+            Navigator.pushReplacementNamed(context, '/dashboard');
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/enrollment');
           } else if (index == 2) {
-            Navigator.pushNamed(context, '/classes');
+            Navigator.pushReplacementNamed(context, '/classes');
           } else if (index == 3) {
-            Navigator.pushNamed(context, '/users');
+            Navigator.pushReplacementNamed(context, '/users');
           }
         },
       ),

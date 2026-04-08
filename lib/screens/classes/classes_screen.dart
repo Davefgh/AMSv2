@@ -17,7 +17,11 @@ class _ClassesScreenState extends State<ClassesScreen> {
     {'name': 'Room 104', 'id': '4', 'selected': false},
   ];
   final List<Map<String, dynamic>> _courses = [
-    {'name': 'Introduction to Computer Science', 'code': 'CS101', 'selected': false},
+    {
+      'name': 'Introduction to Computer Science',
+      'code': 'CS101',
+      'selected': false
+    },
     {'name': 'Data Structures', 'code': 'CS201', 'selected': false},
     {'name': 'Web Development', 'code': 'CS301', 'selected': false},
   ];
@@ -32,9 +36,24 @@ class _ClassesScreenState extends State<ClassesScreen> {
     {'name': 'Chemistry', 'code': 'CHEM101', 'selected': false},
   ];
   final List<Map<String, dynamic>> _schedules = [
-    {'day': 'Monday', 'time': '08:00 AM - 10:00 AM', 'room': 'Room 101', 'selected': false},
-    {'day': 'Wednesday', 'time': '10:00 AM - 12:00 PM', 'room': 'Room 102', 'selected': false},
-    {'day': 'Friday', 'time': '02:00 PM - 04:00 PM', 'room': 'Room 103', 'selected': false},
+    {
+      'day': 'Monday',
+      'time': '08:00 AM - 10:00 AM',
+      'room': 'Room 101',
+      'selected': false
+    },
+    {
+      'day': 'Wednesday',
+      'time': '10:00 AM - 12:00 PM',
+      'room': 'Room 102',
+      'selected': false
+    },
+    {
+      'day': 'Friday',
+      'time': '02:00 PM - 04:00 PM',
+      'room': 'Room 103',
+      'selected': false
+    },
   ];
 
   @override
@@ -157,7 +176,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 setState(() => _selectedTab = tab);
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
@@ -169,8 +189,11 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 child: Text(
                   tab,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected
+                        ? Colors.white
+                        : Colors.white.withOpacity(0.6),
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                     fontSize: 14,
                   ),
                 ),
@@ -320,16 +343,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     children: [
                       const Icon(Icons.delete, color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      const Text('Delete', style: TextStyle(color: Colors.white)),
+                      const Text('Delete',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
                 PopupMenuItem(
                   child: Row(
                     children: [
-                      const Icon(Icons.select_all, color: Colors.white, size: 20),
+                      const Icon(Icons.select_all,
+                          color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      const Text('Select All', style: TextStyle(color: Colors.white)),
+                      const Text('Select All',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -347,53 +373,54 @@ class _ClassesScreenState extends State<ClassesScreen> {
           children: List.generate(_classrooms.length, (index) {
             final classroom = _classrooms[index];
             return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                color: Colors.white.withOpacity(0.95),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.meeting_room,
-                          color: Color(0xFF3B82F6),
-                          size: 28,
-                        ),
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              color: Colors.white.withOpacity(0.95),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              classroom['name'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1F2937),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'ID: ${classroom['id']}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: const Icon(
+                        Icons.meeting_room,
+                        color: Color(0xFF3B82F6),
+                        size: 28,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            classroom['name'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'ID: ${classroom['id']}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              );
+              ),
+            );
           }),
         ),
       ],
@@ -472,16 +499,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     children: [
                       const Icon(Icons.delete, color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      const Text('Delete', style: TextStyle(color: Colors.white)),
+                      const Text('Delete',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
                 PopupMenuItem(
                   child: Row(
                     children: [
-                      const Icon(Icons.select_all, color: Colors.white, size: 20),
+                      const Icon(Icons.select_all,
+                          color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      const Text('Select All', style: TextStyle(color: Colors.white)),
+                      const Text('Select All',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -499,53 +529,54 @@ class _ClassesScreenState extends State<ClassesScreen> {
           children: List.generate(_courses.length, (index) {
             final course = _courses[index];
             return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                color: Colors.white.withOpacity(0.95),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.purple.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.book,
-                          color: Colors.purple,
-                          size: 28,
-                        ),
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              color: Colors.white.withOpacity(0.95),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              course['name'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1F2937),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Code: ${course['code']}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: const Icon(
+                        Icons.book,
+                        color: Colors.purple,
+                        size: 28,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            course['name'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Code: ${course['code']}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              );
+              ),
+            );
           }),
         ),
       ],
@@ -624,16 +655,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     children: [
                       const Icon(Icons.delete, color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      const Text('Delete', style: TextStyle(color: Colors.white)),
+                      const Text('Delete',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
                 PopupMenuItem(
                   child: Row(
                     children: [
-                      const Icon(Icons.select_all, color: Colors.white, size: 20),
+                      const Icon(Icons.select_all,
+                          color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      const Text('Select All', style: TextStyle(color: Colors.white)),
+                      const Text('Select All',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -651,53 +685,54 @@ class _ClassesScreenState extends State<ClassesScreen> {
           children: List.generate(_sections.length, (index) {
             final section = _sections[index];
             return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                color: Colors.white.withOpacity(0.95),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.layers,
-                          color: Colors.orange,
-                          size: 28,
-                        ),
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              color: Colors.white.withOpacity(0.95),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              section['name'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1F2937),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Capacity: ${section['capacity']}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: const Icon(
+                        Icons.layers,
+                        color: Colors.orange,
+                        size: 28,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            section['name'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Capacity: ${section['capacity']}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              );
+              ),
+            );
           }),
         ),
       ],
@@ -776,16 +811,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     children: [
                       const Icon(Icons.delete, color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      const Text('Delete', style: TextStyle(color: Colors.white)),
+                      const Text('Delete',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
                 PopupMenuItem(
                   child: Row(
                     children: [
-                      const Icon(Icons.select_all, color: Colors.white, size: 20),
+                      const Icon(Icons.select_all,
+                          color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      const Text('Select All', style: TextStyle(color: Colors.white)),
+                      const Text('Select All',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -803,53 +841,54 @@ class _ClassesScreenState extends State<ClassesScreen> {
           children: List.generate(_subjects.length, (index) {
             final subject = _subjects[index];
             return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                color: Colors.white.withOpacity(0.95),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.subject,
-                          color: Colors.red,
-                          size: 28,
-                        ),
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              color: Colors.white.withOpacity(0.95),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              subject['name'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1F2937),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Code: ${subject['code']}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: const Icon(
+                        Icons.subject,
+                        color: Colors.red,
+                        size: 28,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            subject['name'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Code: ${subject['code']}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              );
+              ),
+            );
           }),
         ),
       ],
@@ -928,16 +967,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     children: [
                       const Icon(Icons.delete, color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      const Text('Delete', style: TextStyle(color: Colors.white)),
+                      const Text('Delete',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
                 PopupMenuItem(
                   child: Row(
                     children: [
-                      const Icon(Icons.select_all, color: Colors.white, size: 20),
+                      const Icon(Icons.select_all,
+                          color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      const Text('Select All', style: TextStyle(color: Colors.white)),
+                      const Text('Select All',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -955,53 +997,54 @@ class _ClassesScreenState extends State<ClassesScreen> {
           children: List.generate(_schedules.length, (index) {
             final schedule = _schedules[index];
             return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                color: Colors.white.withOpacity(0.95),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.teal.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.schedule,
-                          color: Colors.teal,
-                          size: 28,
-                        ),
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              color: Colors.white.withOpacity(0.95),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.teal.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              schedule['day'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1F2937),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${schedule['time']} - ${schedule['room']}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: const Icon(
+                        Icons.schedule,
+                        color: Colors.teal,
+                        size: 28,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            schedule['day'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${schedule['time']} - ${schedule['room']}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              );
+              ),
+            );
           }),
         ),
       ],
@@ -1027,17 +1070,22 @@ class _ClassesScreenState extends State<ClassesScreen> {
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white.withOpacity(0.6),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_add), label: 'Enrollment'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_add), label: 'Enrollment'),
           BottomNavigationBarItem(icon: Icon(Icons.class_), label: 'Classes'),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
         ],
         onTap: (index) {
-          setState(() => _selectedIndex = index);
           if (index == 0) {
-            Navigator.pushNamed(context, '/dashboard');
+            Navigator.pushReplacementNamed(context, '/dashboard');
           } else if (index == 1) {
-            Navigator.pushNamed(context, '/enrollment');
+            Navigator.pushReplacementNamed(context, '/enrollment');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/classes');
+          } else if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/users');
           }
         },
       ),
