@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class UsersScreen extends StatefulWidget {
@@ -8,56 +9,121 @@ class UsersScreen extends StatefulWidget {
 }
 
 class _UsersScreenState extends State<UsersScreen> {
+  final List<Map<String, dynamic>> _recentUsers = [
+    {
+      'name': 'Eleanor Pena',
+      'role': 'Teacher',
+      'time': '2 mins ago',
+      'color': const Color(0xFF60A5FA),
+      'icon': Icons.person
+    },
+    {
+      'name': 'Wade Warren',
+      'role': 'Student',
+      'time': '1 hour ago',
+      'color': const Color(0xFF34D399),
+      'icon': Icons.school
+    },
+    {
+      'name': 'Brooklyn Simmons',
+      'role': 'Student',
+      'time': '3 hours ago',
+      'color': const Color(0xFF34D399),
+      'icon': Icons.school
+    },
+    {
+      'name': 'Guy Hawkins',
+      'role': 'Admin',
+      'time': '1 day ago',
+      'color': const Color(0xFFA78BFA),
+      'icon': Icons.admin_panel_settings
+    },
+    {
+      'name': 'Dianne Russell',
+      'role': 'Teacher',
+      'time': '2 days ago',
+      'color': const Color(0xFF60A5FA),
+      'icon': Icons.person
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1E3A8A),
-              Color(0xFF3B82F6),
-              Color(0xFF60A5FA),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    const Text(
-                      'User Overview',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildUserGrowthChart(),
-                    const SizedBox(height: 32),
-                    const Text(
-                      'Users List',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildUserCards(),
-                  ],
-                ),
+      backgroundColor: const Color(0xFF0F172A), // Slate 900
+      body: Stack(
+        children: [
+          // Background Glowing Orbs for ambiance
+          Positioned(
+            top: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF3B82F6).withOpacity(0.4),
+                boxShadow: [
+                  BoxShadow(
+                      color: const Color(0xFF3B82F6).withOpacity(0.4),
+                      blurRadius: 100,
+                      spreadRadius: 50)
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            bottom: 100,
+            right: -150,
+            child: Container(
+              width: 400,
+              height: 400,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                boxShadow: [
+                  BoxShadow(
+                      color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                      blurRadius: 120,
+                      spreadRadius: 60)
+                ],
+              ),
+            ),
+          ),
+          // Backdrop blur for the glowing orbs to look smoothly ambient
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+            child: Container(color: Colors.transparent),
+          ),
+
+          SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                    children: [
+                      _buildSectionTitle('User Growth'),
+                      const SizedBox(height: 16),
+                      _buildUserGrowthChart(),
+                      const SizedBox(height: 32),
+                      _buildSectionTitle('Role Distribution'),
+                      const SizedBox(height: 16),
+                      _buildRoleCards(),
+                      const SizedBox(height: 32),
+                      _buildSectionTitle('Recently Added'),
+                      const SizedBox(height: 16),
+                      _buildRecentUsersList(),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
@@ -65,152 +131,192 @@ class _UsersScreenState extends State<UsersScreen> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Image.asset(
-            'aclc_logo.png', // Fallback handled in errorBuilder
-            height: 40,
-            width: 40,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(8),
+          Row(
+            children: [
+              Image.asset(
+                'aclc_logo.png',
+                height: 48,
+                width: 48,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.shield, color: Colors.white, size: 40),
+              ),
+              const SizedBox(width: 16),
+              const Text(
+                'Admin',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
                 ),
-                child: const Icon(Icons.school, color: Colors.white),
-              );
-            },
+              ),
+            ],
           ),
-          const Text(
-            'Users',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          PopupMenuButton<String>(
+            color: const Color(0xFF1E293B), // Dark slate
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            offset: const Offset(0, 50),
+            padding: EdgeInsets.zero,
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'profile',
+                child: Text('Profile', style: TextStyle(color: Colors.white)),
+              ),
+              const PopupMenuItem(
+                value: 'billing',
+                child: Text('Billing', style: TextStyle(color: Colors.white)),
+              ),
+              const PopupMenuItem(
+                value: 'settings',
+                child: Text('Settings', style: TextStyle(color: Colors.white)),
+              ),
+              const PopupMenuDivider(height: 1),
+              const PopupMenuItem(
+                value: 'logout',
+                child:
+                    Text('Log out', style: TextStyle(color: Colors.redAccent)),
+              ),
+            ],
+            child: const CircleAvatar(
+              radius: 20,
+              backgroundColor: Color(0xFF38BDF8),
+              backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.white, size: 28),
-            onPressed: () {},
-          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+        letterSpacing: 0.5,
       ),
     );
   }
 
   Widget _buildUserGrowthChart() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2864C6), // Darker blue card
-        borderRadius: BorderRadius.circular(16),
-      ),
+    return _GlassCard(
+      height: 240,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'User Growth',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Total Users',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    '32',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.greenAccent.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border:
+                      Border.all(color: Colors.greenAccent.withOpacity(0.5)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.trending_up,
+                        color: Colors.greenAccent, size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      '+14%',
+                      style: TextStyle(
+                        color: Colors.greenAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
           ),
-          const SizedBox(height: 8),
-          const Text(
-            '32 Total',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Chart implementation mimicking the image
+          const Spacer(),
           SizedBox(
-            height: 140,
+            height: 100,
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                // Y-axis labels
+                // Y-axis
                 Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: const [
+                    Text('10',
+                        style: TextStyle(color: Colors.white70, fontSize: 10)),
                     Text('5',
-                        style: TextStyle(color: Colors.white70, fontSize: 10)),
-                    Text('3',
-                        style: TextStyle(color: Colors.white70, fontSize: 10)),
-                    Text('2',
-                        style: TextStyle(color: Colors.white70, fontSize: 10)),
-                    Text('1',
                         style: TextStyle(color: Colors.white70, fontSize: 10)),
                     Text('0',
                         style: TextStyle(color: Colors.white70, fontSize: 10)),
                   ],
                 ),
-                const SizedBox(width: 12),
-                // Graph area
+                const SizedBox(width: 16),
+                // Chart
                 Expanded(
-                    child: Column(children: [
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        // Horizontal grid lines
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: List.generate(
-                              5,
-                              (index) => Divider(
-                                  color: Colors.white.withOpacity(0.1),
-                                  height: 1)),
-                        ),
-                        // Line near 0
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                              height: 2,
-                              decoration: BoxDecoration(
-                                  color: Colors.cyanAccent,
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color:
-                                            Colors.cyanAccent.withOpacity(0.5),
-                                        blurRadius: 4)
-                                  ])),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // X-axis labels
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Stack(
                     children: [
-                      'Jan',
-                      'Feb',
-                      'Mar',
-                      'Apr',
-                      'May',
-                      'Jun',
-                      'Jul',
-                      'Aug',
-                      'Sep',
-                      'Oct',
-                      'Nov',
-                      'Dec'
-                    ]
-                        .map((e) => Text(e,
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 10)))
-                        .toList(),
+                      // Grid lines
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: List.generate(
+                          3,
+                          (index) => Divider(
+                              color: Colors.white.withOpacity(0.1), height: 1),
+                        ),
+                      ),
+                      // Custom Curve Graph
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _CurvedChartPainter(),
+                        ),
+                      ),
+                    ],
                   ),
-                ])),
+                ),
               ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          // X-axis labels
+          Padding(
+            padding: const EdgeInsets.only(left: 28),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: ['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov']
+                  .map((e) => Text(e,
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 10)))
+                  .toList(),
             ),
           ),
         ],
@@ -218,93 +324,113 @@ class _UsersScreenState extends State<UsersScreen> {
     );
   }
 
-  Widget _buildUserCards() {
+  Widget _buildRoleCards() {
     return Row(
       children: [
         Expanded(
-          child: _buildRoleCard(
-            'Students',
-            '19',
-            Icons.school,
-            const Color(0xFF34D399), // Greenish
-          ),
-        ),
+            child: _buildSingleRoleCard(
+                'Students', '19', Icons.school, const Color(0xFF34D399))),
         const SizedBox(width: 12),
         Expanded(
-          child: _buildRoleCard(
-            'Teacher',
-            '12',
-            Icons.person,
-            const Color(0xFF60A5FA), // Blueish
-          ),
-        ),
+            child: _buildSingleRoleCard(
+                'Teachers', '12', Icons.person, const Color(0xFF60A5FA))),
         const SizedBox(width: 12),
         Expanded(
-          child: _buildRoleCard(
-            'Admin',
-            '1',
-            Icons.admin_panel_settings,
-            const Color(0xFFA78BFA), // Purple
-          ),
-        ),
+            child: _buildSingleRoleCard('Admins', '1',
+                Icons.admin_panel_settings, const Color(0xFFA78BFA))),
       ],
     );
   }
 
-  Widget _buildRoleCard(
+  Widget _buildSingleRoleCard(
       String title, String count, IconData icon, Color color) {
-    return Container(
-      height: 140,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.4),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return _GlassCard(
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Flexible(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: Colors.white, size: 16),
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withOpacity(0.3)),
+            ),
+            child: Icon(icon, color: color, size: 24),
           ),
+          const SizedBox(height: 16),
           Text(
             count,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 32,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
             ),
           ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRecentUsersList() {
+    return _GlassCard(
+      padding: EdgeInsets.zero,
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: _recentUsers.length,
+        separatorBuilder: (context, index) => Divider(
+          color: Colors.white.withOpacity(0.1),
+          height: 1,
+        ),
+        itemBuilder: (context, index) {
+          final user = _recentUsers[index];
+          return ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            leading: Container(
+              height: 44,
+              width: 44,
+              decoration: BoxDecoration(
+                color: user['color'].withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: user['color'].withOpacity(0.3)),
+              ),
+              child: Icon(user['icon'], color: user['color'], size: 24),
+            ),
+            title: Text(
+              user['name'],
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              user['role'],
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.6),
+                fontSize: 13,
+              ),
+            ),
+            trailing: Text(
+              user['time'],
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.5),
+                fontSize: 12,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -312,28 +438,35 @@ class _UsersScreenState extends State<UsersScreen> {
   Widget _buildBottomNavBar() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1E3A8A),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+        color: const Color(0xFF0F172A),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
           ),
-        ],
+        ),
       ),
       child: BottomNavigationBar(
         currentIndex: 3, // Users tab
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1E3A8A),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white.withOpacity(0.6),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        selectedItemColor: const Color(0xFF38BDF8),
+        unselectedItemColor: Colors.white.withOpacity(0.4),
+        showUnselectedLabels: true,
+        selectedLabelStyle:
+            const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        unselectedLabelStyle:
+            const TextStyle(fontWeight: FontWeight.normal, fontSize: 11),
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard), label: 'Dashboard'),
+              icon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.person_add), label: 'Enrollment'),
-          BottomNavigationBarItem(icon: Icon(Icons.class_), label: 'Classes'),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
+              icon: Icon(Icons.person_add_rounded), label: 'Enrollment'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.class_rounded), label: 'Classes'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.people_rounded), label: 'Users'),
         ],
         onTap: (index) {
           if (index == 0) {
@@ -342,11 +475,104 @@ class _UsersScreenState extends State<UsersScreen> {
             Navigator.pushReplacementNamed(context, '/enrollment');
           } else if (index == 2) {
             Navigator.pushReplacementNamed(context, '/classes');
-          } else if (index == 3) {
-            Navigator.pushReplacementNamed(context, '/users');
           }
         },
       ),
     );
   }
+}
+
+class _GlassCard extends StatelessWidget {
+  final Widget child;
+  final double? height;
+  final EdgeInsetsGeometry padding;
+
+  const _GlassCard({
+    required this.child,
+    this.height,
+    this.padding = const EdgeInsets.all(20),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          height: height,
+          padding: padding,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.15),
+              width: 1.0,
+            ),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+class _CurvedChartPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF38BDF8)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+
+    // Smooth sample data simulating growth
+    final data = [2.0, 2.5, 3.2, 4.0, 5.5, 7.0, 7.8, 8.5, 9.2, 9.8, 10.0];
+    final maxData = 12.0;
+
+    final xStep = size.width / (data.length - 1);
+
+    path.moveTo(0, size.height - (data[0] / maxData) * size.height);
+
+    for (int i = 0; i < data.length - 1; i++) {
+      final x1 = i * xStep;
+      final y1 = size.height - (data[i] / maxData) * size.height;
+      final x2 = (i + 1) * xStep;
+      final y2 = size.height - (data[i + 1] / maxData) * size.height;
+
+      final ctrl1X = x1 + (x2 - x1) / 2;
+      final ctrl1Y = y1;
+      final ctrl2X = x1 + (x2 - x1) / 2;
+      final ctrl2Y = y2;
+
+      path.cubicTo(ctrl1X, ctrl1Y, ctrl2X, ctrl2Y, x2, y2);
+    }
+
+    // Draw main line
+    canvas.drawPath(path, paint);
+
+    // Draw gradient fill below
+    final fillPath = Path.from(path);
+    fillPath.lineTo(size.width, size.height);
+    fillPath.lineTo(0, size.height);
+    fillPath.close();
+
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          const Color(0xFF38BDF8).withOpacity(0.4),
+          const Color(0xFF38BDF8).withOpacity(0.0),
+        ],
+      ).createShader(Rect.fromLTRB(0, 0, size.width, size.height))
+      ..style = PaintingStyle.fill;
+
+    canvas.drawPath(fillPath, fillPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
