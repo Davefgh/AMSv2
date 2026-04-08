@@ -446,7 +446,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
         onTap: (index) {
           setState(() => _selectedIndex = index);
           if (index == 0) {
-            Navigator.pushNamed(context, '/dashboard');
+            Navigator.pushReplacementNamed(context, '/dashboard');
           }
         },
       ),

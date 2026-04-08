@@ -339,11 +339,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onTap: (index) {
           setState(() => _selectedIndex = index);
           if (index == 1) {
-            Navigator.pushNamed(context, '/enrollment');
-          } else if (index == 2) {
-            Navigator.pushNamed(context, '/classes');
+            Navigator.pushReplacementNamed(context, '/enrollment');
           } else if (index == 3) {
-            Navigator.pushNamed(context, '/users');
+            Navigator.pushReplacementNamed(context, '/users');
           }
         },
       ),
