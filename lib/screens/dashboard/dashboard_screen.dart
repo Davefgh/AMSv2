@@ -337,9 +337,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
         ],
         onTap: (index) {
-          setState(() => _selectedIndex = index);
-          if (index == 1) {
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, '/dashboard');
+          } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/enrollment');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/classes');
           } else if (index == 3) {
             Navigator.pushReplacementNamed(context, '/users');
           }

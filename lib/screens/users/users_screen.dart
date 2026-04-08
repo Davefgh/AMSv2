@@ -341,7 +341,9 @@ class _UsersScreenState extends State<UsersScreen> {
           } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/enrollment');
           } else if (index == 2) {
-            // Navigator.pushReplacementNamed(context, '/classes');
+            Navigator.pushReplacementNamed(context, '/classes');
+          } else if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/users');
           }
         },
       ),
