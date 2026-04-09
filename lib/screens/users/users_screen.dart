@@ -102,6 +102,7 @@ class _UsersScreenState extends State<UsersScreen> {
                 _buildHeader(),
                 Expanded(
                   child: ListView(
+                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 12),
                     children: [

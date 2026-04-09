@@ -114,6 +114,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 const SizedBox(height: 16),
                 Expanded(
                   child: ListView(
+                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     children: [
                       if (_selectedTab == 'Classroom') ...[

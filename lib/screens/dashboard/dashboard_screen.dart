@@ -67,6 +67,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 _buildHeader(),
                 Expanded(
                   child: ListView(
+                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 12),
                     children: [
@@ -252,17 +253,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ],
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  children: [
-                    _buildPeriodButton('Today', 'Today'),
-                    _buildPeriodButton('Weekly', 'Weekly'),
-                    _buildPeriodButton('Monthly', 'Monthly'),
-                  ],
+              Flexible(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildPeriodButton('Today', 'Today'),
+                        _buildPeriodButton('Weekly', 'Weekly'),
+                        _buildPeriodButton('Monthly', 'Monthly'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -287,10 +294,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildChart(),
-                ),
+                const SizedBox(width: 12),
+                _buildChart(),
               ],
             ),
           ),
@@ -306,15 +311,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         setState(() => _selectedPeriod = value);
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF38BDF8) : Colors.transparent, // Sky Blue
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? const Color(0xFF38BDF8) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: FontWeight.bold,
             color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
           ),
@@ -324,47 +329,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildChart() {
-    final data = [100, 85, 90, 95, 88, 92, 0];
-    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final maxHeight = 140.0;
+    final data = [100, 85, 90, 95, 88, 92];
+    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    final maxHeight = 100.0;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(
-        data.length,
-        (index) {
-          final height = (data[index] / 100) * maxHeight;
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Container(
-                width: 24,
-                height: height,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      const Color(0xFF1E3A8A).withOpacity(0.6), // Navy
-                      const Color(0xFF38BDF8), // Sky Blue
-                    ],
+    return Expanded(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(
+          data.length,
+          (index) {
+            final height = (data[index] / 100) * maxHeight;
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 18,
+                  height: height,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        const Color(0xFF1E3A8A).withOpacity(0.6),
+                        const Color(0xFF38BDF8),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                  borderRadius: BorderRadius.circular(6),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                days[index],
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: Colors.white70,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(height: 8),
+                Text(
+                  days[index],
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }

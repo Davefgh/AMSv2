@@ -190,6 +190,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
 
   Widget _buildEnrollmentList() {
     return ListView.builder(
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       padding: const EdgeInsets.all(24),
       itemCount: _enrollments.length,
       itemBuilder: (context, index) {
@@ -279,6 +280,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
             return _GlassCard(
               padding: const EdgeInsets.all(24),
               child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
