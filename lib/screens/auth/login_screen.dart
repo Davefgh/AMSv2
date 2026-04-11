@@ -41,8 +41,16 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (mounted) {
-      // Navigate to dashboard
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      // Check if email contains "teacher" to determine role
+      final email = _usernameController.text.toLowerCase();
+      final isTeacher = email.contains('teacher') || email.contains('instructor');
+      
+      // Navigate based on role
+      if (isTeacher) {
+        Navigator.pushReplacementNamed(context, '/teacher-dashboard');
+      } else {
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      }
     }
   }
 

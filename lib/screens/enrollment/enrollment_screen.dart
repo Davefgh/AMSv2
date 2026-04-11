@@ -190,7 +190,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
 
   Widget _buildEnrollmentList() {
     return ListView.builder(
-      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       padding: const EdgeInsets.all(24),
       itemCount: _enrollments.length,
       itemBuilder: (context, index) {
@@ -233,8 +234,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                 color: const Color(0xFF1E293B), // Dark slate
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
-                icon: Icon(Icons.more_vert,
-                    color: Colors.white.withOpacity(0.6)),
+                icon:
+                    Icon(Icons.more_vert, color: Colors.white.withOpacity(0.6)),
                 itemBuilder: (context) => [
                   const PopupMenuItem(
                     child: Text('Edit', style: TextStyle(color: Colors.white)),
@@ -362,7 +363,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF38BDF8), // Sky Blue
+                              backgroundColor:
+                                  const Color(0xFF38BDF8), // Sky Blue
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -438,8 +440,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                   value: item,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(item,
-                        style: const TextStyle(color: Colors.white)),
+                    child:
+                        Text(item, style: const TextStyle(color: Colors.white)),
                   ),
                 );
               }).toList(),
