@@ -12,7 +12,7 @@ class CustomTextField extends StatefulWidget {
   final int minLines;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.label,
     this.hint,
     this.controller,
@@ -22,7 +22,7 @@ class CustomTextField extends StatefulWidget {
     this.onChanged,
     this.maxLines = 1,
     this.minLines = 1,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();

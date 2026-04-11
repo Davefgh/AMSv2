@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class TeacherDashboardScreen extends StatefulWidget {
-  const TeacherDashboardScreen({Key? key}) : super(key: key);
+  const TeacherDashboardScreen({super.key});
 
   @override
   State<TeacherDashboardScreen> createState() => _TeacherDashboardScreenState();
@@ -36,8 +36,10 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                 _buildHeader(),
                 Expanded(
                   child: ListView(
-                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics()),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
                     children: [
                       _buildSectionHeader('Dashboard Overview'),
                       const SizedBox(height: 16),
@@ -69,7 +71,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               ],
             ),
           ),
-          
+
           // Floating Bottom Navigation (Glass Slab)
           _buildFloatingBottomNav(),
         ],
@@ -91,20 +93,29 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
-                    BoxShadow(color: _navy.withOpacity(0.06), blurRadius: 20, spreadRadius: 0, offset: const Offset(0, 10))
+                    BoxShadow(
+                        color: _navy.withValues(alpha: 0.06),
+                        blurRadius: 20,
+                        spreadRadius: 0,
+                        offset: const Offset(0, 10))
                   ],
                 ),
                 child: Image.asset(
-                  'aclc_logo.png',
+                  'assets/aclc_logo.png',
                   height: 36,
                   width: 36,
-                  errorBuilder: (context, error, stackTrace) => Icon(Icons.shield_rounded, color: _navy, size: 32),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Icon(Icons.shield_rounded, color: _navy, size: 32),
                 ),
               ),
               const SizedBox(width: 16),
               Text(
                 'Aclc Dashboard',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: _navy, letterSpacing: -0.5),
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: _navy,
+                    letterSpacing: -0.5),
               ),
             ],
           ),
@@ -112,7 +123,8 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             padding: EdgeInsets.zero,
             borderRadius: 14,
             child: IconButton(
-              icon: Icon(Icons.notifications_none_rounded, color: _navy.withOpacity(0.8), size: 28),
+              icon: Icon(Icons.notifications_none_rounded,
+                  color: _navy.withValues(alpha: 0.8), size: 28),
               onPressed: () {},
             ),
           ),
@@ -142,15 +154,20 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       crossAxisSpacing: 16,
       childAspectRatio: 1.1,
       children: [
-        _buildStatCard('156', 'Students', Icons.people_rounded, const Color(0xFF60A5FA)),
-        _buildStatCard('5', 'Classes', Icons.class_rounded, const Color(0xFF34D399)),
-        _buildStatCard('92%', 'Attendance', Icons.verified_rounded, const Color(0xFFFBBF24)),
-        _buildStatCard('12', 'Teachers', Icons.person_rounded, const Color(0xFFA78BFA)),
+        _buildStatCard(
+            '156', 'Students', Icons.people_rounded, const Color(0xFF60A5FA)),
+        _buildStatCard(
+            '5', 'Classes', Icons.class_rounded, const Color(0xFF34D399)),
+        _buildStatCard('92%', 'Attendance', Icons.verified_rounded,
+            const Color(0xFFFBBF24)),
+        _buildStatCard(
+            '12', 'Teachers', Icons.person_rounded, const Color(0xFFA78BFA)),
       ],
     );
   }
 
-  Widget _buildStatCard(String value, String label, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String value, String label, IconData icon, Color color) {
     return _GlassCard(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -160,9 +177,9 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withOpacity(0.2)),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
             ),
             child: Icon(icon, color: color, size: 24),
           ),
@@ -171,11 +188,15 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             children: [
               Text(
                 value,
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: _navy),
+                style: TextStyle(
+                    fontSize: 28, fontWeight: FontWeight.w900, color: _navy),
               ),
               Text(
                 label,
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _navy.withOpacity(0.5)),
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: _navy.withValues(alpha: 0.5)),
               ),
             ],
           ),
@@ -199,7 +220,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(icon, color: color, size: 32),
@@ -211,16 +232,24 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               children: [
                 Text(
                   isCurrent ? 'Current Session' : 'Upcoming Session',
-                  style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1),
+                  style: TextStyle(
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   title,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: _navy),
+                  style: TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w900, color: _navy),
                 ),
                 Text(
                   details,
-                  style: TextStyle(fontSize: 13, color: _navy.withOpacity(0.4), fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: _navy.withValues(alpha: 0.4),
+                      fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -228,16 +257,19 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: isCurrent ? _skyBlue.withOpacity(0.1) : Colors.transparent,
+              color: isCurrent ? _skyBlue.withValues(alpha: 0.1) : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: isCurrent ? _skyBlue.withOpacity(0.2) : _navy.withOpacity(0.1)),
+              border: Border.all(
+                  color: isCurrent
+                      ? _skyBlue.withValues(alpha: 0.2)
+                      : _navy.withValues(alpha: 0.1)),
             ),
             child: Text(
               timer,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w900,
-                color: isCurrent ? _skyBlue : _navy.withOpacity(0.5),
+                color: isCurrent ? _skyBlue : _navy.withValues(alpha: 0.5),
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
@@ -276,7 +308,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? _skyBlue.withOpacity(0.12) : Colors.transparent,
+          color: isSelected ? _skyBlue.withValues(alpha: 0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(25),
         ),
         child: Column(
@@ -284,7 +316,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? _skyBlue : _navy.withOpacity(0.3),
+              color: isSelected ? _skyBlue : _navy.withValues(alpha: 0.3),
               size: 26,
             ),
             const SizedBox(height: 2),
@@ -293,7 +325,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
-                color: isSelected ? _skyBlue : _navy.withOpacity(0.3),
+                color: isSelected ? _skyBlue : _navy.withValues(alpha: 0.3),
               ),
             ),
           ],
@@ -319,12 +351,13 @@ class _GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(2), // Micro margin to prevent shadow clipping
+      margin:
+          const EdgeInsets.all(2), // Micro margin to prevent shadow clipping
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF001F3F).withOpacity(0.08),
+            color: const Color(0xFF001F3F).withValues(alpha: 0.08),
             blurRadius: 30,
             spreadRadius: 0,
             offset: const Offset(0, 15),
@@ -340,10 +373,10 @@ class _GlassCard extends StatelessWidget {
             padding: padding,
             decoration: BoxDecoration(
               // Applying Sky Blue tint to the glass surface
-              color: const Color(0xFFBAE6FD).withOpacity(0.18),
+              color: const Color(0xFFBAE6FD).withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(
-                color: const Color(0xFFBAE6FD).withOpacity(0.3),
+                color: const Color(0xFFBAE6FD).withValues(alpha: 0.3),
                 width: 1.5,
               ),
             ),

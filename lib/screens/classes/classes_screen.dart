@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class ClassesScreen extends StatefulWidget {
-  const ClassesScreen({Key? key}) : super(key: key);
+  const ClassesScreen({super.key});
 
   @override
   State<ClassesScreen> createState() => _ClassesScreenState();
@@ -72,10 +72,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF38BDF8).withOpacity(0.3), // Sky Blue
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.3), // Sky Blue
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF38BDF8).withOpacity(0.3),
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
                       blurRadius: 100,
                       spreadRadius: 50)
                 ],
@@ -90,10 +90,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
               height: 400,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF1E3A8A).withOpacity(0.5), // Navy Blue
+                color: const Color(0xFF1E3A8A).withValues(alpha: 0.5), // Navy Blue
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF1E3A8A).withOpacity(0.5),
+                      color: const Color(0xFF1E3A8A).withValues(alpha: 0.5),
                       blurRadius: 120,
                       spreadRadius: 60)
                 ],
@@ -105,7 +105,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
             child: Container(color: Colors.transparent),
           ),
-          
+
           SafeArea(
             child: Column(
               children: [
@@ -114,8 +114,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 const SizedBox(height: 16),
                 Expanded(
                   child: ListView(
-                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics()),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
                     children: [
                       if (_selectedTab == 'Classroom') ...[
                         _buildClassroomsOverview(),
@@ -160,7 +162,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
           Row(
             children: [
               Image.asset(
-                'aclc_logo.png',
+                'assets/aclc_logo.png',
                 height: 48,
                 width: 48,
                 errorBuilder: (context, error, stackTrace) =>
@@ -180,7 +182,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
           ),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withOpacity(0.2),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: IconButton(
@@ -198,10 +200,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
+        color: Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           width: 1.0,
         ),
       ),
@@ -220,17 +222,26 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF38BDF8).withOpacity(0.2) : Colors.transparent,
+                    color: isSelected
+                        ? const Color(0xFF38BDF8).withValues(alpha: 0.2)
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
-                    border: isSelected ? Border.all(color: const Color(0xFF38BDF8).withOpacity(0.5)) : null,
+                    border: isSelected
+                        ? Border.all(
+                            color: const Color(0xFF38BDF8).withValues(alpha: 0.5))
+                        : null,
                   ),
                   child: Text(
                     tab,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      color: isSelected
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.5),
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.w500,
                       fontSize: 14,
                     ),
                   ),
@@ -261,9 +272,9 @@ class _ClassesScreenState extends State<ClassesScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: color.withOpacity(0.3)),
+                  border: Border.all(color: color.withValues(alpha: 0.3)),
                 ),
                 child: Icon(icon, color: color, size: 24),
               ),
@@ -292,7 +303,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 16),
@@ -301,7 +312,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             child: LinearProgressIndicator(
               value: percentage / 100,
               minHeight: 6,
-              backgroundColor: Colors.white.withOpacity(0.1),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),
@@ -327,11 +338,13 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard('Total Classrooms', '27', Icons.meeting_room, const Color(0xFF60A5FA), 100),
+              child: _buildOverviewCard('Total Classrooms', '27',
+                  Icons.meeting_room, const Color(0xFF60A5FA), 100),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard('Active Classrooms', '27', Icons.check_circle, const Color(0xFF34D399), 100),
+              child: _buildOverviewCard('Active Classrooms', '27',
+                  Icons.check_circle, const Color(0xFF34D399), 100),
             ),
           ],
         ),
@@ -356,11 +369,13 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard('Total Courses', '${_courses.length}', Icons.book, const Color(0xFFA78BFA), 100),
+              child: _buildOverviewCard('Total Courses', '${_courses.length}',
+                  Icons.book, const Color(0xFFA78BFA), 100),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard('Active Courses', '${_courses.length}', Icons.check_circle, const Color(0xFF34D399), 100),
+              child: _buildOverviewCard('Active Courses', '${_courses.length}',
+                  Icons.check_circle, const Color(0xFF34D399), 100),
             ),
           ],
         ),
@@ -385,11 +400,17 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard('Total Sections', '${_sections.length}', Icons.layers, const Color(0xFFFBBF24), 100),
+              child: _buildOverviewCard('Total Sections', '${_sections.length}',
+                  Icons.layers, const Color(0xFFFBBF24), 100),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard('Active Sections', '${_sections.length}', Icons.check_circle, const Color(0xFF34D399), 100),
+              child: _buildOverviewCard(
+                  'Active Sections',
+                  '${_sections.length}',
+                  Icons.check_circle,
+                  const Color(0xFF34D399),
+                  100),
             ),
           ],
         ),
@@ -414,11 +435,17 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard('Total Subjects', '${_subjects.length}', Icons.subject, const Color(0xFFF87171), 100),
+              child: _buildOverviewCard('Total Subjects', '${_subjects.length}',
+                  Icons.subject, const Color(0xFFF87171), 100),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard('Active Subjects', '${_subjects.length}', Icons.check_circle, const Color(0xFF34D399), 100),
+              child: _buildOverviewCard(
+                  'Active Subjects',
+                  '${_subjects.length}',
+                  Icons.check_circle,
+                  const Color(0xFF34D399),
+                  100),
             ),
           ],
         ),
@@ -443,11 +470,21 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard('Total Schedules', '${_schedules.length}', Icons.schedule, const Color(0xFF14B8A6), 100),
+              child: _buildOverviewCard(
+                  'Total Schedules',
+                  '${_schedules.length}',
+                  Icons.schedule,
+                  const Color(0xFF14B8A6),
+                  100),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard('Active Schedules', '${_schedules.length}', Icons.check_circle, const Color(0xFF34D399), 100),
+              child: _buildOverviewCard(
+                  'Active Schedules',
+                  '${_schedules.length}',
+                  Icons.check_circle,
+                  const Color(0xFF34D399),
+                  100),
             ),
           ],
         ),
@@ -477,7 +514,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
   Widget _buildListPopupMenu() {
     return PopupMenuButton<String>(
-      icon: Icon(Icons.more_vert, color: Colors.white.withOpacity(0.6)),
+      icon: Icon(Icons.more_vert, color: Colors.white.withValues(alpha: 0.6)),
       color: const Color(0xFF1E293B), // Dark slate
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       itemBuilder: (context) => <PopupMenuEntry<String>>[
@@ -531,9 +568,9 @@ class _ClassesScreenState extends State<ClassesScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.2),
+                color: iconColor.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: iconColor.withOpacity(0.3)),
+                border: Border.all(color: iconColor.withValues(alpha: 0.3)),
               ),
               child: Icon(
                 icon,
@@ -559,7 +596,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     subtitle,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -681,8 +718,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
         border: Border(
-           top: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -693,7 +730,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withOpacity(0.4),
+        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
         showUnselectedLabels: true,
         selectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
@@ -746,10 +783,10 @@ class _GlassCard extends StatelessWidget {
           height: height,
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
+            color: Colors.white.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               width: 1.0,
             ),
           ),

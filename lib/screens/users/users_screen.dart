@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class UsersScreen extends StatefulWidget {
-  const UsersScreen({Key? key}) : super(key: key);
+  const UsersScreen({super.key});
 
   @override
   State<UsersScreen> createState() => _UsersScreenState();
@@ -62,10 +62,10 @@ class _UsersScreenState extends State<UsersScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF3B82F6).withOpacity(0.4),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF3B82F6).withOpacity(0.4),
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
                       blurRadius: 100,
                       spreadRadius: 50)
                 ],
@@ -80,10 +80,10 @@ class _UsersScreenState extends State<UsersScreen> {
               height: 400,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
                       blurRadius: 120,
                       spreadRadius: 60)
                 ],
@@ -140,7 +140,7 @@ class _UsersScreenState extends State<UsersScreen> {
           Row(
             children: [
               Image.asset(
-                'aclc_logo.png',
+                'assets/aclc_logo.png',
                 height: 48,
                 width: 48,
                 errorBuilder: (context, error, stackTrace) =>
@@ -222,7 +222,7 @@ class _UsersScreenState extends State<UsersScreen> {
                   Text(
                     'Total Users',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -242,10 +242,10 @@ class _UsersScreenState extends State<UsersScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.greenAccent.withOpacity(0.2),
+                  color: Colors.greenAccent.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                   border:
-                      Border.all(color: Colors.greenAccent.withOpacity(0.5)),
+                      Border.all(color: Colors.greenAccent.withValues(alpha: 0.5)),
                 ),
                 child: const Row(
                   children: [
@@ -293,7 +293,7 @@ class _UsersScreenState extends State<UsersScreen> {
                         children: List.generate(
                           3,
                           (index) => Divider(
-                              color: Colors.white.withOpacity(0.1), height: 1),
+                              color: Colors.white.withValues(alpha: 0.1), height: 1),
                         ),
                       ),
                       // Custom Curve Graph
@@ -354,9 +354,9 @@ class _UsersScreenState extends State<UsersScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withOpacity(0.3)),
+              border: Border.all(color: color.withValues(alpha: 0.3)),
             ),
             child: Icon(icon, color: color, size: 24),
           ),
@@ -373,7 +373,7 @@ class _UsersScreenState extends State<UsersScreen> {
           Text(
             title,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
@@ -392,7 +392,7 @@ class _UsersScreenState extends State<UsersScreen> {
         physics: const NeverScrollableScrollPhysics(),
         itemCount: _recentUsers.length,
         separatorBuilder: (context, index) => Divider(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           height: 1,
         ),
         itemBuilder: (context, index) {
@@ -404,9 +404,9 @@ class _UsersScreenState extends State<UsersScreen> {
               height: 44,
               width: 44,
               decoration: BoxDecoration(
-                color: user['color'].withOpacity(0.2),
+                color: user['color'].withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: user['color'].withOpacity(0.3)),
+                border: Border.all(color: user['color'].withValues(alpha: 0.3)),
               ),
               child: Icon(user['icon'], color: user['color'], size: 24),
             ),
@@ -420,14 +420,14 @@ class _UsersScreenState extends State<UsersScreen> {
             subtitle: Text(
               user['role'],
               style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 13,
               ),
             ),
             trailing: Text(
               user['time'],
               style: TextStyle(
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 fontSize: 12,
               ),
             ),
@@ -443,7 +443,7 @@ class _UsersScreenState extends State<UsersScreen> {
         color: const Color(0xFF0F172A),
         border: Border(
           top: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -454,7 +454,7 @@ class _UsersScreenState extends State<UsersScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withOpacity(0.4),
+        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
         showUnselectedLabels: true,
         selectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
@@ -505,10 +505,10 @@ class _GlassCard extends StatelessWidget {
           height: height,
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
+            color: Colors.white.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               width: 1.0,
             ),
           ),
@@ -566,8 +566,8 @@ class _CurvedChartPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          const Color(0xFF38BDF8).withOpacity(0.4),
-          const Color(0xFF38BDF8).withOpacity(0.0),
+          const Color(0xFF38BDF8).withValues(alpha: 0.4),
+          const Color(0xFF38BDF8).withValues(alpha: 0.0),
         ],
       ).createShader(Rect.fromLTRB(0, 0, size.width, size.height))
       ..style = PaintingStyle.fill;
