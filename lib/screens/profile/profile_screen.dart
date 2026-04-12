@@ -177,8 +177,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _buildUserCard(profile),
         const SizedBox(height: 24),
         _buildDetailSection(profile),
-        const SizedBox(height: 32),
-        _buildActionButtons(),
+        const SizedBox(height: 8),
       ],
     );
   }
@@ -289,49 +288,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Divider(height: 1, color: Colors.white.withValues(alpha: 0.05));
   }
 
-  Widget _buildActionButtons() {
-    return Column(
-      children: [
-        _buildPrimaryButton('Edit Profile', Icons.edit_note_rounded, () {
-          Navigator.pushNamed(context, '/edit-profile').then((updated) {
-            if (updated == true) {
-              setState(() => _profileFuture = _apiService.getMe());
-            }
-          });
-        }),
-      ],
-    );
-  }
-
-  Widget _buildPrimaryButton(String text, IconData icon, VoidCallback onPressed) {
-    return Container(
-      width: double.infinity,
-      height: 56,
-      decoration: BoxDecoration(
-        color: const Color(0xFF38BDF8),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 20),
-        label: Text(text),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-  }
 }
 
 class _GlassCard extends StatelessWidget {

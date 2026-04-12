@@ -1,13 +1,27 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import '../utils/constants.dart';
 import 'storage_service.dart';
 import '../models/user_profile.dart';
+import '../models/app_user.dart';
 
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
   final Logger _logger = Logger();
+
+  Future<List<AppUser>> getUsers() async {
+    try {
+      final response = await get('/api/users');
+      if (response is List) {
+        return response.map((u) => AppUser.fromJson(u)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getUsers Error: $e');
+      rethrow;
+    }
+  }
 
   Future<Map<String, String>> _getHeaders() async {
     final token = StorageService.getString('accessToken');

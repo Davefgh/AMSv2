@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../services/api_service.dart';
+import '../../models/app_user.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -9,8 +11,33 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  final ApiService _apiService = ApiService();
   int _selectedIndex = 0;
   String _selectedPeriod = 'Monthly';
+  List<AppUser> _users = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    try {
+      final users = await _apiService.getUsers();
+      if (mounted) {
+        setState(() {
+          _users = users;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +125,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 16),
                       _buildAttendanceOverview(),
                       const SizedBox(height: 32),
+                      const Text(
+                        'Recent User Trace',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildRecentUsersList(),
+                      const SizedBox(height: 32),
                     ],
                   ),
                 ),
@@ -143,24 +182,143 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildStatsGrid() {
+    final int total = _users.length;
+    final int students =
+        _users.where((u) => u.role.toLowerCase() == 'student').length;
+    final int instructors = _users
+        .where((u) => u.role.toLowerCase() == 'instructor' || u.role.toLowerCase() == 'teacher')
+        .length;
+    final int admins =
+        _users.where((u) => u.role.toLowerCase() == 'admin' || u.role.toLowerCase() == 'administrator').length;
+
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 16,
       crossAxisSpacing: 16,
-      childAspectRatio: 0.9,
+      childAspectRatio: 1.0,
       children: [
-        _buildStatCard('32', 'Total Registered', const Color(0xFF38BDF8),
-            Icons.people, 100), // Sky Blue
         _buildStatCard(
-            '19', 'Total Students', const Color(0xFF60A5FA), Icons.school, 59),
-        _buildStatCard('12', 'Total Teachers', const Color(0xFF1E3A8A),
-            Icons.person, 37), // Navy Blue
-        _buildStatCard('1', 'Admins', const Color(0xFFE2E8F0),
-            Icons.admin_panel_settings, 3), // White/Silver
+            total.toString(),
+            'Total Registered',
+            const Color(0xFF38BDF8),
+            Icons.people,
+            total > 0 ? 100 : 0), // Sky Blue
+        _buildStatCard(students.toString(), 'Total Students',
+            const Color(0xFF34D399), Icons.school, total > 0 ? (students * 100 ~/ total) : 0),
+        _buildStatCard(
+            instructors.toString(),
+            'Total Instructors',
+            const Color(0xFF60A5FA),
+            Icons.person,
+            total > 0 ? (instructors * 100 ~/ total) : 0), // Navy Blue
+        _buildStatCard(
+            admins.toString(),
+            'Admins',
+            const Color(0xFFA78BFA),
+            Icons.admin_panel_settings,
+            total > 0 ? (admins * 100 ~/ total) : 0), // Purple-ish
       ],
     );
+  }
+
+  Widget _buildRecentUsersList() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)));
+    }
+
+    if (_users.isEmpty) {
+      return _GlassCard(
+        child: Center(
+          child: Text(
+            'No users found',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+          ),
+        ),
+      );
+    }
+
+    // Show top 5 recent users
+    final recentUsers = _users.take(5).toList();
+
+    return _GlassCard(
+      padding: EdgeInsets.zero,
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: recentUsers.length,
+        separatorBuilder: (context, index) => Divider(
+          color: Colors.white.withValues(alpha: 0.05),
+          height: 1,
+        ),
+        itemBuilder: (context, index) {
+          final user = recentUsers[index];
+          final color = _getRoleColor(user.role);
+          
+          return ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            leading: Container(
+              height: 44,
+              width: 44,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: color.withValues(alpha: 0.3)),
+              ),
+              child: Icon(_getRoleIcon(user.role), color: color, size: 24),
+            ),
+            title: Text(
+              user.fullName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+            subtitle: Text(
+              user.role,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 13,
+              ),
+            ),
+            trailing: Icon(Icons.arrow_forward_ios_rounded, 
+                color: Colors.white.withValues(alpha: 0.2), size: 14),
+          );
+        },
+      ),
+    );
+  }
+
+  Color _getRoleColor(String role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+      case 'administrator':
+        return const Color(0xFFA78BFA);
+      case 'instructor':
+      case 'teacher':
+        return const Color(0xFF60A5FA);
+      case 'student':
+        return const Color(0xFF34D399);
+      default:
+        return Colors.white70;
+    }
+  }
+
+  IconData _getRoleIcon(String role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+      case 'administrator':
+        return Icons.admin_panel_settings_rounded;
+      case 'instructor':
+      case 'teacher':
+        return Icons.person_rounded;
+      case 'student':
+        return Icons.school_rounded;
+      default:
+        return Icons.people_alt_rounded;
+    }
   }
 
   Widget _buildStatCard(
