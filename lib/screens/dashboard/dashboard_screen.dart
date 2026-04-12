@@ -200,25 +200,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
       childAspectRatio: 1.0,
       children: [
         _buildStatCard(
-            total.toString(),
-            'Total Registered',
-            const Color(0xFF38BDF8),
-            Icons.people,
-            total > 0 ? 100 : 0), // Sky Blue
-        _buildStatCard(students.toString(), 'Total Students',
-            const Color(0xFF34D399), Icons.school, total > 0 ? (students * 100 ~/ total) : 0),
+          total.toString(),
+          'Total Registered',
+          const Color(0xFF38BDF8),
+          Icons.people,
+          total > 0 ? 100 : 0,
+          onTap: () => Navigator.pushNamed(context, '/users'),
+        ), // Sky Blue
         _buildStatCard(
-            instructors.toString(),
-            'Total Instructors',
-            const Color(0xFF60A5FA),
-            Icons.person,
-            total > 0 ? (instructors * 100 ~/ total) : 0), // Navy Blue
+          students.toString(),
+          'Total Students',
+          const Color(0xFF34D399),
+          Icons.school,
+          total > 0 ? (students * 100 ~/ total) : 0,
+          onTap: () => Navigator.pushNamed(context, '/students'),
+        ),
         _buildStatCard(
-            admins.toString(),
-            'Admins',
-            const Color(0xFFA78BFA),
-            Icons.admin_panel_settings,
-            total > 0 ? (admins * 100 ~/ total) : 0), // Purple-ish
+          instructors.toString(),
+          'Total Instructors',
+          const Color(0xFF60A5FA),
+          Icons.person,
+          total > 0 ? (instructors * 100 ~/ total) : 0,
+        ), // Navy Blue
+        _buildStatCard(
+          admins.toString(),
+          'Admins',
+          const Color(0xFFA78BFA),
+          Icons.admin_panel_settings,
+          total > 0 ? (admins * 100 ~/ total) : 0,
+        ), // Purple-ish
       ],
     );
   }
@@ -321,9 +331,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Widget _buildStatCard(
-      String value, String label, Color color, IconData icon, int percentage) {
+  Widget _buildStatCard(String value, String label, Color color, IconData icon,
+      int percentage,
+      {VoidCallback? onTap}) {
     return _GlassCard(
+      onTap: onTap,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -599,11 +611,13 @@ class _GlassCard extends StatelessWidget {
   final Widget child;
   final double? height;
   final EdgeInsetsGeometry padding;
+  final VoidCallback? onTap;
 
   const _GlassCard({
     required this.child,
     this.height,
     this.padding = const EdgeInsets.all(20),
+    this.onTap,
   });
 
   @override
@@ -612,18 +626,26 @@ class _GlassCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          height: height,
-          padding: padding,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
-              width: 1.0,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            splashColor: Colors.white.withValues(alpha: 0.1),
+            highlightColor: Colors.white.withValues(alpha: 0.05),
+            child: Container(
+              height: height,
+              padding: padding,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  width: 1.0,
+                ),
+              ),
+              child: child,
             ),
           ),
-          child: child,
         ),
       ),
     );

@@ -6,11 +6,13 @@ import '../../screens/enrollment/enrollment_screen.dart';
 import '../../screens/users/users_screen.dart';
 import '../../screens/classes/classes_screen.dart';
 import '../../screens/profile/edit_profile_screen.dart';
+import '../../screens/students/students_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
   static const String dashboard = '/dashboard';
   static const String profile = '/profile';
+  static const String students = '/students';
   static const String editProfile = '/edit-profile';
   static const String settings = '/settings';
   static const String enrollment = '/enrollment';
@@ -21,6 +23,7 @@ class AppRoutes {
     return {
       dashboard: (context) => const DashboardScreen(),
       profile: (context) => const ProfileScreen(),
+      students: (context) => const StudentsScreen(),
       editProfile: (context) => const EditProfileScreen(),
       settings: (context) => const SettingsScreen(),
       enrollment: (context) => const EnrollmentScreen(),

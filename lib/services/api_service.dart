@@ -5,10 +5,24 @@ import '../utils/constants.dart';
 import 'storage_service.dart';
 import '../models/user_profile.dart';
 import '../models/app_user.dart';
+import '../models/student_model.dart';
 
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
   final Logger _logger = Logger();
+
+  Future<List<Student>> getStudents() async {
+    try {
+      final response = await get('/api/students');
+      if (response is List) {
+        return response.map((s) => Student.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getStudents Error: $e');
+      rethrow;
+    }
+  }
 
   Future<List<AppUser>> getUsers() async {
     try {
