@@ -111,7 +111,10 @@ class _UsersScreenState extends State<UsersScreen> {
                       const SizedBox(height: 16),
                       _buildUserGrowthChart(),
                       const SizedBox(height: 32),
-                      _buildSectionTitle('Role Distribution'),
+                      _buildSectionTitle(
+                        'Role Distribution',
+                        trailing: _buildAddButton(),
+                      ),
                       const SizedBox(height: 16),
                       _buildRoleCards(),
                       const SizedBox(height: 32),
@@ -195,14 +198,48 @@ class _UsersScreenState extends State<UsersScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-        letterSpacing: 0.5,
+  Widget _buildSectionTitle(String title, {Widget? trailing}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 0.5,
+          ),
+        ),
+        if (trailing != null) trailing,
+      ],
+    );
+  }
+
+  Widget _buildAddButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border:
+            Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            // Implementation for adding a user
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Icon(
+              Icons.add_rounded,
+              color: Color(0xFF38BDF8),
+              size: 20,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -244,8 +281,8 @@ class _UsersScreenState extends State<UsersScreen> {
                 decoration: BoxDecoration(
                   color: Colors.greenAccent.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
-                  border:
-                      Border.all(color: Colors.greenAccent.withValues(alpha: 0.5)),
+                  border: Border.all(
+                      color: Colors.greenAccent.withValues(alpha: 0.5)),
                 ),
                 child: const Row(
                   children: [
@@ -293,7 +330,8 @@ class _UsersScreenState extends State<UsersScreen> {
                         children: List.generate(
                           3,
                           (index) => Divider(
-                              color: Colors.white.withValues(alpha: 0.1), height: 1),
+                              color: Colors.white.withValues(alpha: 0.1),
+                              height: 1),
                         ),
                       ),
                       // Custom Curve Graph

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../screens/dashboard/dashboard_screen.dart';
-import '../../screens/dashboard/teacher_dashboard_screen.dart';
 import '../../screens/profile/profile_screen.dart';
 import '../../screens/settings/settings_screen.dart';
 import '../../screens/enrollment/enrollment_screen.dart';
@@ -10,7 +9,6 @@ import '../../screens/classes/classes_screen.dart';
 class AppRoutes {
   static const String home = '/';
   static const String dashboard = '/dashboard';
-  static const String teacherDashboard = '/teacher-dashboard';
   static const String profile = '/profile';
   static const String settings = '/settings';
   static const String enrollment = '/enrollment';
@@ -20,7 +18,6 @@ class AppRoutes {
   static Map<String, WidgetBuilder> get routes {
     return {
       dashboard: (context) => const DashboardScreen(),
-      teacherDashboard: (context) => const TeacherDashboardScreen(),
       profile: (context) => const ProfileScreen(),
       settings: (context) => const SettingsScreen(),
       enrollment: (context) => const EnrollmentScreen(),

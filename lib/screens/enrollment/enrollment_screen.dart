@@ -28,7 +28,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.3), // Sky Blue
+                color:
+                    const Color(0xFF38BDF8).withValues(alpha: 0.3), // Sky Blue
                 boxShadow: [
                   BoxShadow(
                       color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
@@ -46,7 +47,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               height: 400,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF1E3A8A).withValues(alpha: 0.5), // Navy Blue
+                color:
+                    const Color(0xFF1E3A8A).withValues(alpha: 0.5), // Navy Blue
                 boxShadow: [
                   BoxShadow(
                       color: const Color(0xFF1E3A8A).withValues(alpha: 0.5),
@@ -145,8 +147,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
             hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
             prefixIcon:
                 Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
-            suffixIcon:
-                Icon(Icons.filter_list, color: Colors.white.withValues(alpha: 0.5)),
+            suffixIcon: Icon(Icons.filter_list,
+                color: Colors.white.withValues(alpha: 0.5)),
             border: InputBorder.none,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -234,8 +236,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                 color: const Color(0xFF1E293B), // Dark slate
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
-                icon:
-                    Icon(Icons.more_vert, color: Colors.white.withValues(alpha: 0.6)),
+                icon: Icon(Icons.more_vert,
+                    color: Colors.white.withValues(alpha: 0.6)),
                 itemBuilder: (context) => [
                   const PopupMenuItem(
                     child: Text('Edit', style: TextStyle(color: Colors.white)),

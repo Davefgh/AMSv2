@@ -1,6 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../config/routes/app_routes.dart';
+import '../../services/api_service.dart';
+import '../../services/storage_service.dart';
+import '../../providers/app_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -34,24 +38,43 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
 
-    // Simulate login API call
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final response = await ApiService().post('/api/account/login', {
+        'username': _usernameController.text.trim(),
+        'password': _passwordController.text.trim(),
+      });
 
-    setState(() {
-      _isLoading = false;
-    });
+      if (response['success'] == true) {
+        // Save tokens and user info
+        await StorageService.setString(
+            'accessToken', response['accessToken'] ?? '');
+        await StorageService.setString(
+            'refreshToken', response['refreshToken'] ?? '');
+        await StorageService.setString('userEmail', response['user'] ?? '');
+        await StorageService.setString('userRole', response['role'] ?? 'user');
 
-    if (mounted) {
-      // Check if email contains "teacher" to determine role
-      final email = _usernameController.text.toLowerCase();
-      final isTeacher =
-          email.contains('teacher') || email.contains('instructor');
+        if (mounted) {
+          final role = response['role']?.toString().toLowerCase() ?? 'user';
+          context.read<AppProvider>().setUserRole(role);
 
-      // Navigate based on role
-      if (isTeacher) {
-        Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);
+          Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+        }
       } else {
-        Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+        setState(() {
+          _errorMessage = response['message'] ?? 'Login failed';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage =
+            'An error occurred. Please make sure the backend is running and you are using the correct login flags.';
+        debugPrint('Login Error: $e');
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -157,7 +180,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       color: Colors.red.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: Colors.red.withValues(alpha: 0.4),
+                                        color:
+                                            Colors.red.withValues(alpha: 0.4),
                                       ),
                                     ),
                                     child: Row(

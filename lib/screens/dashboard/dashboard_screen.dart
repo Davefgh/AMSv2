@@ -27,7 +27,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.3), // Sky Blue
+                color:
+                    const Color(0xFF38BDF8).withValues(alpha: 0.3), // Sky Blue
                 boxShadow: [
                   BoxShadow(
                       color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
@@ -45,7 +46,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               height: 400,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF1E3A8A).withValues(alpha: 0.5), // Navy Blue
+                color:
+                    const Color(0xFF1E3A8A).withValues(alpha: 0.5), // Navy Blue
                 boxShadow: [
                   BoxShadow(
                       color: const Color(0xFF1E3A8A).withValues(alpha: 0.5),
@@ -329,7 +331,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
+            color:
+                isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ),

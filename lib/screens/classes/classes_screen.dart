@@ -72,7 +72,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.3), // Sky Blue
+                color:
+                    const Color(0xFF38BDF8).withValues(alpha: 0.3), // Sky Blue
                 boxShadow: [
                   BoxShadow(
                       color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
@@ -90,7 +91,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
               height: 400,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF1E3A8A).withValues(alpha: 0.5), // Navy Blue
+                color:
+                    const Color(0xFF1E3A8A).withValues(alpha: 0.5), // Navy Blue
                 boxShadow: [
                   BoxShadow(
                       color: const Color(0xFF1E3A8A).withValues(alpha: 0.5),
@@ -231,7 +233,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     borderRadius: BorderRadius.circular(12),
                     border: isSelected
                         ? Border.all(
-                            color: const Color(0xFF38BDF8).withValues(alpha: 0.5))
+                            color:
+                                const Color(0xFF38BDF8).withValues(alpha: 0.5))
                         : null,
                   ),
                   child: Text(
