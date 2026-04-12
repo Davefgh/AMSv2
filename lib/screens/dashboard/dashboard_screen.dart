@@ -221,6 +221,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const Color(0xFF60A5FA),
           Icons.person,
           total > 0 ? (instructors * 100 ~/ total) : 0,
+          onTap: () => Navigator.pushNamed(context, '/instructors'),
         ), // Navy Blue
         _buildStatCard(
           admins.toString(),

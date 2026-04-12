@@ -5,11 +5,85 @@ import '../utils/constants.dart';
 import 'storage_service.dart';
 import '../models/user_profile.dart';
 import '../models/app_user.dart';
+import '../models/instructor_model.dart';
 import '../models/student_model.dart';
 
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
   final Logger _logger = Logger();
+
+  Future<List<Instructor>> getInstructors({bool includeDeleted = false}) async {
+    try {
+      final endpoint = includeDeleted ? '/api/instructors?status=all' : '/api/instructors';
+      final response = await get(endpoint);
+      if (response is List) {
+        return response.map((i) => Instructor.fromJson(i)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getInstructors Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Instructor> getInstructor(int id) async {
+    try {
+      final response = await get('/api/instructors/$id');
+      return Instructor.fromJson(response);
+    } catch (e) {
+      _logger.e('getInstructor Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateInstructor(int id, Map<String, dynamic> data) async {
+    try {
+      await patch('/api/instructors/$id', data);
+    } catch (e) {
+      _logger.e('updateInstructor Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteInstructor(int id) async {
+    try {
+      await delete('/api/instructors/$id');
+    } catch (e) {
+      _logger.e('deleteInstructor Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> softDeleteInstructor(int id) async {
+    try {
+      await patch('/api/instructors/$id/soft-delete', {});
+    } catch (e) {
+      _logger.e('softDeleteInstructor Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> restoreInstructor(int id) async {
+    try {
+      await patch('/api/instructors/$id/restore', {});
+    } catch (e) {
+      _logger.e('restoreInstructor Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Instructor>> searchInstructorsByName(String name) async {
+    try {
+      final response = await get('/api/instructors/search/name?name=$name');
+      if (response is List) {
+        return response.map((i) => Instructor.fromJson(i)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('searchInstructorsByName Error: $e');
+      rethrow;
+    }
+  }
 
   Future<List<Student>> getStudents({bool includeDeleted = false}) async {
     try {
