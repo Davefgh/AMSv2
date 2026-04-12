@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class EnrollmentScreen extends StatefulWidget {
-  const EnrollmentScreen({Key? key}) : super(key: key);
+  const EnrollmentScreen({super.key});
 
   @override
   State<EnrollmentScreen> createState() => _EnrollmentScreenState();
@@ -28,10 +28,11 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF38BDF8).withOpacity(0.3), // Sky Blue
+                color:
+                    const Color(0xFF38BDF8).withValues(alpha: 0.3), // Sky Blue
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF38BDF8).withOpacity(0.3),
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
                       blurRadius: 100,
                       spreadRadius: 50)
                 ],
@@ -46,10 +47,11 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               height: 400,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF1E3A8A).withOpacity(0.5), // Navy Blue
+                color:
+                    const Color(0xFF1E3A8A).withValues(alpha: 0.5), // Navy Blue
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF1E3A8A).withOpacity(0.5),
+                      color: const Color(0xFF1E3A8A).withValues(alpha: 0.5),
                       blurRadius: 120,
                       spreadRadius: 60)
                 ],
@@ -90,7 +92,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
           Row(
             children: [
               Image.asset(
-                'aclc_logo.png',
+                'assets/aclc_logo.png',
                 height: 48,
                 width: 48,
                 errorBuilder: (context, error, stackTrace) =>
@@ -110,7 +112,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
           ),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withOpacity(0.2),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: IconButton(
@@ -128,10 +130,10 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.06),
+          color: Colors.white.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.15),
+            color: Colors.white.withValues(alpha: 0.15),
             width: 1.0,
           ),
         ),
@@ -142,11 +144,11 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: 'Search class code...',
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
             prefixIcon:
-                Icon(Icons.search, color: Colors.white.withOpacity(0.5)),
-            suffixIcon:
-                Icon(Icons.filter_list, color: Colors.white.withOpacity(0.5)),
+                Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
+            suffixIcon: Icon(Icons.filter_list,
+                color: Colors.white.withValues(alpha: 0.5)),
             border: InputBorder.none,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -164,7 +166,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
           Icon(
             Icons.assignment,
             size: 80,
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
           ),
           const SizedBox(height: 16),
           Text(
@@ -172,7 +174,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 8),
@@ -180,7 +182,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
             'Tap the + button to enroll a student',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -190,7 +192,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
 
   Widget _buildEnrollmentList() {
     return ListView.builder(
-      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       padding: const EdgeInsets.all(24),
       itemCount: _enrollments.length,
       itemBuilder: (context, index) {
@@ -203,10 +206,10 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withOpacity(0.2),
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0xFF38BDF8).withOpacity(0.3),
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
                   ),
                 ),
                 child: const Icon(Icons.person, color: Color(0xFF38BDF8)),
@@ -224,7 +227,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                 child: Text(
                   '${enrollment['classCode']} • ${enrollment['subject']}',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 13,
                   ),
                 ),
@@ -234,7 +237,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
                 icon: Icon(Icons.more_vert,
-                    color: Colors.white.withOpacity(0.6)),
+                    color: Colors.white.withValues(alpha: 0.6)),
                 itemBuilder: (context) => [
                   const PopupMenuItem(
                     child: Text('Edit', style: TextStyle(color: Colors.white)),
@@ -328,7 +331,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
-                                  color: Colors.white.withOpacity(0.5),
+                                  color: Colors.white.withValues(alpha: 0.5),
                                   width: 1),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -362,7 +365,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF38BDF8), // Sky Blue
+                              backgroundColor:
+                                  const Color(0xFF38BDF8), // Sky Blue
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -406,16 +410,16 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
+            color: Colors.white.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               width: 1.0,
             ),
           ),
@@ -424,12 +428,12 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               isExpanded: true,
               dropdownColor: const Color(0xFF1E293B), // Dark slate
               icon: Icon(Icons.arrow_drop_down,
-                  color: Colors.white.withOpacity(0.6), size: 28),
+                  color: Colors.white.withValues(alpha: 0.6), size: 28),
               hint: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   hint,
-                  style: TextStyle(color: Colors.white.withOpacity(0.5)),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                 ),
               ),
               value: value,
@@ -438,8 +442,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                   value: item,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(item,
-                        style: const TextStyle(color: Colors.white)),
+                    child:
+                        Text(item, style: const TextStyle(color: Colors.white)),
                   ),
                 );
               }).toList(),
@@ -457,7 +461,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
         color: const Color(0xFF0F172A),
         border: Border(
           top: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -468,7 +472,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withOpacity(0.4),
+        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
         showUnselectedLabels: true,
         selectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
@@ -521,10 +525,10 @@ class _GlassCard extends StatelessWidget {
           height: height,
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
+            color: Colors.white.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               width: 1.0,
             ),
           ),

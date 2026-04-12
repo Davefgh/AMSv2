@@ -1,9 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:logger/logger.dart';
+import '../utils/constants.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://api.example.com';
+  static const String baseUrl = AppConstants.apiBaseUrl;
   final Logger _logger = Logger();
 
   Future<dynamic> get(String endpoint) async {

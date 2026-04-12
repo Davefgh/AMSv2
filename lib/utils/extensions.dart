@@ -18,6 +18,6 @@ extension StringExtension on String {
 
   bool isValidPhone() {
     final phoneRegex = RegExp(r'^\d{10,}$');
-    return phoneRegex.hasMatch(this.replaceAll(RegExp(r'\D'), ''));
+    return phoneRegex.hasMatch(replaceAll(RegExp(r'\D'), ''));
   }
 }

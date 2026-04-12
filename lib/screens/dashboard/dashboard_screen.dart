@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -27,10 +27,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF38BDF8).withOpacity(0.3), // Sky Blue
+                color:
+                    const Color(0xFF38BDF8).withValues(alpha: 0.3), // Sky Blue
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF38BDF8).withOpacity(0.3),
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
                       blurRadius: 100,
                       spreadRadius: 50)
                 ],
@@ -45,10 +46,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               height: 400,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF1E3A8A).withOpacity(0.5), // Navy Blue
+                color:
+                    const Color(0xFF1E3A8A).withValues(alpha: 0.5), // Navy Blue
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF1E3A8A).withOpacity(0.5),
+                      color: const Color(0xFF1E3A8A).withValues(alpha: 0.5),
                       blurRadius: 120,
                       spreadRadius: 60)
                 ],
@@ -67,7 +69,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 _buildHeader(),
                 Expanded(
                   child: ListView(
-                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                    physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics()),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 12),
                     children: [
@@ -116,7 +119,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             children: [
               Image.asset(
-                'aclc_logo.png',
+                'assets/aclc_logo.png',
                 height: 48,
                 width: 48,
                 errorBuilder: (context, error, stackTrace) =>
@@ -148,10 +151,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       crossAxisSpacing: 16,
       childAspectRatio: 0.9,
       children: [
-        _buildStatCard('32', 'Total Registered', const Color(0xFF38BDF8), Icons.people, 100), // Sky Blue
-        _buildStatCard('19', 'Total Students', const Color(0xFF60A5FA), Icons.school, 59),
-        _buildStatCard('12', 'Total Teachers', const Color(0xFF1E3A8A), Icons.person, 37), // Navy Blue
-        _buildStatCard('1', 'Admins', const Color(0xFFE2E8F0), Icons.admin_panel_settings, 3), // White/Silver
+        _buildStatCard('32', 'Total Registered', const Color(0xFF38BDF8),
+            Icons.people, 100), // Sky Blue
+        _buildStatCard(
+            '19', 'Total Students', const Color(0xFF60A5FA), Icons.school, 59),
+        _buildStatCard('12', 'Total Teachers', const Color(0xFF1E3A8A),
+            Icons.person, 37), // Navy Blue
+        _buildStatCard('1', 'Admins', const Color(0xFFE2E8F0),
+            Icons.admin_panel_settings, 3), // White/Silver
       ],
     );
   }
@@ -170,9 +177,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: color.withOpacity(0.3)),
+                  border: Border.all(color: color.withValues(alpha: 0.3)),
                 ),
                 child: Icon(icon, color: color, size: 24),
               ),
@@ -203,7 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -213,7 +220,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: LinearProgressIndicator(
               value: percentage / 100,
               minHeight: 6,
-              backgroundColor: Colors.white.withOpacity(0.1),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),
@@ -237,7 +244,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text(
                     'Average Attendance',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -256,7 +263,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Flexible(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: SingleChildScrollView(
@@ -286,11 +293,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
                       Text('100%',
-                          style: TextStyle(fontSize: 10, color: Colors.white70)),
+                          style:
+                              TextStyle(fontSize: 10, color: Colors.white70)),
                       Text('50%',
-                          style: TextStyle(fontSize: 10, color: Colors.white70)),
+                          style:
+                              TextStyle(fontSize: 10, color: Colors.white70)),
                       Text('0%',
-                          style: TextStyle(fontSize: 10, color: Colors.white70)),
+                          style:
+                              TextStyle(fontSize: 10, color: Colors.white70)),
                     ],
                   ),
                 ),
@@ -321,7 +331,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+            color:
+                isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ),
@@ -353,7 +364,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        const Color(0xFF1E3A8A).withOpacity(0.6),
+                        const Color(0xFF1E3A8A).withValues(alpha: 0.6),
                         const Color(0xFF38BDF8),
                       ],
                     ),
@@ -383,7 +394,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         color: const Color(0xFF0F172A),
         border: Border(
           top: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -394,7 +405,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withOpacity(0.4),
+        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
         showUnselectedLabels: true,
         selectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
@@ -447,10 +458,10 @@ class _GlassCard extends StatelessWidget {
           height: height,
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
+            color: Colors.white.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               width: 1.0,
             ),
           ),

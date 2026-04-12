@@ -12,7 +12,7 @@ class CustomTextField extends StatefulWidget {
   final int minLines;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.label,
     this.hint,
     this.controller,
@@ -22,7 +22,7 @@ class CustomTextField extends StatefulWidget {
     this.onChanged,
     this.maxLines = 1,
     this.minLines = 1,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -47,12 +47,32 @@ class _CustomTextFieldState extends State<CustomTextField> {
       onChanged: widget.onChanged,
       maxLines: widget.obscureText ? 1 : widget.maxLines,
       minLines: widget.minLines,
+      style: const TextStyle(color: Colors.white, fontSize: 15),
       decoration: InputDecoration(
         labelText: widget.label,
+        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
         hintText: widget.hint,
+        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.redAccent.withValues(alpha: 0.5)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.redAccent),
+        ),
         suffixIcon: widget.obscureText
             ? IconButton(
-                icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
+                icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.white70),
                 onPressed: () {
                   setState(() {
                     _obscureText = !_obscureText;
