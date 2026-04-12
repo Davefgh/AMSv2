@@ -7,10 +7,70 @@ import '../models/user_profile.dart';
 import '../models/app_user.dart';
 import '../models/instructor_model.dart';
 import '../models/student_model.dart';
+import '../models/section_model.dart';
+import '../models/subject_model.dart';
+import '../models/enrollment_model.dart';
 
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
   final Logger _logger = Logger();
+
+  Future<List<Section>> getSections() async {
+    try {
+      final response = await get('/api/sections');
+      if (response is List) {
+        return response.map((s) => Section.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getSections Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Subject>> getSubjects() async {
+    try {
+      final response = await get('/api/subjects');
+      if (response is List) {
+        return response.map((s) => Subject.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getSubjects Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> enrollStudent(Map<String, dynamic> data) async {
+    try {
+      await post('/api/StudentEnrollment/enroll', data);
+    } catch (e) {
+      _logger.e('enrollStudent Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Enrollment>> getEnrollments() async {
+    try {
+      final response = await get('/api/StudentEnrollment/check');
+      if (response is List) {
+        return response.map((e) => Enrollment.fromJson(e)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getEnrollments Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> dropEnrollment(int id) async {
+    try {
+      await patch('/api/StudentEnrollment/$id/drop', {});
+    } catch (e) {
+      _logger.e('dropEnrollment Error: $e');
+      rethrow;
+    }
+  }
 
   Future<List<Instructor>> getInstructors({bool includeDeleted = false}) async {
     try {
