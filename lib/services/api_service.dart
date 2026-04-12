@@ -11,15 +11,75 @@ class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
   final Logger _logger = Logger();
 
-  Future<List<Student>> getStudents() async {
+  Future<List<Student>> getStudents({bool includeDeleted = false}) async {
     try {
-      final response = await get('/api/students');
+      final endpoint = includeDeleted ? '/api/students?status=all' : '/api/students';
+      final response = await get(endpoint);
       if (response is List) {
         return response.map((s) => Student.fromJson(s)).toList();
       }
       return [];
     } catch (e) {
       _logger.e('getStudents Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Student> getStudent(int id) async {
+    try {
+      final response = await get('/api/students/$id');
+      return Student.fromJson(response);
+    } catch (e) {
+      _logger.e('getStudent Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateStudent(int id, Map<String, dynamic> data) async {
+    try {
+      await patch('/api/students/$id', data);
+    } catch (e) {
+      _logger.e('updateStudent Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteStudent(int id) async {
+    try {
+      await delete('/api/students/$id');
+    } catch (e) {
+      _logger.e('deleteStudent Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> softDeleteStudent(int id) async {
+    try {
+      await patch('/api/students/$id/soft-delete', {});
+    } catch (e) {
+      _logger.e('softDeleteStudent Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> restoreStudent(int id) async {
+    try {
+      await patch('/api/students/$id/restore', {});
+    } catch (e) {
+      _logger.e('restoreStudent Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Student>> searchStudentsByName(String name) async {
+    try {
+      final response = await get('/api/students/search/name?name=$name');
+      if (response is List) {
+        return response.map((s) => Student.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('searchStudentsByName Error: $e');
       rethrow;
     }
   }
