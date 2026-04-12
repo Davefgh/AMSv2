@@ -166,6 +166,14 @@ class _UsersScreenState extends State<UsersScreen> {
             ],
           ),
           PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'profile') {
+                Navigator.pushNamed(context, '/profile');
+              } else if (value == 'logout') {
+                // Future logout implementation
+                Navigator.pushReplacementNamed(context, '/');
+              }
+            },
             color: const Color(0xFF1E293B), // Dark slate
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

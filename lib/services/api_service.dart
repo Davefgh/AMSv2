@@ -2,16 +2,37 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:logger/logger.dart';
 import '../utils/constants.dart';
+import 'storage_service.dart';
+import '../models/user_profile.dart';
 
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
   final Logger _logger = Logger();
 
+  Future<Map<String, String>> _getHeaders() async {
+    final token = StorageService.getString('accessToken');
+    return {
+      'Content-Type': 'application/json',
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  Future<UserProfile> getMe() async {
+    try {
+      final response = await get('/api/account/me');
+      return UserProfile.fromJson(response);
+    } catch (e) {
+      _logger.e('getMe Error: $e');
+      rethrow;
+    }
+  }
+
   Future<dynamic> get(String endpoint) async {
     try {
+      final headers = await _getHeaders();
       final response = await http.get(
         Uri.parse('$baseUrl$endpoint'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
       );
       return _handleResponse(response);
     } catch (e) {
@@ -22,9 +43,10 @@ class ApiService {
 
   Future<dynamic> post(String endpoint, Map<String, dynamic> body) async {
     try {
+      final headers = await _getHeaders();
       final response = await http.post(
         Uri.parse('$baseUrl$endpoint'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
         body: jsonEncode(body),
       );
       return _handleResponse(response);
@@ -36,9 +58,10 @@ class ApiService {
 
   Future<dynamic> put(String endpoint, Map<String, dynamic> body) async {
     try {
+      final headers = await _getHeaders();
       final response = await http.put(
         Uri.parse('$baseUrl$endpoint'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
         body: jsonEncode(body),
       );
       return _handleResponse(response);
@@ -50,9 +73,10 @@ class ApiService {
 
   Future<dynamic> delete(String endpoint) async {
     try {
+      final headers = await _getHeaders();
       final response = await http.delete(
         Uri.parse('$baseUrl$endpoint'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
       );
       return _handleResponse(response);
     } catch (e) {
