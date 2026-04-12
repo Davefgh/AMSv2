@@ -1,6 +1,7 @@
 class AppConstants {
   // API
-  static const String apiBaseUrl = 'https://api.example.com';
+  static const String apiBaseUrl =
+      'https://email-conversation-enrollment-laboratories.trycloudflare.com';
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Storage Keys

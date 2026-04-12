@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../widgets/register_user_modal.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -91,9 +92,12 @@ class _UsersScreenState extends State<UsersScreen> {
             ),
           ),
           // Backdrop blur for the glowing orbs to look smoothly ambient
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-            child: Container(color: Colors.transparent),
+          IgnorePointer(
+            ignoring: true,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+              child: Container(color: Colors.transparent),
+            ),
           ),
 
           SafeArea(
@@ -217,27 +221,32 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Widget _buildAddButton() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => const RegisterUserModal(),
+          );
+        },
         borderRadius: BorderRadius.circular(12),
-        border:
-            Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            // Implementation for adding a user
-          },
-          borderRadius: BorderRadius.circular(12),
-          child: const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Icon(
-              Icons.add_rounded,
-              color: Color(0xFF38BDF8),
-              size: 20,
-            ),
+        hoverColor: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+        splashColor: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+        child: Container(
+          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+          ),
+          child: const Icon(
+            Icons.add_rounded,
+            color: Color(0xFF38BDF8),
+            size: 20,
           ),
         ),
       ),
