@@ -292,9 +292,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildActionButtons() {
     return Column(
       children: [
-        _buildPrimaryButton('Edit Profile', Icons.edit_note_rounded, () {}),
-        const SizedBox(height: 16),
-        _buildSecondaryButton('Security Settings', Icons.security_rounded, () {}),
+        _buildPrimaryButton('Edit Profile', Icons.edit_note_rounded, () {
+          Navigator.pushNamed(context, '/edit-profile').then((updated) {
+            if (updated == true) {
+              setState(() => _profileFuture = _apiService.getMe());
+            }
+          });
+        }),
       ],
     );
   }
@@ -324,28 +328,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSecondaryButton(String text, IconData icon, VoidCallback onPressed) {
-    return Container(
-      width: double.infinity,
-      height: 56,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: TextButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 20, color: Colors.white),
-        label: Text(text),
-        style: TextButton.styleFrom(
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
     );

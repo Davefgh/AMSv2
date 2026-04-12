@@ -169,6 +169,8 @@ class _UsersScreenState extends State<UsersScreen> {
             onSelected: (value) {
               if (value == 'profile') {
                 Navigator.pushNamed(context, '/profile');
+              } else if (value == 'edit_profile') {
+                Navigator.pushNamed(context, '/edit-profile');
               } else if (value == 'logout') {
                 // Future logout implementation
                 Navigator.pushReplacementNamed(context, '/');
@@ -185,8 +187,9 @@ class _UsersScreenState extends State<UsersScreen> {
                 child: Text('Profile', style: TextStyle(color: Colors.white)),
               ),
               const PopupMenuItem(
-                value: 'billing',
-                child: Text('Billing', style: TextStyle(color: Colors.white)),
+                value: 'edit_profile',
+                child:
+                    Text('Edit Profile', style: TextStyle(color: Colors.white)),
               ),
               const PopupMenuItem(
                 value: 'settings',

@@ -27,6 +27,15 @@ class ApiService {
     }
   }
 
+  Future<void> updateProfile(Map<String, dynamic> data) async {
+    try {
+      await patch('/api/account/profile', data);
+    } catch (e) {
+      _logger.e('updateProfile Error: $e');
+      rethrow;
+    }
+  }
+
   Future<dynamic> get(String endpoint) async {
     try {
       final headers = await _getHeaders();
@@ -52,6 +61,21 @@ class ApiService {
       return _handleResponse(response);
     } catch (e) {
       _logger.e('POST Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<dynamic> patch(String endpoint, Map<String, dynamic> body) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.patch(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+      return _handleResponse(response);
+    } catch (e) {
+      _logger.e('PATCH Error: $e');
       rethrow;
     }
   }
