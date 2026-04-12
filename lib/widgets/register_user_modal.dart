@@ -96,7 +96,7 @@ class _RegisterUserModalState extends State<RegisterUserModal> {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.75,
+        height: MediaQuery.of(context).size.height * 0.80,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         decoration: BoxDecoration(
           color: const Color(0xFF0F172A).withValues(alpha: 0.8),
@@ -226,9 +226,18 @@ class _RegisterUserModalState extends State<RegisterUserModal> {
                       ),
                       const SizedBox(height: 20),
                       CustomTextField(
-                        label: 'Section ID (Optional)',
+                        label: _selectedRole == 'Student'
+                            ? 'Section ID (Required)'
+                            : 'Section ID (Optional)',
                         controller: _sectionIdController,
                         keyboardType: TextInputType.number,
+                        validator: (v) {
+                          if (_selectedRole == 'Student' &&
+                              (v == null || v.isEmpty)) {
+                            return 'Required for students';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
                       CustomTextField(
