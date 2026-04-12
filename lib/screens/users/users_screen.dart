@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../widgets/register_user_modal.dart';
+import '../../services/api_service.dart';
+import '../../models/app_user.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -10,43 +12,31 @@ class UsersScreen extends StatefulWidget {
 }
 
 class _UsersScreenState extends State<UsersScreen> {
-  final List<Map<String, dynamic>> _recentUsers = [
-    {
-      'name': 'Eleanor Pena',
-      'role': 'Teacher',
-      'time': '2 mins ago',
-      'color': const Color(0xFF60A5FA),
-      'icon': Icons.person
-    },
-    {
-      'name': 'Wade Warren',
-      'role': 'Student',
-      'time': '1 hour ago',
-      'color': const Color(0xFF34D399),
-      'icon': Icons.school
-    },
-    {
-      'name': 'Brooklyn Simmons',
-      'role': 'Student',
-      'time': '3 hours ago',
-      'color': const Color(0xFF34D399),
-      'icon': Icons.school
-    },
-    {
-      'name': 'Guy Hawkins',
-      'role': 'Admin',
-      'time': '1 day ago',
-      'color': const Color(0xFFA78BFA),
-      'icon': Icons.admin_panel_settings
-    },
-    {
-      'name': 'Dianne Russell',
-      'role': 'Teacher',
-      'time': '2 days ago',
-      'color': const Color(0xFF60A5FA),
-      'icon': Icons.person
-    },
-  ];
+  final ApiService _apiService = ApiService();
+  List<AppUser> _users = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsers();
+  }
+
+  Future<void> _fetchUsers() async {
+    try {
+      final users = await _apiService.getUsers();
+      if (mounted) {
+        setState(() {
+          _users = users;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,6 +156,16 @@ class _UsersScreenState extends State<UsersScreen> {
             ],
           ),
           PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'profile') {
+                Navigator.pushNamed(context, '/profile');
+              } else if (value == 'edit_profile') {
+                Navigator.pushNamed(context, '/edit-profile');
+              } else if (value == 'logout') {
+                // Future logout implementation
+                Navigator.pushReplacementNamed(context, '/');
+              }
+            },
             color: const Color(0xFF1E293B), // Dark slate
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -177,8 +177,9 @@ class _UsersScreenState extends State<UsersScreen> {
                 child: Text('Profile', style: TextStyle(color: Colors.white)),
               ),
               const PopupMenuItem(
-                value: 'billing',
-                child: Text('Billing', style: TextStyle(color: Colors.white)),
+                value: 'edit_profile',
+                child:
+                    Text('Edit Profile', style: TextStyle(color: Colors.white)),
               ),
               const PopupMenuItem(
                 value: 'settings',
@@ -265,18 +266,18 @@ class _UsersScreenState extends State<UsersScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Total Users',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Colors.white70,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    '32',
-                    style: TextStyle(
+                  Text(
+                    _users.length.toString(),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
@@ -374,18 +375,26 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Widget _buildRoleCards() {
+    final students =
+        _users.where((u) => u.role.toLowerCase() == 'student').length;
+    final instructors = _users
+        .where((u) => u.role.toLowerCase() == 'instructor' || u.role.toLowerCase() == 'teacher')
+        .length;
+    final admins =
+        _users.where((u) => u.role.toLowerCase() == 'admin' || u.role.toLowerCase() == 'administrator').length;
+
     return Row(
       children: [
         Expanded(
-            child: _buildSingleRoleCard(
-                'Students', '19', Icons.school, const Color(0xFF34D399))),
+            child: _buildSingleRoleCard('Students', students.toString(),
+                Icons.school, const Color(0xFF34D399))),
         const SizedBox(width: 12),
         Expanded(
-            child: _buildSingleRoleCard(
-                'Teachers', '12', Icons.person, const Color(0xFF60A5FA))),
+            child: _buildSingleRoleCard('Teachers', instructors.toString(),
+                Icons.person, const Color(0xFF60A5FA))),
         const SizedBox(width: 12),
         Expanded(
-            child: _buildSingleRoleCard('Admins', '1',
+            child: _buildSingleRoleCard('Admins', admins.toString(),
                 Icons.admin_panel_settings, const Color(0xFFA78BFA))),
       ],
     );
@@ -432,18 +441,35 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Widget _buildRecentUsersList() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)));
+    }
+
+    if (_users.isEmpty) {
+      return _GlassCard(
+        child: Center(
+          child: Text(
+            'No users found',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+          ),
+        ),
+      );
+    }
+
     return _GlassCard(
       padding: EdgeInsets.zero,
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: _recentUsers.length,
+        itemCount: _users.length,
         separatorBuilder: (context, index) => Divider(
           color: Colors.white.withValues(alpha: 0.1),
           height: 1,
         ),
         itemBuilder: (context, index) {
-          final user = _recentUsers[index];
+          final user = _users[index];
+          final color = _getRoleColor(user.role);
+
           return ListTile(
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -451,37 +477,68 @@ class _UsersScreenState extends State<UsersScreen> {
               height: 44,
               width: 44,
               decoration: BoxDecoration(
-                color: user['color'].withValues(alpha: 0.2),
+                color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: user['color'].withValues(alpha: 0.3)),
+                border: Border.all(color: color.withValues(alpha: 0.3)),
               ),
-              child: Icon(user['icon'], color: user['color'], size: 24),
+              child: Icon(_getRoleIcon(user.role), color: color, size: 24),
             ),
             title: Text(
-              user['name'],
+              user.fullName,
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
             subtitle: Text(
-              user['role'],
+              user.role,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 13,
               ),
             ),
             trailing: Text(
-              user['time'],
+              'Active',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
+                color: Colors.greenAccent.withValues(alpha: 0.7),
                 fontSize: 12,
+                fontWeight: FontWeight.bold,
               ),
             ),
           );
         },
       ),
     );
+  }
+
+  Color _getRoleColor(String role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+      case 'administrator':
+        return const Color(0xFFA78BFA);
+      case 'instructor':
+      case 'teacher':
+        return const Color(0xFF60A5FA);
+      case 'student':
+        return const Color(0xFF34D399);
+      default:
+        return Colors.white70;
+    }
+  }
+
+  IconData _getRoleIcon(String role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+      case 'administrator':
+        return Icons.admin_panel_settings_rounded;
+      case 'instructor':
+      case 'teacher':
+        return Icons.person_rounded;
+      case 'student':
+        return Icons.school_rounded;
+      default:
+        return Icons.people_alt_rounded;
+    }
   }
 
   Widget _buildBottomNavBar() {
