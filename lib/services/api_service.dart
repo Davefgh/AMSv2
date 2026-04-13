@@ -11,6 +11,7 @@ import '../models/section_model.dart';
 import '../models/subject_model.dart';
 import '../models/enrollment_model.dart';
 import '../models/schedule_model.dart';
+import '../models/course_model.dart';
 
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
@@ -94,6 +95,57 @@ class ApiService {
       await delete('/api/subjects/$id');
     } catch (e) {
       _logger.e('deleteSubject Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Course>> getCourses() async {
+    try {
+      final response = await get('/api/Course');
+      if (response is List) {
+        return response.map((c) => Course.fromJson(c as Map<String, dynamic>)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getCourses Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Course> getCourse(int id) async {
+    try {
+      final response = await get('/api/Course/$id');
+      return Course.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getCourse Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Course> createCourse(Map<String, dynamic> data) async {
+    try {
+      final response = await post('/api/Course', data);
+      return Course.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('createCourse Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateCourse(int id, Map<String, dynamic> data) async {
+    try {
+      await put('/api/Course/$id', data);
+    } catch (e) {
+      _logger.e('updateCourse Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteCourse(int id) async {
+    try {
+      await delete('/api/Course/$id');
+    } catch (e) {
+      _logger.e('deleteCourse Error: $e');
       rethrow;
     }
   }
@@ -518,6 +570,8 @@ class ApiService {
 
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      final body = response.body.trim();
+      if (body.isEmpty) return null;
       return jsonDecode(response.body);
     } else {
       throw Exception('API Error: ${response.statusCode} - ${response.body}');

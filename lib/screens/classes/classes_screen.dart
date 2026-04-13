@@ -4,6 +4,7 @@ import '../../services/api_service.dart';
 import '../../models/subject_model.dart';
 import '../../models/section_model.dart';
 import '../../models/schedule_model.dart';
+import '../../models/course_model.dart';
 
 class ClassesScreen extends StatefulWidget {
   const ClassesScreen({super.key});
@@ -21,16 +22,9 @@ class _ClassesScreenState extends State<ClassesScreen> {
     {'name': 'Room 103', 'id': '3', 'selected': false},
     {'name': 'Room 104', 'id': '4', 'selected': false},
   ];
-  final List<Map<String, dynamic>> _courses = [
-    {
-      'name': 'Introduction to Computer Science',
-      'code': 'CS101',
-      'selected': false
-    },
-    {'name': 'Data Structures', 'code': 'CS201', 'selected': false},
-    {'name': 'Web Development', 'code': 'CS301', 'selected': false},
-  ];
   final ApiService _apiService = ApiService();
+  List<Course> _coursesList = [];
+  bool _isLoadingCourses = false;
   List<Subject> _subjectsList = [];
   bool _isLoadingSubjects = false;
   List<Section> _sectionsList = [];
@@ -44,6 +38,28 @@ class _ClassesScreenState extends State<ClassesScreen> {
     _fetchSubjects();
     _fetchSections();
     _fetchSchedules();
+    _fetchCourses();
+  }
+
+  Future<void> _fetchCourses() async {
+    setState(() => _isLoadingCourses = true);
+    try {
+      final courses = await _apiService.getCourses();
+      setState(() {
+        _coursesList = courses;
+        _isLoadingCourses = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingCourses = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error fetching courses: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _fetchSubjects() async {
@@ -648,6 +664,237 @@ class _ClassesScreenState extends State<ClassesScreen> {
     }
   }
 
+  void _showAddEditCourseDialog({Course? course}) {
+    final nameController = TextEditingController(text: course?.name ?? '');
+    final isEditing = course != null;
+    bool isSaving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(28)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      isEditing ? 'Edit Course' : 'Add Course',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDialogTextField(
+                      controller: nameController,
+                      label: 'Course Name',
+                      hint: 'e.g. Bachelor of Science in Computer Science',
+                      icon: Icons.book_outlined,
+                    ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                final name = nameController.text.trim();
+                                if (name.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Please enter a course name.'),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                  return;
+                                }
+                                setModalState(() => isSaving = true);
+                                try {
+                                  if (isEditing) {
+                                    await _updateCourse(course.id, name);
+                                  } else {
+                                    await _createCourse(name);
+                                  }
+                                  if (ctx.mounted) Navigator.pop(ctx);
+                                } catch (_) {
+                                  setModalState(() => isSaving = false);
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFA78BFA),
+                          foregroundColor: const Color(0xFF0F172A),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: isSaving
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              )
+                            : Text(
+                                isEditing ? 'Save Changes' : 'Add Course',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _createCourse(String name) async {
+    try {
+      await _apiService.createCourse({'name': name});
+      await _fetchCourses();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Course created successfully!'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error creating course: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _updateCourse(int id, String name) async {
+    try {
+      await _apiService.updateCourse(id, {'name': name});
+      await _fetchCourses();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Course updated successfully!'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating course: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _deleteCourse(int id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Delete Course',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to delete this course? Sections referencing this course may be affected.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _apiService.deleteCourse(id);
+      await _fetchCourses();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Course deleted.'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting course: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
   void _showAddEditScheduleDialog({Schedule? schedule}) {
     final isEditing = schedule != null;
     bool isSaving = false;
@@ -1083,6 +1330,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
               onPressed: () {
                 if (_selectedTab == 'Subjects') {
                   _showAddEditSubjectDialog();
+                } else if (_selectedTab == 'Courses') {
+                  _showAddEditCourseDialog();
                 } else if (_selectedTab == 'Sections') {
                   _showAddEditSectionDialog();
                 } else if (_selectedTab == 'Schedule') {
@@ -1271,12 +1520,12 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard('Total Courses', '${_courses.length}',
+              child: _buildOverviewCard('Total Courses', '${_coursesList.length}',
                   Icons.book, const Color(0xFFA78BFA), 100),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard('Active Courses', '${_courses.length}',
+              child: _buildOverviewCard('Active Courses', '${_coursesList.length}',
                   Icons.check_circle, const Color(0xFF34D399), 100),
             ),
           ],
@@ -1536,23 +1785,143 @@ class _ClassesScreenState extends State<ClassesScreen> {
   }
 
   Widget _buildCoursesList() {
+    if (_isLoadingCourses) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: CircularProgressIndicator(color: Color(0xFFA78BFA)),
+        ),
+      );
+    }
+
+    if (_coursesList.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            children: [
+              Icon(Icons.book_outlined,
+                  size: 64, color: Colors.white.withValues(alpha: 0.2)),
+              const SizedBox(height: 16),
+              const Text(
+                'No courses found',
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: () => _showAddEditCourseDialog(),
+                icon: const Icon(Icons.add, color: Color(0xFFA78BFA)),
+                label: const Text(
+                  'Add Course',
+                  style: TextStyle(color: Color(0xFFA78BFA)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildListHeader('Courses List'),
         const SizedBox(height: 16),
         Column(
-          children: List.generate(_courses.length, (index) {
-            final course = _courses[index];
-            return _buildGlassListItem(
-              icon: Icons.book,
-              iconColor: const Color(0xFFA78BFA),
-              title: course['name'] ?? '',
-              subtitle: 'Code: ${course['code']}',
-            );
+          children: List.generate(_coursesList.length, (index) {
+            final course = _coursesList[index];
+            return _buildCourseListItem(course);
           }),
         ),
       ],
+    );
+  }
+
+  Widget _buildCourseListItem(Course course) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: _GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFA78BFA).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: const Color(0xFFA78BFA).withValues(alpha: 0.3)),
+              ),
+              child: const Icon(
+                Icons.book,
+                color: Color(0xFFA78BFA),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    course.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'ID: ${course.id}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert,
+                  color: Colors.white.withValues(alpha: 0.5)),
+              color: const Color(0xFF1E293B),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              onSelected: (value) {
+                if (value == 'edit') {
+                  _showAddEditCourseDialog(course: course);
+                } else if (value == 'delete') {
+                  _deleteCourse(course.id);
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem<String>(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, color: Color(0xFFA78BFA), size: 20),
+                      SizedBox(width: 12),
+                      Text('Edit', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                      SizedBox(width: 12),
+                      Text('Delete',
+                          style: TextStyle(color: Colors.redAccent)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
