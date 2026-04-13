@@ -63,6 +63,289 @@ class _ClassesScreenState extends State<ClassesScreen> {
       }
     }
   }
+
+  void _showAddEditSubjectDialog({Subject? subject}) {
+    final nameController = TextEditingController(text: subject?.name ?? '');
+    final codeController = TextEditingController(text: subject?.code ?? '');
+    final isEditing = subject != null;
+    bool isSaving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      isEditing ? 'Edit Subject' : 'Add Subject',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDialogTextField(
+                      controller: nameController,
+                      label: 'Subject Name',
+                      hint: 'e.g. Computing Fundamentals',
+                      icon: Icons.subject,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDialogTextField(
+                      controller: codeController,
+                      label: 'Subject Code',
+                      hint: 'e.g. IT1008',
+                      icon: Icons.tag,
+                    ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                final name = nameController.text.trim();
+                                final code = codeController.text.trim();
+                                if (name.isEmpty || code.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Please fill in all fields.'),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                  return;
+                                }
+                                setModalState(() => isSaving = true);
+                                try {
+                                  if (isEditing) {
+                                    await _updateSubject(subject.id, name, code);
+                                  } else {
+                                    await _createSubject(name, code);
+                                  }
+                                  if (ctx.mounted) Navigator.pop(ctx);
+                                } catch (_) {
+                                  setModalState(() => isSaving = false);
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF38BDF8),
+                          foregroundColor: const Color(0xFF0F172A),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: isSaving
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              )
+                            : Text(
+                                isEditing ? 'Save Changes' : 'Add Subject',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDialogTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+            prefixIcon: Icon(icon, color: const Color(0xFF38BDF8), size: 20),
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.07),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFF38BDF8)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _createSubject(String name, String code) async {
+    try {
+      await _apiService.createSubject({'name': name, 'code': code});
+      await _fetchSubjects();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Subject created successfully!'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error creating subject: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _updateSubject(int id, String name, String code) async {
+    try {
+      await _apiService.updateSubject(id, {'name': name, 'code': code});
+      await _fetchSubjects();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Subject updated successfully!'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating subject: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _deleteSubject(int id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Delete Subject',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to delete this subject? This action cannot be undone.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _apiService.deleteSubject(id);
+      await _fetchSubjects();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Subject deleted.'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting subject: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
   final List<Map<String, dynamic>> _schedules = [
     {
       'day': 'Monday',
@@ -216,7 +499,11 @@ class _ClassesScreenState extends State<ClassesScreen> {
             ),
             child: IconButton(
               icon: const Icon(Icons.add, color: Color(0xFF38BDF8)),
-              onPressed: () {},
+              onPressed: () {
+                if (_selectedTab == 'Subjects') {
+                  _showAddEditSubjectDialog();
+                }
+              },
             ),
           ),
         ],
@@ -728,6 +1015,15 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 'No subjects found',
                 style: TextStyle(color: Colors.white70, fontSize: 16),
               ),
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: () => _showAddEditSubjectDialog(),
+                icon: const Icon(Icons.add, color: Color(0xFF38BDF8)),
+                label: const Text(
+                  'Add Subject',
+                  style: TextStyle(color: Color(0xFF38BDF8)),
+                ),
+              ),
             ],
           ),
         ),
@@ -742,15 +1038,98 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Column(
           children: List.generate(_subjectsList.length, (index) {
             final subject = _subjectsList[index];
-            return _buildGlassListItem(
-              icon: Icons.subject,
-              iconColor: const Color(0xFFF87171),
-              title: subject.name,
-              subtitle: 'Code: ${subject.code}',
-            );
+            return _buildSubjectListItem(subject);
           }),
         ),
       ],
+    );
+  }
+
+  Widget _buildSubjectListItem(Subject subject) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: _GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF87171).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: const Color(0xFFF87171).withValues(alpha: 0.3)),
+              ),
+              child: const Icon(
+                Icons.subject,
+                color: Color(0xFFF87171),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subject.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Code: ${subject.code}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert,
+                  color: Colors.white.withValues(alpha: 0.5)),
+              color: const Color(0xFF1E293B),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              onSelected: (value) {
+                if (value == 'edit') {
+                  _showAddEditSubjectDialog(subject: subject);
+                } else if (value == 'delete') {
+                  _deleteSubject(subject.id);
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem<String>(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, color: Color(0xFF38BDF8), size: 20),
+                      SizedBox(width: 12),
+                      Text('Edit', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                      SizedBox(width: 12),
+                      Text('Delete',
+                          style: TextStyle(color: Colors.redAccent)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

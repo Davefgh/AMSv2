@@ -41,6 +41,34 @@ class ApiService {
     }
   }
 
+  Future<Subject> createSubject(Map<String, dynamic> data) async {
+    try {
+      final response = await post('/api/subjects', data);
+      return Subject.fromJson(response);
+    } catch (e) {
+      _logger.e('createSubject Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateSubject(int id, Map<String, dynamic> data) async {
+    try {
+      await patch('/api/subjects/$id', data);
+    } catch (e) {
+      _logger.e('updateSubject Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteSubject(int id) async {
+    try {
+      await delete('/api/subjects/$id');
+    } catch (e) {
+      _logger.e('deleteSubject Error: $e');
+      rethrow;
+    }
+  }
+
   Future<void> enrollStudent(Map<String, dynamic> data) async {
     try {
       await post('/api/StudentEnrollment/enroll', data);
