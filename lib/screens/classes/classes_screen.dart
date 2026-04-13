@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../models/subject_model.dart';
 import '../../models/section_model.dart';
+import '../../models/schedule_model.dart';
 
 class ClassesScreen extends StatefulWidget {
   const ClassesScreen({super.key});
@@ -12,7 +13,7 @@ class ClassesScreen extends StatefulWidget {
 }
 
 class _ClassesScreenState extends State<ClassesScreen> {
-  int _selectedIndex = 2;
+  final int _selectedIndex = 2;
   String _selectedTab = 'Classroom';
   final List<Map<String, dynamic>> _classrooms = [
     {'name': 'Room 101', 'id': '1', 'selected': false},
@@ -34,12 +35,15 @@ class _ClassesScreenState extends State<ClassesScreen> {
   bool _isLoadingSubjects = false;
   List<Section> _sectionsList = [];
   bool _isLoadingSections = false;
+  List<Schedule> _schedulesList = [];
+  bool _isLoadingSchedules = false;
 
   @override
   void initState() {
     super.initState();
     _fetchSubjects();
     _fetchSections();
+    _fetchSchedules();
   }
 
   Future<void> _fetchSubjects() async {
@@ -77,6 +81,27 @@ class _ClassesScreenState extends State<ClassesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error fetching sections: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _fetchSchedules() async {
+    setState(() => _isLoadingSchedules = true);
+    try {
+      final schedules = await _apiService.getSchedules();
+      setState(() {
+        _schedulesList = schedules;
+        _isLoadingSchedules = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingSchedules = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error fetching schedules: $e'),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -622,26 +647,306 @@ class _ClassesScreenState extends State<ClassesScreen> {
       }
     }
   }
-  final List<Map<String, dynamic>> _schedules = [
-    {
-      'day': 'Monday',
-      'time': '08:00 AM - 10:00 AM',
-      'room': 'Room 101',
-      'selected': false
-    },
-    {
-      'day': 'Wednesday',
-      'time': '10:00 AM - 12:00 PM',
-      'room': 'Room 102',
-      'selected': false
-    },
-    {
-      'day': 'Friday',
-      'time': '02:00 PM - 04:00 PM',
-      'room': 'Room 103',
-      'selected': false
-    },
-  ];
+
+  void _showAddEditScheduleDialog({Schedule? schedule}) {
+    final isEditing = schedule != null;
+    bool isSaving = false;
+
+    String? initialDayOfWeek;
+    if (schedule?.dayOfWeek != null) {
+      initialDayOfWeek = '${schedule!.dayOfWeek}';
+    } else if (schedule?.dayName != null && schedule!.dayName!.isNotEmpty) {
+      initialDayOfWeek = schedule.dayName;
+    }
+
+    final timeInController =
+        TextEditingController(text: schedule?.timeIn ?? '');
+    final timeOutController =
+        TextEditingController(text: schedule?.timeOut ?? '');
+    final dayOfWeekController =
+        TextEditingController(text: initialDayOfWeek ?? '');
+    final subjectIdController = TextEditingController(
+        text: schedule?.subjectId != null ? '${schedule!.subjectId}' : '');
+    final classroomIdController = TextEditingController(
+        text: schedule?.classroomId != null ? '${schedule!.classroomId}' : '');
+    final sectionIdController = TextEditingController(
+        text: schedule?.sectionId != null ? '${schedule!.sectionId}' : '');
+    final instructorIdController = TextEditingController(
+        text:
+            schedule?.instructorId != null ? '${schedule!.instructorId}' : '');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(28)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        isEditing ? 'Edit Schedule' : 'Add Schedule',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _buildDialogTextField(
+                        controller: timeInController,
+                        label: 'Time In',
+                        hint: 'e.g. 08:00:00',
+                        icon: Icons.login,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDialogTextField(
+                        controller: timeOutController,
+                        label: 'Time Out',
+                        hint: 'e.g. 09:00:00',
+                        icon: Icons.logout,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDialogTextField(
+                        controller: dayOfWeekController,
+                        label: 'Day of Week',
+                        hint: '1-7 or Monday',
+                        icon: Icons.calendar_today,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDialogTextField(
+                        controller: subjectIdController,
+                        label: 'Subject ID',
+                        hint: 'e.g. 1',
+                        icon: Icons.subject,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDialogTextField(
+                        controller: classroomIdController,
+                        label: 'Classroom ID',
+                        hint: 'e.g. 1',
+                        icon: Icons.meeting_room,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDialogTextField(
+                        controller: sectionIdController,
+                        label: 'Section ID',
+                        hint: 'e.g. 1',
+                        icon: Icons.layers,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDialogTextField(
+                        controller: instructorIdController,
+                        label: 'Instructor ID',
+                        hint: 'e.g. 1',
+                        icon: Icons.person,
+                      ),
+                      const SizedBox(height: 28),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: isSaving
+                              ? null
+                              : () async {
+                                  final timeIn =
+                                      timeInController.text.trim();
+                                  final timeOut =
+                                      timeOutController.text.trim();
+                                  if (timeIn.isEmpty || timeOut.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Time In and Time Out are required.'),
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  Map<String, dynamic> payload = {
+                                    'timeIn': timeIn,
+                                    'timeOut': timeOut,
+                                    'dayOfWeek':
+                                        dayOfWeekController.text.trim().isEmpty
+                                            ? null
+                                            : (int.tryParse(
+                                                    dayOfWeekController.text
+                                                        .trim()) ??
+                                                dayOfWeekController.text.trim()),
+                                    'subjectId': subjectIdController.text
+                                            .trim()
+                                            .isEmpty
+                                        ? null
+                                        : int.tryParse(
+                                            subjectIdController.text.trim()),
+                                    'classroomId': classroomIdController.text
+                                            .trim()
+                                            .isEmpty
+                                        ? null
+                                        : int.tryParse(classroomIdController.text
+                                            .trim()),
+                                    'sectionId': sectionIdController.text
+                                            .trim()
+                                            .isEmpty
+                                        ? null
+                                        : int.tryParse(
+                                            sectionIdController.text.trim()),
+                                    'instructorId': instructorIdController.text
+                                            .trim()
+                                            .isEmpty
+                                        ? null
+                                        : int.tryParse(instructorIdController.text
+                                            .trim()),
+                                  };
+
+                                  setModalState(() => isSaving = true);
+                                  try {
+                                    if (isEditing) {
+                                      await _apiService.updateSchedule(
+                                          schedule.id, payload);
+                                    } else {
+                                      await _apiService.createSchedule(payload);
+                                    }
+                                    await _fetchSchedules();
+                                    if (ctx.mounted) Navigator.pop(ctx);
+                                  } catch (e) {
+                                    setModalState(() => isSaving = false);
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              'Error saving schedule: $e'),
+                                          backgroundColor: Colors.redAccent,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF14B8A6),
+                            foregroundColor: const Color(0xFF0F172A),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: isSaving
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                )
+                              : Text(
+                                  isEditing ? 'Save Changes' : 'Add Schedule',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteSchedule(int id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Delete Schedule',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to delete this schedule? This action cannot be undone.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _apiService.deleteSchedule(id);
+      await _fetchSchedules();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Schedule deleted.'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting schedule: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -780,6 +1085,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                   _showAddEditSubjectDialog();
                 } else if (_selectedTab == 'Sections') {
                   _showAddEditSectionDialog();
+                } else if (_selectedTab == 'Schedule') {
+                  _showAddEditScheduleDialog();
                 }
               },
             ),
@@ -1071,7 +1378,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             Expanded(
               child: _buildOverviewCard(
                   'Total Schedules',
-                  '${_schedules.length}',
+                  '${_schedulesList.length}',
                   Icons.schedule,
                   const Color(0xFF14B8A6),
                   100),
@@ -1080,7 +1387,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             Expanded(
               child: _buildOverviewCard(
                   'Active Schedules',
-                  '${_schedules.length}',
+                  '${_schedulesList.length}',
                   Icons.check_circle,
                   const Color(0xFF34D399),
                   100),
@@ -1534,23 +1841,159 @@ class _ClassesScreenState extends State<ClassesScreen> {
   }
 
   Widget _buildScheduleList() {
+    if (_isLoadingSchedules) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
+        ),
+      );
+    }
+
+    if (_schedulesList.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            children: [
+              Icon(Icons.schedule_outlined,
+                  size: 64, color: Colors.white.withValues(alpha: 0.2)),
+              const SizedBox(height: 16),
+              const Text(
+                'No schedules found',
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildListHeader('Schedule List'),
         const SizedBox(height: 16),
         Column(
-          children: List.generate(_schedules.length, (index) {
-            final schedule = _schedules[index];
-            return _buildGlassListItem(
-              icon: Icons.schedule,
-              iconColor: const Color(0xFF14B8A6),
-              title: schedule['day'] ?? '',
-              subtitle: '${schedule['time']} • ${schedule['room']}',
-            );
+          children: List.generate(_schedulesList.length, (index) {
+            final schedule = _schedulesList[index];
+            return _buildScheduleListItem(schedule);
           }),
         ),
       ],
+    );
+  }
+
+  Widget _buildScheduleListItem(Schedule schedule) {
+    final subject = schedule.subjectName.isNotEmpty
+        ? schedule.subjectName
+        : (schedule.subjectId != null ? 'Subject #${schedule.subjectId}' : '');
+    final section = schedule.sectionName.isNotEmpty
+        ? schedule.sectionName
+        : (schedule.sectionId != null ? 'Section #${schedule.sectionId}' : '');
+    final classroom = schedule.classroomName.isNotEmpty
+        ? schedule.classroomName
+        : (schedule.classroomId != null
+            ? 'Classroom #${schedule.classroomId}'
+            : '');
+    final line2Parts = <String>[
+      if (subject.isNotEmpty) subject,
+      if (section.isNotEmpty) section,
+      if (classroom.isNotEmpty) classroom,
+    ];
+    final line2 = line2Parts.join(' • ');
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: _GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF14B8A6).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: const Color(0xFF14B8A6).withValues(alpha: 0.3)),
+              ),
+              child: const Icon(
+                Icons.schedule,
+                color: Color(0xFF14B8A6),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    schedule.displayDay.isNotEmpty
+                        ? schedule.displayDay
+                        : 'Schedule',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    [
+                      if (schedule.timeIn.isNotEmpty ||
+                          schedule.timeOut.isNotEmpty)
+                        '${schedule.timeIn} - ${schedule.timeOut}',
+                      if (line2.isNotEmpty) line2,
+                    ].join('\n'),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert,
+                  color: Colors.white.withValues(alpha: 0.5)),
+              color: const Color(0xFF1E293B),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              onSelected: (value) {
+                if (value == 'edit') {
+                  _showAddEditScheduleDialog(schedule: schedule);
+                } else if (value == 'delete') {
+                  _deleteSchedule(schedule.id);
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem<String>(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, color: Color(0xFF14B8A6), size: 20),
+                      SizedBox(width: 12),
+                      Text('Edit', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                      SizedBox(width: 12),
+                      Text('Delete',
+                          style: TextStyle(color: Colors.redAccent)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

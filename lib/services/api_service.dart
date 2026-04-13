@@ -10,6 +10,7 @@ import '../models/student_model.dart';
 import '../models/section_model.dart';
 import '../models/subject_model.dart';
 import '../models/enrollment_model.dart';
+import '../models/schedule_model.dart';
 
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
@@ -321,6 +322,96 @@ class ApiService {
       return [];
     } catch (e) {
       _logger.e('getUsers Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Schedule>> getSchedules() async {
+    try {
+      final response = await get('/api/schedules');
+      if (response is List) {
+        return response.map((s) => Schedule.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getSchedules Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Schedule>> getMySchedules() async {
+    try {
+      final response = await get('/api/schedules/my-schedules');
+      if (response is List) {
+        return response.map((s) => Schedule.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getMySchedules Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Schedule> getSchedule(int id) async {
+    try {
+      final response = await get('/api/schedules/$id');
+      return Schedule.fromJson(response);
+    } catch (e) {
+      _logger.e('getSchedule Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Schedule>> getSchedulesBySection(int sectionId) async {
+    try {
+      final response = await get('/api/schedules/by-section/$sectionId');
+      if (response is List) {
+        return response.map((s) => Schedule.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getSchedulesBySection Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Schedule>> getSchedulesByInstructorAll(int instructorId) async {
+    try {
+      final response = await get('/api/schedules/$instructorId/all');
+      if (response is List) {
+        return response.map((s) => Schedule.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getSchedulesByInstructorAll Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Schedule> createSchedule(Map<String, dynamic> data) async {
+    try {
+      final response = await post('/api/schedules', data);
+      return Schedule.fromJson(response);
+    } catch (e) {
+      _logger.e('createSchedule Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateSchedule(int id, Map<String, dynamic> data) async {
+    try {
+      await patch('/api/schedules/$id', data);
+    } catch (e) {
+      _logger.e('updateSchedule Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteSchedule(int id) async {
+    try {
+      await delete('/api/schedules/$id');
+    } catch (e) {
+      _logger.e('deleteSchedule Error: $e');
       rethrow;
     }
   }
