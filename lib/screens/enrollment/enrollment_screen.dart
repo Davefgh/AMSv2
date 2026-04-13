@@ -1,5 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../services/api_service.dart';
+import '../../models/enrollment_model.dart';
+import '../../models/student_model.dart';
+import '../../models/section_model.dart';
+import '../../models/subject_model.dart';
 
 class EnrollmentScreen extends StatefulWidget {
   const EnrollmentScreen({super.key});
@@ -9,9 +14,67 @@ class EnrollmentScreen extends StatefulWidget {
 }
 
 class _EnrollmentScreenState extends State<EnrollmentScreen> {
+  final ApiService _apiService = ApiService();
   int _selectedIndex = 1;
   String _searchQuery = '';
-  final List<Map<String, String>> _enrollments = [];
+  List<Enrollment> _enrollments = [];
+  List<Student> _students = [];
+  List<Section> _sections = [];
+  List<Subject> _subjects = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() => _isLoading = true);
+    try {
+      final results = await Future.wait([
+        _apiService.getEnrollments(),
+        _apiService.getStudents(),
+        _apiService.getSections(),
+        _apiService.getSubjects(),
+      ]);
+
+      if (mounted) {
+        setState(() {
+          _enrollments = results[0] as List<Enrollment>;
+          _students = results[1] as List<Student>;
+          _sections = results[2] as List<Section>;
+          _subjects = results[3] as List<Subject>;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showSnackBar('Error loading data: $e');
+      }
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFF1E293B),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _handleDrop(Enrollment enrollment) async {
+    try {
+      await _apiService.dropEnrollment(enrollment.id);
+      _fetchData();
+      _showSnackBar('Student dropped successfully');
+    } catch (e) {
+      _showSnackBar('Error dropping student: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,9 +133,11 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                 _buildHeader(),
                 _buildSearchBar(),
                 Expanded(
-                  child: _enrollments.isEmpty
-                      ? _buildEmptyState()
-                      : _buildEnrollmentList(),
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+                      : _enrollments.isEmpty
+                          ? _buildEmptyState()
+                          : _buildEnrollmentList(),
                 ),
               ],
             ),
@@ -191,13 +256,17 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
   }
 
   Widget _buildEnrollmentList() {
+    final filtered = _enrollments.where((e) => 
+      (e.studentName?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
+      (e.sectionName?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false)
+    ).toList();
+
     return ListView.builder(
-      physics:
-          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       padding: const EdgeInsets.all(24),
-      itemCount: _enrollments.length,
+      itemCount: filtered.length,
       itemBuilder: (context, index) {
-        final enrollment = _enrollments[index];
+        final enrollment = filtered[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: _GlassCard(
@@ -212,10 +281,10 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                     color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
                   ),
                 ),
-                child: const Icon(Icons.person, color: Color(0xFF38BDF8)),
+                child: const Icon(Icons.school_rounded, color: Color(0xFF38BDF8)),
               ),
               title: Text(
-                enrollment['name'] ?? 'Unknown',
+                enrollment.studentName ?? 'Student #${enrollment.studentId}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -224,27 +293,53 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               ),
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 4.0),
-                child: Text(
-                  '${enrollment['classCode']} • ${enrollment['subject']}',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 13,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${enrollment.sectionName ?? "Section ID: ${enrollment.sectionId}"} • ${enrollment.subjectName ?? "Subject ID: ${enrollment.subjectId}"}',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${enrollment.academicYear} | ${enrollment.semester}',
+                      style: TextStyle(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              trailing: PopupMenuButton(
-                color: const Color(0xFF1E293B), // Dark slate
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                icon: Icon(Icons.more_vert,
-                    color: Colors.white.withValues(alpha: 0.6)),
+              trailing: PopupMenuButton<String>(
+                color: const Color(0xFF1E293B),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                icon: Icon(Icons.more_vert, color: Colors.white.withValues(alpha: 0.6)),
+                onSelected: (value) async {
+                  if (value == 'drop') {
+                    _handleDrop(enrollment);
+                  } else if (value == 'reenroll') {
+                    try {
+                      await _apiService.reenrollStudent(enrollment.id);
+                      _fetchData();
+                      _showSnackBar('Student re-enrolled successfully');
+                    } catch (e) {
+                      _showSnackBar('Error: $e');
+                    }
+                  }
+                },
                 itemBuilder: (context) => [
                   const PopupMenuItem(
-                    child: Text('Edit', style: TextStyle(color: Colors.white)),
+                    value: 'reenroll',
+                    child: Text('Re-enroll Student', style: TextStyle(color: Color(0xFF34D399))),
                   ),
                   const PopupMenuItem(
-                    child: Text('Delete',
-                        style: TextStyle(color: Colors.redAccent)),
+                    value: 'drop',
+                    child: Text('Drop Student', style: TextStyle(color: Colors.redAccent)),
                   ),
                 ],
               ),
@@ -256,23 +351,14 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
   }
 
   void _showAddEnrollmentDialog() {
-    String? selectedStudent;
-    String? selectedSection = 'CS31A';
-    String? selectedSubject;
+    Student? selectedStudent;
+    Section? selectedSection;
+    Subject? selectedSubject;
 
-    final students = [
-      'John Doe',
-      'Jane Smith',
-      'Mike Johnson',
-      'Sarah Williams'
-    ];
-    final sections = ['CS31A', 'CS31B', 'CS32A', 'CS32B'];
-    final subjects = [
-      'Computer Science',
-      'Mathematics',
-      'Physics',
-      'Chemistry'
-    ];
+    final academicYears = ['2023-2024', '2024-2025'];
+    final semesters = ['1st Semester', '2nd Semester', 'Summer'];
+    String academicYear = academicYears[0];
+    String semester = semesters[0];
 
     showDialog(
       context: context,
@@ -297,31 +383,53 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _buildDialogDropdown(
+                    _buildDialogDropdown<Student>(
                       label: 'Student *',
                       hint: 'Select a student',
                       value: selectedStudent,
-                      items: students,
-                      onChanged: (value) =>
-                          setStateDialog(() => selectedStudent = value),
+                      items: _students,
+                      itemLabel: (s) => s.fullName,
+                      onChanged: (value) => setStateDialog(() => selectedStudent = value),
                     ),
                     const SizedBox(height: 16),
-                    _buildDialogDropdown(
+                    _buildDialogDropdown<Section>(
                       label: 'Section *',
                       hint: 'Select a section',
                       value: selectedSection,
-                      items: sections,
-                      onChanged: (value) =>
-                          setStateDialog(() => selectedSection = value),
+                      items: _sections,
+                      itemLabel: (s) => s.name,
+                      onChanged: (value) => setStateDialog(() => selectedSection = value),
                     ),
                     const SizedBox(height: 16),
-                    _buildDialogDropdown(
+                    _buildDialogDropdown<Subject>(
                       label: 'Subject *',
                       hint: 'Select a subject',
                       value: selectedSubject,
-                      items: subjects,
-                      onChanged: (value) =>
-                          setStateDialog(() => selectedSubject = value),
+                      items: _subjects,
+                      itemLabel: (s) => s.name,
+                      onChanged: (value) => setStateDialog(() => selectedSubject = value),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildSimpleDropdown(
+                            label: 'A.Y.',
+                            value: academicYear,
+                            items: academicYears,
+                            onChanged: (v) => setStateDialog(() => academicYear = v!),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildSimpleDropdown(
+                            label: 'Semester',
+                            value: semester,
+                            items: semesters,
+                            onChanged: (v) => setStateDialog(() => semester = v!),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 32),
                     Row(
@@ -330,57 +438,43 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
-                              side: BorderSide(
-                                  color: Colors.white.withValues(alpha: 0.5),
-                                  width: 1),
+                              side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () {
-                              if (selectedStudent != null &&
-                                  selectedSection != null &&
-                                  selectedSubject != null) {
-                                setState(() {
-                                  _enrollments.add({
-                                    'name': selectedStudent!,
-                                    'classCode': selectedSection!,
-                                    'subject': selectedSubject!,
-                                  });
-                                });
-                                Navigator.pop(context);
-                              }
-                            },
+                            onPressed: (selectedStudent == null || selectedSection == null || selectedSubject == null)
+                                ? null
+                                : () async {
+                                    try {
+                                      await _apiService.enrollStudent({
+                                        'studentId': selectedStudent!.id,
+                                        'sectionId': selectedSection!.id,
+                                        'subjectId': selectedSubject!.id,
+                                        'enrollmentType': 'Regular',
+                                        'academicYear': academicYear,
+                                        'semester': semester,
+                                      });
+                                      if (mounted) {
+                                        Navigator.pop(context);
+                                        _fetchData();
+                                        _showSnackBar('Enrollment successful');
+                                      }
+                                    } catch (e) {
+                                      _showSnackBar('Enrollment failed: $e');
+                                    }
+                                  },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color(0xFF38BDF8), // Sky Blue
+                              backgroundColor: const Color(0xFF38BDF8),
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                            child: const Text(
-                              'Enroll',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
+                            child: const Text('Enroll', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],
@@ -395,58 +489,66 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
     );
   }
 
-  Widget _buildDialogDropdown({
+  Widget _buildDialogDropdown<T>({
     required String label,
     required String hint,
-    required String? value,
+    required T? value,
+    required List<T> items,
+    required String Function(T) itemLabel,
+    required ValueChanged<T?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.8))),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<T>(
+              isExpanded: true,
+              dropdownColor: const Color(0xFF1E293B),
+              icon: const Icon(Icons.arrow_drop_down, color: Colors.white60),
+              hint: Text(hint, style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
+              value: value,
+              items: items.map((item) => DropdownMenuItem(value: item, child: Text(itemLabel(item), style: const TextStyle(color: Colors.white)))).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSimpleDropdown({
+    required String label,
+    required String value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.white.withValues(alpha: 0.8),
-          ),
-        ),
-        const SizedBox(height: 8),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.5))),
+        const SizedBox(height: 4),
         Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
-              width: 1.0,
-            ),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               isExpanded: true,
-              dropdownColor: const Color(0xFF1E293B), // Dark slate
-              icon: Icon(Icons.arrow_drop_down,
-                  color: Colors.white.withValues(alpha: 0.6), size: 28),
-              hint: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  hint,
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                ),
-              ),
+              dropdownColor: const Color(0xFF1E293B),
               value: value,
-              items: items.map((item) {
-                return DropdownMenuItem(
-                  value: item,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child:
-                        Text(item, style: const TextStyle(color: Colors.white)),
-                  ),
-                );
-              }).toList(),
+              items: items.map((item) => DropdownMenuItem(value: item, child: Text(item, style: const TextStyle(color: Colors.white, fontSize: 13)))).toList(),
               onChanged: onChanged,
             ),
           ),
