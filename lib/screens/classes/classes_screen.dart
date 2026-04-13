@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../models/subject_model.dart';
+import '../../models/section_model.dart';
 
 class ClassesScreen extends StatefulWidget {
   const ClassesScreen({super.key});
@@ -28,19 +29,17 @@ class _ClassesScreenState extends State<ClassesScreen> {
     {'name': 'Data Structures', 'code': 'CS201', 'selected': false},
     {'name': 'Web Development', 'code': 'CS301', 'selected': false},
   ];
-  final List<Map<String, dynamic>> _sections = [
-    {'name': 'CS31A', 'capacity': '40', 'selected': false},
-    {'name': 'CS31B', 'capacity': '35', 'selected': false},
-    {'name': 'CS32A', 'capacity': '38', 'selected': false},
-  ];
   final ApiService _apiService = ApiService();
   List<Subject> _subjectsList = [];
   bool _isLoadingSubjects = false;
+  List<Section> _sectionsList = [];
+  bool _isLoadingSections = false;
 
   @override
   void initState() {
     super.initState();
     _fetchSubjects();
+    _fetchSections();
   }
 
   Future<void> _fetchSubjects() async {
@@ -57,6 +56,283 @@ class _ClassesScreenState extends State<ClassesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error fetching subjects: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _fetchSections() async {
+    setState(() => _isLoadingSections = true);
+    try {
+      final sections = await _apiService.getSections();
+      setState(() {
+        _sectionsList = sections;
+        _isLoadingSections = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingSections = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error fetching sections: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showAddEditSectionDialog({Section? section}) {
+    final nameController = TextEditingController(text: section?.name ?? '');
+    final courseIdController = TextEditingController(
+        text: section?.courseId != null ? '${section!.courseId}' : '');
+    final isEditing = section != null;
+    bool isSaving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(28)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      isEditing ? 'Edit Section' : 'Add Section',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDialogTextField(
+                      controller: nameController,
+                      label: 'Section Name',
+                      hint: 'e.g. CS31A',
+                      icon: Icons.layers,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDialogTextField(
+                      controller: courseIdController,
+                      label: 'Course ID',
+                      hint: 'e.g. 1',
+                      icon: Icons.book_outlined,
+                    ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                final name = nameController.text.trim();
+                                final courseIdText =
+                                    courseIdController.text.trim();
+                                final courseId = int.tryParse(courseIdText);
+                                if (name.isEmpty || courseIdText.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content:
+                                          Text('Please fill in all fields.'),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                  return;
+                                }
+                                if (courseId == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Course ID must be a valid number.'),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                  return;
+                                }
+                                setModalState(() => isSaving = true);
+                                try {
+                                  if (isEditing) {
+                                    await _updateSection(
+                                        section.id, name, courseId);
+                                  } else {
+                                    await _createSection(name, courseId);
+                                  }
+                                  if (ctx.mounted) Navigator.pop(ctx);
+                                } catch (_) {
+                                  setModalState(() => isSaving = false);
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFBBF24),
+                          foregroundColor: const Color(0xFF0F172A),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: isSaving
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              )
+                            : Text(
+                                isEditing ? 'Save Changes' : 'Add Section',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _createSection(String name, int courseId) async {
+    try {
+      await _apiService.createSection({'name': name, 'courseId': courseId});
+      await _fetchSections();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Section created successfully!'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error creating section: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _updateSection(int id, String name, int courseId) async {
+    try {
+      await _apiService
+          .updateSection(id, {'name': name, 'courseId': courseId});
+      await _fetchSections();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Section updated successfully!'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating section: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _deleteSection(int id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Delete Section',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to delete this section? This action cannot be undone.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _apiService.deleteSection(id);
+      await _fetchSections();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Section deleted.'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting section: $e'),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -502,6 +778,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
               onPressed: () {
                 if (_selectedTab == 'Subjects') {
                   _showAddEditSubjectDialog();
+                } else if (_selectedTab == 'Sections') {
+                  _showAddEditSectionDialog();
                 }
               },
             ),
@@ -717,14 +995,14 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard('Total Sections', '${_sections.length}',
+              child: _buildOverviewCard('Total Sections', '${_sectionsList.length}',
                   Icons.layers, const Color(0xFFFBBF24), 100),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: _buildOverviewCard(
                   'Active Sections',
-                  '${_sections.length}',
+                  '${_sectionsList.length}',
                   Icons.check_circle,
                   const Color(0xFF34D399),
                   100),
@@ -972,23 +1250,145 @@ class _ClassesScreenState extends State<ClassesScreen> {
   }
 
   Widget _buildSectionsList() {
+    if (_isLoadingSections) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: CircularProgressIndicator(color: Color(0xFFFBBF24)),
+        ),
+      );
+    }
+
+    if (_sectionsList.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            children: [
+              Icon(Icons.layers_outlined,
+                  size: 64, color: Colors.white.withValues(alpha: 0.2)),
+              const SizedBox(height: 16),
+              const Text(
+                'No sections found',
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: () => _showAddEditSectionDialog(),
+                icon: const Icon(Icons.add, color: Color(0xFFFBBF24)),
+                label: const Text(
+                  'Add Section',
+                  style: TextStyle(color: Color(0xFFFBBF24)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildListHeader('Sections List'),
         const SizedBox(height: 16),
         Column(
-          children: List.generate(_sections.length, (index) {
-            final section = _sections[index];
-            return _buildGlassListItem(
-              icon: Icons.layers,
-              iconColor: const Color(0xFFFBBF24),
-              title: section['name'] ?? '',
-              subtitle: 'Capacity: ${section['capacity']}',
-            );
+          children: List.generate(_sectionsList.length, (index) {
+            final section = _sectionsList[index];
+            return _buildSectionListItem(section);
           }),
         ),
       ],
+    );
+  }
+
+  Widget _buildSectionListItem(Section section) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: _GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFBBF24).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: const Color(0xFFFBBF24).withValues(alpha: 0.3)),
+              ),
+              child: const Icon(
+                Icons.layers,
+                color: Color(0xFFFBBF24),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    section.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    section.courseId != null
+                        ? 'Course ID: ${section.courseId}'
+                        : 'ID: ${section.id}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert,
+                  color: Colors.white.withValues(alpha: 0.5)),
+              color: const Color(0xFF1E293B),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              onSelected: (value) {
+                if (value == 'edit') {
+                  _showAddEditSectionDialog(section: section);
+                } else if (value == 'delete') {
+                  _deleteSection(section.id);
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem<String>(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, color: Color(0xFFFBBF24), size: 20),
+                      SizedBox(width: 12),
+                      Text('Edit', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                      SizedBox(width: 12),
+                      Text('Delete',
+                          style: TextStyle(color: Colors.redAccent)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

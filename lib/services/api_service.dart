@@ -28,6 +28,34 @@ class ApiService {
     }
   }
 
+  Future<Section> createSection(Map<String, dynamic> data) async {
+    try {
+      final response = await post('/api/sections', data);
+      return Section.fromJson(response);
+    } catch (e) {
+      _logger.e('createSection Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateSection(int id, Map<String, dynamic> data) async {
+    try {
+      await put('/api/sections/$id', data);
+    } catch (e) {
+      _logger.e('updateSection Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteSection(int id) async {
+    try {
+      await delete('/api/sections/$id');
+    } catch (e) {
+      _logger.e('deleteSection Error: $e');
+      rethrow;
+    }
+  }
+
   Future<List<Subject>> getSubjects() async {
     try {
       final response = await get('/api/subjects');
