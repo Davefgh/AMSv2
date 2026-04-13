@@ -72,9 +72,46 @@ class ApiService {
     }
   }
 
+  Future<void> reenrollStudent(int id) async {
+    try {
+      await patch('/api/StudentEnrollment/$id/reenroll', {});
+    } catch (e) {
+      _logger.e('reenrollStudent Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Enrollment>> getEnrollmentsByStudent(int studentId) async {
+    try {
+      final response = await get('/api/StudentEnrollment/student/$studentId');
+      if (response is List) {
+        return response.map((e) => Enrollment.fromJson(e)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getEnrollmentsByStudent Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Student>> getStudentsBySection(int sectionId) async {
+    try {
+      final response =
+          await get('/api/StudentEnrollment/section/$sectionId/students');
+      if (response is List) {
+        return response.map((s) => Student.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getStudentsBySection Error: $e');
+      rethrow;
+    }
+  }
+
   Future<List<Instructor>> getInstructors({bool includeDeleted = false}) async {
     try {
-      final endpoint = includeDeleted ? '/api/instructors?status=all' : '/api/instructors';
+      final endpoint =
+          includeDeleted ? '/api/instructors?status=all' : '/api/instructors';
       final response = await get(endpoint);
       if (response is List) {
         return response.map((i) => Instructor.fromJson(i)).toList();
@@ -147,7 +184,8 @@ class ApiService {
 
   Future<List<Student>> getStudents({bool includeDeleted = false}) async {
     try {
-      final endpoint = includeDeleted ? '/api/students?status=all' : '/api/students';
+      final endpoint =
+          includeDeleted ? '/api/students?status=all' : '/api/students';
       final response = await get(endpoint);
       if (response is List) {
         return response.map((s) => Student.fromJson(s)).toList();

@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../services/api_service.dart';
+import '../../models/subject_model.dart';
 
 class ClassesScreen extends StatefulWidget {
   const ClassesScreen({super.key});
@@ -31,11 +33,36 @@ class _ClassesScreenState extends State<ClassesScreen> {
     {'name': 'CS31B', 'capacity': '35', 'selected': false},
     {'name': 'CS32A', 'capacity': '38', 'selected': false},
   ];
-  final List<Map<String, dynamic>> _subjects = [
-    {'name': 'Mathematics', 'code': 'MATH101', 'selected': false},
-    {'name': 'Physics', 'code': 'PHY101', 'selected': false},
-    {'name': 'Chemistry', 'code': 'CHEM101', 'selected': false},
-  ];
+  final ApiService _apiService = ApiService();
+  List<Subject> _subjectsList = [];
+  bool _isLoadingSubjects = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSubjects();
+  }
+
+  Future<void> _fetchSubjects() async {
+    setState(() => _isLoadingSubjects = true);
+    try {
+      final subjects = await _apiService.getSubjects();
+      setState(() {
+        _subjectsList = subjects;
+        _isLoadingSubjects = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingSubjects = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error fetching subjects: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
   final List<Map<String, dynamic>> _schedules = [
     {
       'day': 'Monday',
@@ -438,14 +465,18 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard('Total Subjects', '${_subjects.length}',
-                  Icons.subject, const Color(0xFFF87171), 100),
+              child: _buildOverviewCard(
+                  'Total Subjects',
+                  '${_subjectsList.length}',
+                  Icons.subject,
+                  const Color(0xFFF87171),
+                  100),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: _buildOverviewCard(
                   'Active Subjects',
-                  '${_subjects.length}',
+                  '${_subjectsList.length}',
                   Icons.check_circle,
                   const Color(0xFF34D399),
                   100),
@@ -675,19 +706,47 @@ class _ClassesScreenState extends State<ClassesScreen> {
   }
 
   Widget _buildSubjectsList() {
+    if (_isLoadingSubjects) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+        ),
+      );
+    }
+
+    if (_subjectsList.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            children: [
+              Icon(Icons.subject_outlined,
+                  size: 64, color: Colors.white.withValues(alpha: 0.2)),
+              const SizedBox(height: 16),
+              const Text(
+                'No subjects found',
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildListHeader('Subjects List'),
         const SizedBox(height: 16),
         Column(
-          children: List.generate(_subjects.length, (index) {
-            final subject = _subjects[index];
+          children: List.generate(_subjectsList.length, (index) {
+            final subject = _subjectsList[index];
             return _buildGlassListItem(
               icon: Icons.subject,
               iconColor: const Color(0xFFF87171),
-              title: subject['name'] ?? '',
-              subtitle: 'Code: ${subject['code']}',
+              title: subject.name,
+              subtitle: 'Code: ${subject.code}',
             );
           }),
         ),

@@ -319,10 +319,24 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                 color: const Color(0xFF1E293B),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 icon: Icon(Icons.more_vert, color: Colors.white.withValues(alpha: 0.6)),
-                onSelected: (value) {
-                  if (value == 'drop') _handleDrop(enrollment);
+                onSelected: (value) async {
+                  if (value == 'drop') {
+                    _handleDrop(enrollment);
+                  } else if (value == 'reenroll') {
+                    try {
+                      await _apiService.reenrollStudent(enrollment.id);
+                      _fetchData();
+                      _showSnackBar('Student re-enrolled successfully');
+                    } catch (e) {
+                      _showSnackBar('Error: $e');
+                    }
+                  }
                 },
                 itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'reenroll',
+                    child: Text('Re-enroll Student', style: TextStyle(color: Color(0xFF34D399))),
+                  ),
                   const PopupMenuItem(
                     value: 'drop',
                     child: Text('Drop Student', style: TextStyle(color: Colors.redAccent)),
