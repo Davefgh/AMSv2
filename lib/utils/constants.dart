@@ -1,7 +1,7 @@
 class AppConstants {
   // API
   static const String apiBaseUrl =
-      'https://athletic-restructuring-arthur-revolution.trycloudflare.com';
+      'https://lanes-parallel-phi-saver.trycloudflare.com';
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Storage Keys
