@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../models/app_user.dart';
+import '../../models/realtime_checkin_preference.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -16,11 +17,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _selectedPeriod = 'Monthly';
   List<AppUser> _users = [];
   bool _isLoading = true;
+  bool _realtimeCheckInEnabled = false;
+  bool _notifPrefLoading = true;
+  bool _notifPrefSaving = false;
 
   @override
   void initState() {
     super.initState();
     _fetchData();
+    _fetchRealtimeCheckinPreference();
+  }
+
+  Future<void> _fetchRealtimeCheckinPreference() async {
+    setState(() => _notifPrefLoading = true);
+    try {
+      final pref = await _apiService.getRealtimeCheckinPreference();
+      if (mounted) {
+        setState(() {
+          _realtimeCheckInEnabled = pref.enabled;
+          _notifPrefLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _notifPrefLoading = false);
+    }
+  }
+
+  Future<void> _onRealtimeCheckInChanged(bool value) async {
+    setState(() {
+      _realtimeCheckInEnabled = value;
+      _notifPrefSaving = true;
+    });
+    try {
+      final updated = await _apiService.putRealtimeCheckinPreference(
+        RealtimeCheckinPreference(enabled: value),
+      );
+      if (mounted) {
+        setState(() {
+          _realtimeCheckInEnabled = updated.enabled;
+          _notifPrefSaving = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _notifPrefSaving = false);
+      await _fetchRealtimeCheckinPreference();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not update preference: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _fetchData() async {
@@ -95,49 +144,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 _buildHeader(),
                 Expanded(
-                  child: ListView(
-                    physics: const BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics()),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
-                    children: [
-                      const Text(
-                        'Overview',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildStatsGrid(),
-                      const SizedBox(height: 32),
-                      const Text(
-                        'Attendance Overview',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildAttendanceOverview(),
-                      const SizedBox(height: 32),
-                      const Text(
-                        'Recent User Trace',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildRecentUsersList(),
-                      const SizedBox(height: 32),
-                    ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      const breakpoint = 720.0;
+                      final wide = constraints.maxWidth >= breakpoint;
+                      final sections = _buildDashboardMainSections();
+
+                      if (!wide) {
+                        return ListView(
+                          physics: const BouncingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics()),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                          children: [
+                            _buildRealtimeNotificationPanel(),
+                            const SizedBox(height: 24),
+                            ...sections,
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 12,
+                            child: ListView(
+                              physics: const BouncingScrollPhysics(
+                                  parent: AlwaysScrollableScrollPhysics()),
+                              padding: const EdgeInsets.fromLTRB(
+                                  24, 12, 12, 12),
+                              children: sections,
+                            ),
+                          ),
+                          Expanded(
+                            flex: 10,
+                            child: ListView(
+                              physics: const BouncingScrollPhysics(
+                                  parent: AlwaysScrollableScrollPhysics()),
+                              padding: const EdgeInsets.fromLTRB(
+                                  12, 12, 24, 12),
+                              children: [
+                                _buildRealtimeNotificationPanel(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ],
@@ -176,6 +230,153 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
+          Icon(
+            Icons.notifications_active_outlined,
+            color: Colors.white.withValues(alpha: 0.35),
+            size: 26,
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildDashboardMainSections() {
+    return [
+      const Text(
+        'Overview',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          letterSpacing: 0.5,
+        ),
+      ),
+      const SizedBox(height: 16),
+      _buildStatsGrid(),
+      const SizedBox(height: 32),
+      const Text(
+        'Attendance Overview',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          letterSpacing: 0.5,
+        ),
+      ),
+      const SizedBox(height: 16),
+      _buildAttendanceOverview(),
+      const SizedBox(height: 32),
+      const Text(
+        'Recent User Trace',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          letterSpacing: 0.5,
+        ),
+      ),
+      const SizedBox(height: 16),
+      _buildRecentUsersList(),
+      const SizedBox(height: 32),
+    ];
+  }
+
+  Widget _buildRealtimeNotificationPanel() {
+    return _GlassCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.touch_app_rounded,
+                  color: Color(0xFF38BDF8),
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Text(
+                  'Notifications',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Realtime check-in alerts when attendance is recorded.',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.35,
+              color: Colors.white.withValues(alpha: 0.65),
+            ),
+          ),
+          const SizedBox(height: 18),
+          if (_notifPrefLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: Color(0xFF38BDF8),
+                  ),
+                ),
+              ),
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Realtime check-in',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withValues(alpha: 0.92),
+                    ),
+                  ),
+                ),
+                if (_notifPrefSaving)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 10),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF38BDF8),
+                      ),
+                    ),
+                  ),
+                Switch.adaptive(
+                  value: _realtimeCheckInEnabled,
+                  activeThumbColor: const Color(0xFF38BDF8),
+                  activeTrackColor:
+                      const Color(0xFF38BDF8).withValues(alpha: 0.45),
+                  onChanged:
+                      _notifPrefSaving ? null : _onRealtimeCheckInChanged,
+                ),
+              ],
+            ),
         ],
       ),
     );

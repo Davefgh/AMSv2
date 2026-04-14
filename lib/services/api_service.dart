@@ -13,6 +13,7 @@ import '../models/enrollment_model.dart';
 import '../models/schedule_model.dart';
 import '../models/course_model.dart';
 import '../models/classroom_model.dart';
+import '../models/realtime_checkin_preference.dart';
 
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
@@ -545,6 +546,37 @@ class ApiService {
       await patch('/api/account/profile', data);
     } catch (e) {
       _logger.e('updateProfile Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<RealtimeCheckinPreference> getRealtimeCheckinPreference() async {
+    try {
+      final response = await get(
+          '/api/NotificationPreference/realtime-checkin');
+      if (response is Map<String, dynamic>) {
+        return RealtimeCheckinPreference.fromJson(response);
+      }
+      return const RealtimeCheckinPreference(enabled: false);
+    } catch (e) {
+      _logger.e('getRealtimeCheckinPreference Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<RealtimeCheckinPreference> putRealtimeCheckinPreference(
+      RealtimeCheckinPreference preference) async {
+    try {
+      final response = await put(
+        '/api/NotificationPreference/realtime-checkin',
+        preference.toJson(),
+      );
+      if (response is Map<String, dynamic>) {
+        return RealtimeCheckinPreference.fromJson(response);
+      }
+      return preference;
+    } catch (e) {
+      _logger.e('putRealtimeCheckinPreference Error: $e');
       rethrow;
     }
   }
