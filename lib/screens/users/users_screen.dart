@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../widgets/register_user_modal.dart';
 import '../../services/api_service.dart';
 import '../../models/app_user.dart';
@@ -15,6 +17,18 @@ class _UsersScreenState extends State<UsersScreen> {
   final ApiService _apiService = ApiService();
   List<AppUser> _users = [];
   bool _isLoading = true;
+  bool _adminDataBusy = false;
+
+  static const List<String> _adminDataEntities = [
+    'users',
+    'students',
+    'instructors',
+    'sections',
+    'subjects',
+    'schedules',
+    'courses',
+    'classrooms',
+  ];
 
   @override
   void initState() {
@@ -170,53 +184,466 @@ class _UsersScreenState extends State<UsersScreen> {
               ),
             ],
           ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'profile') {
-                Navigator.pushNamed(context, '/profile');
-              } else if (value == 'edit_profile') {
-                Navigator.pushNamed(context, '/edit-profile');
-              } else if (value == 'health') {
-                Navigator.pushNamed(context, '/health');
-              } else if (value == 'logout') {
-                // Future logout implementation
-                Navigator.pushReplacementNamed(context, '/');
-              }
-            },
-            color: const Color(0xFF1E293B), // Dark slate
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            offset: const Offset(0, 50),
-            padding: EdgeInsets.zero,
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'profile',
-                child: Text('Profile', style: TextStyle(color: Colors.white)),
+          Row(
+            children: [
+              IconButton(
+                tooltip: 'Export data',
+                onPressed: _adminDataBusy ? null : () => _openAdminDataExport(),
+                icon: Icon(
+                  Icons.file_download_outlined,
+                  color: Colors.white.withValues(alpha: 0.75),
+                ),
               ),
-              const PopupMenuItem(
-                value: 'edit_profile',
-                child:
-                    Text('Edit Profile', style: TextStyle(color: Colors.white)),
+              IconButton(
+                tooltip: 'Import data',
+                onPressed: _adminDataBusy ? null : () => _openAdminDataImport(),
+                icon: Icon(
+                  Icons.file_upload_outlined,
+                  color: Colors.white.withValues(alpha: 0.75),
+                ),
               ),
-              const PopupMenuItem(
-                value: 'health',
-                child: Text('Health', style: TextStyle(color: Colors.white)),
-              ),
-              const PopupMenuDivider(height: 1),
-              const PopupMenuItem(
-                value: 'logout',
-                child:
-                    Text('Log out', style: TextStyle(color: Colors.redAccent)),
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'profile') {
+                    Navigator.pushNamed(context, '/profile');
+                  } else if (value == 'edit_profile') {
+                    Navigator.pushNamed(context, '/edit-profile');
+                  } else if (value == 'health') {
+                    Navigator.pushNamed(context, '/health');
+                  } else if (value == 'logout') {
+                    // Future logout implementation
+                    Navigator.pushReplacementNamed(context, '/');
+                  }
+                },
+                color: const Color(0xFF1E293B), // Dark slate
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                offset: const Offset(0, 50),
+                padding: EdgeInsets.zero,
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'profile',
+                    child:
+                        Text('Profile', style: TextStyle(color: Colors.white)),
+                  ),
+                  const PopupMenuItem(
+                    value: 'edit_profile',
+                    child: Text('Edit Profile',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                  const PopupMenuItem(
+                    value: 'health',
+                    child: Text('Health', style: TextStyle(color: Colors.white)),
+                  ),
+                  const PopupMenuDivider(height: 1),
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Text('Log out',
+                        style: TextStyle(color: Colors.redAccent)),
+                  ),
+                ],
+                child: const CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Color(0xFF38BDF8),
+                  backgroundImage:
+                      NetworkImage('https://i.pravatar.cc/150?img=11'),
+                ),
               ),
             ],
-            child: const CircleAvatar(
-              radius: 20,
-              backgroundColor: Color(0xFF38BDF8),
-              backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
-            ),
           ),
         ],
       ),
+    );
+  }
+
+  Future<String?> _pickEntity(BuildContext context, {required String title}) {
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: Icon(Icons.close_rounded,
+                            color: Colors.white.withValues(alpha: 0.7)),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: _adminDataEntities.length,
+                    separatorBuilder: (_, __) => Divider(
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.06),
+                    ),
+                    itemBuilder: (_, i) {
+                      final e = _adminDataEntities[i];
+                      return ListTile(
+                        title: Text(e,
+                            style: const TextStyle(color: Colors.white)),
+                        trailing: Icon(Icons.chevron_right_rounded,
+                            color: Colors.white.withValues(alpha: 0.3)),
+                        onTap: () => Navigator.pop(ctx, e),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openAdminDataExport() async {
+    final entity =
+        await _pickEntity(context, title: 'Export which entity?');
+    if (entity == null) return;
+
+    setState(() => _adminDataBusy = true);
+    try {
+      final result = await _apiService.getAdminDataExport(entity);
+      final pretty = const JsonEncoder.withIndent('  ').convert(result);
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1E293B),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: Text(
+            'Export: $entity',
+            style: const TextStyle(color: Colors.white),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: SelectableText(
+                pretty,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.75),
+                  fontSize: 12,
+                  height: 1.35,
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Close'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: pretty));
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Export copied to clipboard.'),
+                      backgroundColor: Color(0xFF34D399),
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.copy_rounded, size: 18),
+              label: const Text('Copy'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF38BDF8),
+                foregroundColor: const Color(0xFF0F172A),
+              ),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Export failed: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _adminDataBusy = false);
+    }
+  }
+
+  Future<void> _openAdminDataImport() async {
+    final entity =
+        await _pickEntity(context, title: 'Import into which entity?');
+    if (entity == null) return;
+
+    final controller = TextEditingController();
+    bool isBusy = false;
+
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(builder: (ctx, setModalState) {
+          Future<void> runPreview() async {
+            final text = controller.text.trim();
+            if (text.isEmpty) return;
+            dynamic parsed;
+            try {
+              parsed = jsonDecode(text);
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Invalid JSON: $e'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+              return;
+            }
+            setModalState(() => isBusy = true);
+            try {
+              final result = await _apiService.postAdminDataImportPreview(
+                entity,
+                {'data': parsed},
+              );
+              final pretty =
+                  const JsonEncoder.withIndent('  ').convert(result);
+              if (!ctx.mounted) return;
+              await showDialog<void>(
+                context: context,
+                builder: (dctx) => AlertDialog(
+                  backgroundColor: const Color(0xFF1E293B),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18)),
+                  title: Text('Import preview: $entity',
+                      style: const TextStyle(color: Colors.white)),
+                  content: SizedBox(
+                    width: double.maxFinite,
+                    child: SingleChildScrollView(
+                      child: SelectableText(
+                        pretty,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dctx),
+                      child: const Text('Close'),
+                    ),
+                  ],
+                ),
+              );
+            } catch (e) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Preview failed: $e'),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            } finally {
+              if (ctx.mounted) setModalState(() => isBusy = false);
+            }
+          }
+
+          Future<void> runImport() async {
+            final text = controller.text.trim();
+            if (text.isEmpty) return;
+            dynamic parsed;
+            try {
+              parsed = jsonDecode(text);
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Invalid JSON: $e'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+              return;
+            }
+            setModalState(() => isBusy = true);
+            try {
+              await _apiService.postAdminDataImport(entity, {'data': parsed});
+              if (!mounted) return;
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Import submitted.'),
+                  backgroundColor: Color(0xFF34D399),
+                ),
+              );
+              await _refreshUsers();
+            } catch (e) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Import failed: $e'),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            } finally {
+              if (ctx.mounted) setModalState(() => isBusy = false);
+            }
+          }
+
+          Future<void> loadTemplate() async {
+            setModalState(() => isBusy = true);
+            try {
+              final result = await _apiService.getAdminDataTemplate(entity);
+              final pretty =
+                  const JsonEncoder.withIndent('  ').convert(result);
+              controller.text = pretty;
+            } catch (e) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Template failed: $e'),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            } finally {
+              if (ctx.mounted) setModalState(() => isBusy = false);
+            }
+          }
+
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(22)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              ),
+              padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Import: $entity',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: isBusy ? null : () => Navigator.pop(ctx),
+                        icon: Icon(Icons.close_rounded,
+                            color: Colors.white.withValues(alpha: 0.7)),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    'Paste JSON then Preview or Import. Tip: load Template to get the expected shape.',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.55),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: controller,
+                    minLines: 6,
+                    maxLines: 12,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    decoration: InputDecoration(
+                      hintText: 'Paste JSON here…',
+                      hintStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.35)),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.06),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.15)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.15)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: isBusy ? null : loadTemplate,
+                        icon: const Icon(Icons.description_outlined),
+                        label: const Text('Template'),
+                      ),
+                      const Spacer(),
+                      if (isBusy)
+                        const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFF38BDF8),
+                          ),
+                        ),
+                      const SizedBox(width: 12),
+                      OutlinedButton(
+                        onPressed: isBusy ? null : runPreview,
+                        child: const Text('Preview'),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: isBusy ? null : runImport,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF38BDF8),
+                          foregroundColor: const Color(0xFF0F172A),
+                        ),
+                        child: const Text('Import'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+      },
     );
   }
 
