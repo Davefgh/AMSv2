@@ -13,6 +13,7 @@ import '../models/enrollment_model.dart';
 import '../models/schedule_model.dart';
 import '../models/course_model.dart';
 import '../models/classroom_model.dart';
+import '../models/health_status.dart';
 
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
@@ -428,6 +429,46 @@ class ApiService {
       return [];
     } catch (e) {
       _logger.e('getUsers Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<HealthStatusResponse> getHealth() async {
+    try {
+      final response = await get('/api/health');
+      return HealthStatusResponse.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getHealth Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<HealthStatusResponse> getHealthReady() async {
+    try {
+      final response = await get('/api/health/ready');
+      return HealthStatusResponse.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getHealthReady Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<HealthStatusResponse> getHealthLive() async {
+    try {
+      final response = await get('/api/health/live');
+      return HealthStatusResponse.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getHealthLive Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<HealthStatusResponse> getHealthDataIntegrity() async {
+    try {
+      final response = await get('/api/health/data-integrity');
+      return HealthStatusResponse.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getHealthDataIntegrity Error: $e');
       rethrow;
     }
   }
