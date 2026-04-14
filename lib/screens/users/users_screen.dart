@@ -288,67 +288,149 @@ class _UsersScreenState extends State<UsersScreen> {
     );
   }
 
+  IconData _getIconForEntity(String entity) {
+    switch (entity.toLowerCase()) {
+      case 'users': return Icons.people_outline_rounded;
+      case 'students': return Icons.workspace_premium_outlined;
+      case 'instructors': return Icons.badge_outlined;
+      case 'sections': return Icons.view_module_rounded;
+      case 'subjects': return Icons.menu_book_rounded;
+      case 'schedules': return Icons.calendar_month_rounded;
+      case 'courses': return Icons.account_tree_outlined;
+      case 'classrooms': return Icons.meeting_room_outlined;
+      default: return Icons.folder_outlined;
+    }
+  }
+
   Future<String?> _pickEntity(BuildContext context, {required String title}) {
     return showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (ctx) {
-        return Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  child: Row(
+        return ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.65),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                      Container(
+                        width: 48,
+                        height: 6,
+                        margin: const EdgeInsets.only(bottom: 24),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        icon: Icon(Icons.close_rounded,
-                            color: Colors.white.withValues(alpha: 0.7)),
+                      Row(
+                        children: [
+                          const Icon(Icons.hub_outlined, color: Color(0xFF38BDF8), size: 28),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            icon: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.close_rounded,
+                                  color: Colors.white.withValues(alpha: 0.8), size: 18),
+                            ),
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 24),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 2.5,
+                        ),
+                        itemCount: _adminDataEntities.length,
+                        itemBuilder: (_, i) {
+                          final e = _adminDataEntities[i];
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => Navigator.pop(ctx, e),
+                              borderRadius: BorderRadius.circular(16),
+                              splashColor: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                              highlightColor: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      _getIconForEntity(e),
+                                      color: const Color(0xFF38BDF8).withValues(alpha: 0.8),
+                                      size: 22,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        e[0].toUpperCase() + e.substring(1),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
-                const Divider(height: 1),
-                Flexible(
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: _adminDataEntities.length,
-                    separatorBuilder: (_, __) => Divider(
-                      height: 1,
-                      color: Colors.white.withValues(alpha: 0.06),
-                    ),
-                    itemBuilder: (_, i) {
-                      final e = _adminDataEntities[i];
-                      return ListTile(
-                        title: Text(e,
-                            style: const TextStyle(color: Colors.white)),
-                        trailing: Icon(Icons.chevron_right_rounded,
-                            color: Colors.white.withValues(alpha: 0.3)),
-                        onTap: () => Navigator.pop(ctx, e),
-                      );
-                    },
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         );
@@ -643,6 +725,9 @@ class _UsersScreenState extends State<UsersScreen> {
                         onPressed: isBusy ? null : loadTemplate,
                         icon: const Icon(Icons.description_outlined),
                         label: const Text('Template'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white,
+                        ),
                       ),
                       const Spacer(),
                       if (isBusy)
@@ -657,6 +742,10 @@ class _UsersScreenState extends State<UsersScreen> {
                       const SizedBox(width: 12),
                       OutlinedButton(
                         onPressed: isBusy ? null : runPreview,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                        ),
                         child: const Text('Preview'),
                       ),
                       const SizedBox(width: 10),
