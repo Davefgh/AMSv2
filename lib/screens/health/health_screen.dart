@@ -190,19 +190,13 @@ class _HealthScreenState extends State<HealthScreen> {
         children: [
           Row(
             children: [
-              Container(
-                height: 44,
-                width: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
-                ),
-                child: const Icon(Icons.health_and_safety_outlined,
-                    color: Color(0xFF38BDF8)),
+              IconButton(
+                tooltip: 'Back',
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white, size: 22),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 8),
               const Text(
                 'Health',
                 style: TextStyle(
@@ -213,12 +207,6 @@ class _HealthScreenState extends State<HealthScreen> {
                 ),
               ),
             ],
-          ),
-          IconButton(
-            tooltip: 'Back',
-            onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.arrow_back_ios_new_rounded,
-                color: Colors.white.withValues(alpha: 0.6), size: 20),
           ),
         ],
       ),

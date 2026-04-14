@@ -186,21 +186,53 @@ class _UsersScreenState extends State<UsersScreen> {
           ),
           Row(
             children: [
-              IconButton(
-                tooltip: 'Export data',
-                onPressed: _adminDataBusy ? null : () => _openAdminDataExport(),
-                icon: Icon(
-                  Icons.file_download_outlined,
-                  color: Colors.white.withValues(alpha: 0.75),
-                ),
-              ),
-              IconButton(
-                tooltip: 'Import data',
-                onPressed: _adminDataBusy ? null : () => _openAdminDataImport(),
-                icon: Icon(
-                  Icons.file_upload_outlined,
-                  color: Colors.white.withValues(alpha: 0.75),
-                ),
+              PopupMenuButton<String>(
+                tooltip: 'Data Management',
+                icon: _adminDataBusy
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
+                    : Icon(
+                        Icons.swap_vert_rounded,
+                        color: Colors.white.withValues(alpha: 0.75),
+                      ),
+                onSelected: (value) {
+                  if (value == 'export') {
+                    _openAdminDataExport();
+                  } else if (value == 'import') {
+                    _openAdminDataImport();
+                  }
+                },
+                color: const Color(0xFF1E293B),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                offset: const Offset(0, 50),
+                padding: EdgeInsets.zero,
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'import',
+                    child: Row(
+                      children: [
+                        Icon(Icons.file_upload_outlined, color: Colors.white, size: 20),
+                        SizedBox(width: 12),
+                        Text('Import Data', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'export',
+                    child: Row(
+                      children: [
+                        Icon(Icons.file_download_outlined, color: Colors.white, size: 20),
+                        SizedBox(width: 12),
+                        Text('Export Data', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               PopupMenuButton<String>(
                 onSelected: (value) {
