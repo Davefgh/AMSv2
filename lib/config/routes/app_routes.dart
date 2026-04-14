@@ -8,6 +8,7 @@ import '../../screens/classes/classes_screen.dart';
 import '../../screens/profile/edit_profile_screen.dart';
 import '../../screens/students/students_screen.dart';
 import '../../screens/instructors/instructors_screen.dart';
+import '../../screens/settings/notifications_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -20,6 +21,7 @@ class AppRoutes {
   static const String enrollment = '/enrollment';
   static const String classes = '/classes';
   static const String users = '/users';
+  static const String notifications = '/notifications';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -32,6 +34,7 @@ class AppRoutes {
       enrollment: (context) => const EnrollmentScreen(),
       classes: (context) => const ClassesScreen(),
       users: (context) => const UsersScreen(),
+      notifications: (context) => const NotificationsScreen(),
     };
   }
 }
