@@ -15,11 +15,7 @@ class _HealthScreenState extends State<HealthScreen> {
 
   bool _loading = true;
   String? _error;
-
-  HealthStatusResponse? _health;
   HealthStatusResponse? _ready;
-  HealthStatusResponse? _live;
-  HealthStatusResponse? _dataIntegrity;
 
   @override
   void initState() {
@@ -33,18 +29,10 @@ class _HealthScreenState extends State<HealthScreen> {
       _error = null;
     });
     try {
-      final results = await Future.wait([
-        _apiService.getHealth(),
-        _apiService.getHealthReady(),
-        _apiService.getHealthLive(),
-        _apiService.getHealthDataIntegrity(),
-      ]);
+      final ready = await _apiService.getHealthReady();
       if (!mounted) return;
       setState(() {
-        _health = results[0];
-        _ready = results[1];
-        _live = results[2];
-        _dataIntegrity = results[3];
+        _ready = ready;
         _loading = false;
       });
     } catch (e) {
@@ -174,33 +162,10 @@ class _HealthScreenState extends State<HealthScreen> {
                             ),
                           )
                         else ...[
-                          _buildSectionTitle('Overall'),
-                          const SizedBox(height: 12),
-                          _buildHealthCard(
-                            title: '/api/health',
-                            health: _health!,
-                          ),
-                          const SizedBox(height: 20),
-                          _buildSectionTitle('Liveness'),
-                          const SizedBox(height: 12),
-                          _buildHealthCard(
-                            title: '/api/health/live',
-                            health: _live!,
-                            compact: true,
-                          ),
-                          const SizedBox(height: 20),
                           _buildSectionTitle('Readiness'),
                           const SizedBox(height: 12),
                           _buildHealthCard(
-                            title: '/api/health/ready',
                             health: _ready!,
-                          ),
-                          const SizedBox(height: 20),
-                          _buildSectionTitle('Data integrity'),
-                          const SizedBox(height: 12),
-                          _buildHealthCard(
-                            title: '/api/health/data-integrity',
-                            health: _dataIntegrity!,
                             showIntegrityDetails: true,
                           ),
                           const SizedBox(height: 24),
@@ -273,9 +238,7 @@ class _HealthScreenState extends State<HealthScreen> {
   }
 
   Widget _buildHealthCard({
-    required String title,
     required HealthStatusResponse health,
-    bool compact = false,
     bool showIntegrityDetails = false,
   }) {
     final ok = health.overallHealthy;
@@ -294,19 +257,11 @@ class _HealthScreenState extends State<HealthScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      'Health status',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      health.service ?? 'Attendance Monitoring API',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.55),
-                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -341,7 +296,7 @@ class _HealthScreenState extends State<HealthScreen> {
               ),
             ),
           ],
-          if (!compact && health.database != null) ...[
+          if (health.database != null) ...[
             const SizedBox(height: 14),
             _row(
               Icons.storage_rounded,
@@ -354,7 +309,7 @@ class _HealthScreenState extends State<HealthScreen> {
                   : const Color(0xFFF87171),
             ),
           ],
-          if (!compact && health.dataIntegrity != null) ...[
+          if (health.dataIntegrity != null) ...[
             const SizedBox(height: 10),
             _row(
               Icons.fact_check_outlined,
