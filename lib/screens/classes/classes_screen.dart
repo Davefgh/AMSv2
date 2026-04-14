@@ -5,6 +5,7 @@ import '../../models/subject_model.dart';
 import '../../models/section_model.dart';
 import '../../models/schedule_model.dart';
 import '../../models/course_model.dart';
+import '../../models/classroom_model.dart';
 
 class ClassesScreen extends StatefulWidget {
   const ClassesScreen({super.key});
@@ -16,13 +17,9 @@ class ClassesScreen extends StatefulWidget {
 class _ClassesScreenState extends State<ClassesScreen> {
   final int _selectedIndex = 2;
   String _selectedTab = 'Classroom';
-  final List<Map<String, dynamic>> _classrooms = [
-    {'name': 'Room 101', 'id': '1', 'selected': false},
-    {'name': 'Room 102', 'id': '2', 'selected': false},
-    {'name': 'Room 103', 'id': '3', 'selected': false},
-    {'name': 'Room 104', 'id': '4', 'selected': false},
-  ];
   final ApiService _apiService = ApiService();
+  List<Classroom> _classroomsList = [];
+  bool _isLoadingClassrooms = false;
   List<Course> _coursesList = [];
   bool _isLoadingCourses = false;
   List<Subject> _subjectsList = [];
@@ -39,6 +36,28 @@ class _ClassesScreenState extends State<ClassesScreen> {
     _fetchSections();
     _fetchSchedules();
     _fetchCourses();
+    _fetchClassrooms();
+  }
+
+  Future<void> _fetchClassrooms() async {
+    setState(() => _isLoadingClassrooms = true);
+    try {
+      final list = await _apiService.getClassrooms();
+      setState(() {
+        _classroomsList = list;
+        _isLoadingClassrooms = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingClassrooms = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error fetching classrooms: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _fetchCourses() async {
@@ -895,6 +914,247 @@ class _ClassesScreenState extends State<ClassesScreen> {
     }
   }
 
+  void _showAddEditClassroomDialog({Classroom? classroom}) {
+    final nameController = TextEditingController(text: classroom?.name ?? '');
+    final isEditing = classroom != null;
+    bool isSaving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(28)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      isEditing ? 'Edit Classroom' : 'Add Classroom',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDialogTextField(
+                      controller: nameController,
+                      label: 'Classroom Name',
+                      hint: 'e.g. Software Laboratory 1',
+                      icon: Icons.meeting_room_outlined,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '2–100 characters (required by server).',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.45),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                final name = nameController.text.trim();
+                                if (name.length < 2 || name.length > 100) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Name must be between 2 and 100 characters.',
+                                      ),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                  return;
+                                }
+                                setModalState(() => isSaving = true);
+                                try {
+                                  if (isEditing) {
+                                    await _updateClassroom(classroom.id, name);
+                                  } else {
+                                    await _createClassroom(name);
+                                  }
+                                  if (ctx.mounted) Navigator.pop(ctx);
+                                } catch (_) {
+                                  setModalState(() => isSaving = false);
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF60A5FA),
+                          foregroundColor: const Color(0xFF0F172A),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: isSaving
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              )
+                            : Text(
+                                isEditing ? 'Save Changes' : 'Add Classroom',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _createClassroom(String name) async {
+    try {
+      await _apiService.createClassroom({'name': name});
+      await _fetchClassrooms();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Classroom created successfully!'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error creating classroom: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _updateClassroom(int id, String name) async {
+    try {
+      await _apiService.updateClassroom(id, {'name': name});
+      await _fetchClassrooms();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Classroom updated successfully!'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating classroom: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _deleteClassroom(int id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Delete Classroom',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to delete this classroom? Schedules that use it may need to be updated.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _apiService.deleteClassroom(id);
+      await _fetchClassrooms();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Classroom deleted.'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting classroom: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
   void _showAddEditScheduleDialog({Schedule? schedule}) {
     final isEditing = schedule != null;
     bool isSaving = false;
@@ -1328,7 +1588,9 @@ class _ClassesScreenState extends State<ClassesScreen> {
             child: IconButton(
               icon: const Icon(Icons.add, color: Color(0xFF38BDF8)),
               onPressed: () {
-                if (_selectedTab == 'Subjects') {
+                if (_selectedTab == 'Classroom') {
+                  _showAddEditClassroomDialog();
+                } else if (_selectedTab == 'Subjects') {
                   _showAddEditSubjectDialog();
                 } else if (_selectedTab == 'Courses') {
                   _showAddEditCourseDialog();
@@ -1489,13 +1751,21 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard('Total Classrooms', '27',
-                  Icons.meeting_room, const Color(0xFF60A5FA), 100),
+              child: _buildOverviewCard(
+                  'Total Classrooms',
+                  '${_classroomsList.length}',
+                  Icons.meeting_room,
+                  const Color(0xFF60A5FA),
+                  100),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard('Active Classrooms', '27',
-                  Icons.check_circle, const Color(0xFF34D399), 100),
+              child: _buildOverviewCard(
+                  'Active Classrooms',
+                  '${_classroomsList.length}',
+                  Icons.check_circle,
+                  const Color(0xFF34D399),
+                  100),
             ),
           ],
         ),
@@ -1708,28 +1978,77 @@ class _ClassesScreenState extends State<ClassesScreen> {
     );
   }
 
-  Widget _buildGlassListItem({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-  }) {
+  Widget _buildClassroomsList() {
+    if (_isLoadingClassrooms) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: CircularProgressIndicator(color: Color(0xFF60A5FA)),
+        ),
+      );
+    }
+
+    if (_classroomsList.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            children: [
+              Icon(Icons.meeting_room_outlined,
+                  size: 64, color: Colors.white.withValues(alpha: 0.2)),
+              const SizedBox(height: 16),
+              const Text(
+                'No classrooms found',
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: () => _showAddEditClassroomDialog(),
+                icon: const Icon(Icons.add, color: Color(0xFF60A5FA)),
+                label: const Text(
+                  'Add Classroom',
+                  style: TextStyle(color: Color(0xFF60A5FA)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildListHeader('Classrooms List'),
+        const SizedBox(height: 16),
+        Column(
+          children: List.generate(_classroomsList.length, (index) {
+            final classroom = _classroomsList[index];
+            return _buildClassroomListItem(classroom);
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildClassroomListItem(Classroom classroom) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: _GlassCard(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.2),
+                color: const Color(0xFF60A5FA).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: iconColor.withValues(alpha: 0.3)),
+                border: Border.all(
+                    color: const Color(0xFF60A5FA).withValues(alpha: 0.3)),
               ),
-              child: Icon(
-                icon,
-                color: iconColor,
+              child: const Icon(
+                Icons.meeting_room,
+                color: Color(0xFF60A5FA),
                 size: 24,
               ),
             ),
@@ -1739,7 +2058,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    classroom.name,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -1748,7 +2067,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    subtitle,
+                    'ID: ${classroom.id}',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.white.withValues(alpha: 0.6),
@@ -1757,30 +2076,46 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 ],
               ),
             ),
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert,
+                  color: Colors.white.withValues(alpha: 0.5)),
+              color: const Color(0xFF1E293B),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              onSelected: (value) {
+                if (value == 'edit') {
+                  _showAddEditClassroomDialog(classroom: classroom);
+                } else if (value == 'delete') {
+                  _deleteClassroom(classroom.id);
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem<String>(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, color: Color(0xFF60A5FA), size: 20),
+                      SizedBox(width: 12),
+                      Text('Edit', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                      SizedBox(width: 12),
+                      Text('Delete',
+                          style: TextStyle(color: Colors.redAccent)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildClassroomsList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildListHeader('Classrooms List'),
-        const SizedBox(height: 16),
-        Column(
-          children: List.generate(_classrooms.length, (index) {
-            final classroom = _classrooms[index];
-            return _buildGlassListItem(
-              icon: Icons.meeting_room,
-              iconColor: const Color(0xFF60A5FA),
-              title: classroom['name'] ?? '',
-              subtitle: 'ID: ${classroom['id']}',
-            );
-          }),
-        ),
-      ],
     );
   }
 

@@ -12,6 +12,7 @@ import '../models/subject_model.dart';
 import '../models/enrollment_model.dart';
 import '../models/schedule_model.dart';
 import '../models/course_model.dart';
+import '../models/classroom_model.dart';
 
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
@@ -146,6 +147,59 @@ class ApiService {
       await delete('/api/Course/$id');
     } catch (e) {
       _logger.e('deleteCourse Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Classroom>> getClassrooms() async {
+    try {
+      final response = await get('/api/classrooms');
+      if (response is List) {
+        return response
+            .map((c) => Classroom.fromJson(c as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getClassrooms Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Classroom> getClassroom(int id) async {
+    try {
+      final response = await get('/api/classrooms/$id');
+      return Classroom.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getClassroom Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Classroom> createClassroom(Map<String, dynamic> data) async {
+    try {
+      final response = await post('/api/classrooms', data);
+      return Classroom.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('createClassroom Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateClassroom(int id, Map<String, dynamic> data) async {
+    try {
+      await patch('/api/classrooms/$id', data);
+    } catch (e) {
+      _logger.e('updateClassroom Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteClassroom(int id) async {
+    try {
+      await delete('/api/classrooms/$id');
+    } catch (e) {
+      _logger.e('deleteClassroom Error: $e');
       rethrow;
     }
   }
