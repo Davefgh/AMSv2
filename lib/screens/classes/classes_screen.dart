@@ -1920,61 +1920,14 @@ class _ClassesScreenState extends State<ClassesScreen> {
   // --- List Builders ---
 
   Widget _buildListHeader(String title) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 0.5,
-          ),
-        ),
-        _buildListPopupMenu(),
-      ],
-    );
-  }
-
-  Widget _buildListPopupMenu() {
-    return PopupMenuButton<String>(
-      icon: Icon(Icons.more_vert, color: Colors.white.withValues(alpha: 0.6)),
-      color: const Color(0xFF1E293B), // Dark slate
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      itemBuilder: (context) => <PopupMenuEntry<String>>[
-        const PopupMenuItem<String>(
-          value: 'edit',
-          child: Row(
-            children: [
-              Icon(Icons.edit, color: Colors.white, size: 20),
-              SizedBox(width: 12),
-              Text('Edit', style: TextStyle(color: Colors.white)),
-            ],
-          ),
-        ),
-        const PopupMenuItem<String>(
-          value: 'delete',
-          child: Row(
-            children: [
-              Icon(Icons.delete, color: Colors.redAccent, size: 20),
-              SizedBox(width: 12),
-              Text('Delete', style: TextStyle(color: Colors.redAccent)),
-            ],
-          ),
-        ),
-        const PopupMenuDivider(height: 1),
-        const PopupMenuItem<String>(
-          value: 'select_all',
-          child: Row(
-            children: [
-              Icon(Icons.select_all, color: Colors.white, size: 20),
-              SizedBox(width: 12),
-              Text('Select All', style: TextStyle(color: Colors.white)),
-            ],
-          ),
-        ),
-      ],
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+        letterSpacing: 0.5,
+      ),
     );
   }
 
