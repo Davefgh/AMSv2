@@ -473,6 +473,44 @@ class ApiService {
     }
   }
 
+  Future<dynamic> getAdminDataTemplate(String entity) async {
+    try {
+      return await get('/api/admin-data/$entity/template');
+    } catch (e) {
+      _logger.e('getAdminDataTemplate Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<dynamic> getAdminDataExport(String entity) async {
+    try {
+      return await get('/api/admin-data/$entity/export');
+    } catch (e) {
+      _logger.e('getAdminDataExport Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<dynamic> postAdminDataImportPreview(
+      String entity, Map<String, dynamic> body) async {
+    try {
+      return await post('/api/admin-data/$entity/import-preview', body);
+    } catch (e) {
+      _logger.e('postAdminDataImportPreview Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<dynamic> postAdminDataImport(
+      String entity, Map<String, dynamic> body) async {
+    try {
+      return await post('/api/admin-data/$entity/import', body);
+    } catch (e) {
+      _logger.e('postAdminDataImport Error: $e');
+      rethrow;
+    }
+  }
+
   Future<List<Schedule>> getSchedules() async {
     try {
       final response = await get('/api/schedules');
