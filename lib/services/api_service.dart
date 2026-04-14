@@ -10,6 +10,10 @@ import '../models/student_model.dart';
 import '../models/section_model.dart';
 import '../models/subject_model.dart';
 import '../models/enrollment_model.dart';
+import '../models/schedule_model.dart';
+import '../models/course_model.dart';
+import '../models/classroom_model.dart';
+import '../models/health_status.dart';
 
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
@@ -93,6 +97,110 @@ class ApiService {
       await delete('/api/subjects/$id');
     } catch (e) {
       _logger.e('deleteSubject Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Course>> getCourses() async {
+    try {
+      final response = await get('/api/Course');
+      if (response is List) {
+        return response.map((c) => Course.fromJson(c as Map<String, dynamic>)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getCourses Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Course> getCourse(int id) async {
+    try {
+      final response = await get('/api/Course/$id');
+      return Course.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getCourse Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Course> createCourse(Map<String, dynamic> data) async {
+    try {
+      final response = await post('/api/Course', data);
+      return Course.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('createCourse Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateCourse(int id, Map<String, dynamic> data) async {
+    try {
+      await put('/api/Course/$id', data);
+    } catch (e) {
+      _logger.e('updateCourse Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteCourse(int id) async {
+    try {
+      await delete('/api/Course/$id');
+    } catch (e) {
+      _logger.e('deleteCourse Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Classroom>> getClassrooms() async {
+    try {
+      final response = await get('/api/classrooms');
+      if (response is List) {
+        return response
+            .map((c) => Classroom.fromJson(c as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getClassrooms Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Classroom> getClassroom(int id) async {
+    try {
+      final response = await get('/api/classrooms/$id');
+      return Classroom.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getClassroom Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Classroom> createClassroom(Map<String, dynamic> data) async {
+    try {
+      final response = await post('/api/classrooms', data);
+      return Classroom.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('createClassroom Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateClassroom(int id, Map<String, dynamic> data) async {
+    try {
+      await patch('/api/classrooms/$id', data);
+    } catch (e) {
+      _logger.e('updateClassroom Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteClassroom(int id) async {
+    try {
+      await delete('/api/classrooms/$id');
+    } catch (e) {
+      _logger.e('deleteClassroom Error: $e');
       rethrow;
     }
   }
@@ -325,6 +433,136 @@ class ApiService {
     }
   }
 
+  Future<HealthStatusResponse> getHealth() async {
+    try {
+      final response = await get('/api/health');
+      return HealthStatusResponse.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getHealth Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<HealthStatusResponse> getHealthReady() async {
+    try {
+      final response = await get('/api/health/ready');
+      return HealthStatusResponse.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getHealthReady Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<HealthStatusResponse> getHealthLive() async {
+    try {
+      final response = await get('/api/health/live');
+      return HealthStatusResponse.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getHealthLive Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<HealthStatusResponse> getHealthDataIntegrity() async {
+    try {
+      final response = await get('/api/health/data-integrity');
+      return HealthStatusResponse.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getHealthDataIntegrity Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Schedule>> getSchedules() async {
+    try {
+      final response = await get('/api/schedules');
+      if (response is List) {
+        return response.map((s) => Schedule.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getSchedules Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Schedule>> getMySchedules() async {
+    try {
+      final response = await get('/api/schedules/my-schedules');
+      if (response is List) {
+        return response.map((s) => Schedule.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getMySchedules Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Schedule> getSchedule(int id) async {
+    try {
+      final response = await get('/api/schedules/$id');
+      return Schedule.fromJson(response);
+    } catch (e) {
+      _logger.e('getSchedule Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Schedule>> getSchedulesBySection(int sectionId) async {
+    try {
+      final response = await get('/api/schedules/by-section/$sectionId');
+      if (response is List) {
+        return response.map((s) => Schedule.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getSchedulesBySection Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Schedule>> getSchedulesByInstructorAll(int instructorId) async {
+    try {
+      final response = await get('/api/schedules/$instructorId/all');
+      if (response is List) {
+        return response.map((s) => Schedule.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getSchedulesByInstructorAll Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Schedule> createSchedule(Map<String, dynamic> data) async {
+    try {
+      final response = await post('/api/schedules', data);
+      return Schedule.fromJson(response);
+    } catch (e) {
+      _logger.e('createSchedule Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateSchedule(int id, Map<String, dynamic> data) async {
+    try {
+      await patch('/api/schedules/$id', data);
+    } catch (e) {
+      _logger.e('updateSchedule Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteSchedule(int id) async {
+    try {
+      await delete('/api/schedules/$id');
+    } catch (e) {
+      _logger.e('deleteSchedule Error: $e');
+      rethrow;
+    }
+  }
+
   Future<Map<String, String>> _getHeaders() async {
     final token = StorageService.getString('accessToken');
     return {
@@ -427,6 +665,8 @@ class ApiService {
 
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      final body = response.body.trim();
+      if (body.isEmpty) return null;
       return jsonDecode(response.body);
     } else {
       throw Exception('API Error: ${response.statusCode} - ${response.body}');

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../config/routes/app_routes.dart';
 import '../../services/api_service.dart';
 import '../../models/app_user.dart';
 
@@ -100,44 +101,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         parent: AlwaysScrollableScrollPhysics()),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 12),
-                    children: [
-                      const Text(
-                        'Overview',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildStatsGrid(),
-                      const SizedBox(height: 32),
-                      const Text(
-                        'Attendance Overview',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildAttendanceOverview(),
-                      const SizedBox(height: 32),
-                      const Text(
-                        'Recent User Trace',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildRecentUsersList(),
-                      const SizedBox(height: 32),
-                    ],
+                    children: _buildDashboardMainSections(),
                   ),
                 ),
               ],
@@ -176,9 +140,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
+          IconButton(
+            tooltip: 'Notifications',
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.notifications);
+            },
+            icon: Icon(
+              Icons.notifications_active_outlined,
+              color: Colors.white.withValues(alpha: 0.55),
+              size: 26,
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildDashboardMainSections() {
+    return [
+      const Text(
+        'Overview',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          letterSpacing: 0.5,
+        ),
+      ),
+      const SizedBox(height: 16),
+      _buildStatsGrid(),
+      const SizedBox(height: 32),
+      const Text(
+        'Attendance Overview',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          letterSpacing: 0.5,
+        ),
+      ),
+      const SizedBox(height: 16),
+      _buildAttendanceOverview(),
+      const SizedBox(height: 32),
+      const Text(
+        'Recent User Trace',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          letterSpacing: 0.5,
+        ),
+      ),
+      const SizedBox(height: 16),
+      _buildRecentUsersList(),
+      const SizedBox(height: 32),
+    ];
   }
 
   Widget _buildStatsGrid() {

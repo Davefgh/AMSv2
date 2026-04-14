@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../config/routes/app_routes.dart';
 import '../../providers/app_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -35,12 +36,10 @@ class SettingsScreen extends StatelessWidget {
           const Divider(),
           ListTile(
             title: const Text('Notifications'),
-            subtitle: const Text('Manage notification settings'),
+            subtitle: const Text('Attendance and check-in alerts'),
             trailing: const Icon(Icons.arrow_forward),
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications settings')),
-              );
+              Navigator.pushNamed(context, AppRoutes.notifications);
             },
           ),
           const Divider(),

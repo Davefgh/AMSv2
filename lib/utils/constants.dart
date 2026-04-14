@@ -1,7 +1,7 @@
 class AppConstants {
   // API
   static const String apiBaseUrl =
-      'https://email-conversation-enrollment-laboratories.trycloudflare.com';
+      'https://athletic-restructuring-arthur-revolution.trycloudflare.com';
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Storage Keys

@@ -38,6 +38,13 @@ class _UsersScreenState extends State<UsersScreen> {
     }
   }
 
+  Future<void> _refreshUsers() async {
+    try {
+      final users = await _apiService.getUsers();
+      if (mounted) setState(() => _users = users);
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,15 +102,22 @@ class _UsersScreenState extends State<UsersScreen> {
               children: [
                 _buildHeader(),
                 Expanded(
-                  child: ListView(
-                    physics: const BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics()),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
-                    children: [
-                      _buildSectionTitle('User Growth'),
-                      const SizedBox(height: 16),
-                      _buildUserGrowthChart(),
+                  child: RefreshIndicator(
+                    color: const Color(0xFF38BDF8),
+                    onRefresh: () async {
+                      await _refreshUsers();
+                    },
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics()),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      children: [
+                        _buildSectionTitle('User Growth'),
+                        const SizedBox(height: 16),
+                        _buildUserGrowthChart(),
                       const SizedBox(height: 32),
                       _buildSectionTitle(
                         'Role Distribution',
@@ -117,6 +131,7 @@ class _UsersScreenState extends State<UsersScreen> {
                       _buildRecentUsersList(),
                       const SizedBox(height: 24),
                     ],
+                    ),
                   ),
                 ),
               ],
@@ -161,6 +176,8 @@ class _UsersScreenState extends State<UsersScreen> {
                 Navigator.pushNamed(context, '/profile');
               } else if (value == 'edit_profile') {
                 Navigator.pushNamed(context, '/edit-profile');
+              } else if (value == 'health') {
+                Navigator.pushNamed(context, '/health');
               } else if (value == 'logout') {
                 // Future logout implementation
                 Navigator.pushReplacementNamed(context, '/');
@@ -182,8 +199,8 @@ class _UsersScreenState extends State<UsersScreen> {
                     Text('Edit Profile', style: TextStyle(color: Colors.white)),
               ),
               const PopupMenuItem(
-                value: 'settings',
-                child: Text('Settings', style: TextStyle(color: Colors.white)),
+                value: 'health',
+                child: Text('Health', style: TextStyle(color: Colors.white)),
               ),
               const PopupMenuDivider(height: 1),
               const PopupMenuItem(
