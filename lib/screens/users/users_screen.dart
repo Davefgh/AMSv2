@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../widgets/register_user_modal.dart';
 import '../../services/api_service.dart';
 import '../../models/app_user.dart';
-import '../../models/health_status.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -16,15 +15,11 @@ class _UsersScreenState extends State<UsersScreen> {
   final ApiService _apiService = ApiService();
   List<AppUser> _users = [];
   bool _isLoading = true;
-  HealthStatusResponse? _health;
-  bool _healthLoading = true;
-  String? _healthError;
 
   @override
   void initState() {
     super.initState();
     _fetchUsers();
-    _fetchHealth();
   }
 
   Future<void> _fetchUsers() async {
@@ -48,30 +43,6 @@ class _UsersScreenState extends State<UsersScreen> {
       final users = await _apiService.getUsers();
       if (mounted) setState(() => _users = users);
     } catch (_) {}
-  }
-
-  Future<void> _fetchHealth() async {
-    setState(() {
-      _healthLoading = true;
-      _healthError = null;
-    });
-    try {
-      final h = await _apiService.getHealth();
-      if (mounted) {
-        setState(() {
-          _health = h;
-          _healthLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _health = null;
-          _healthLoading = false;
-          _healthError = e.toString();
-        });
-      }
-    }
   }
 
   @override
@@ -134,10 +105,7 @@ class _UsersScreenState extends State<UsersScreen> {
                   child: RefreshIndicator(
                     color: const Color(0xFF38BDF8),
                     onRefresh: () async {
-                      await Future.wait([
-                        _refreshUsers(),
-                        _fetchHealth(),
-                      ]);
+                      await _refreshUsers();
                     },
                     child: ListView(
                       physics: const AlwaysScrollableScrollPhysics(
@@ -147,8 +115,6 @@ class _UsersScreenState extends State<UsersScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 24, vertical: 12),
                       children: [
-                        _buildHealthStatusSection(),
-                        const SizedBox(height: 24),
                         _buildSectionTitle('User Growth'),
                         const SizedBox(height: 16),
                         _buildUserGrowthChart(),
@@ -210,6 +176,8 @@ class _UsersScreenState extends State<UsersScreen> {
                 Navigator.pushNamed(context, '/profile');
               } else if (value == 'edit_profile') {
                 Navigator.pushNamed(context, '/edit-profile');
+              } else if (value == 'health') {
+                Navigator.pushNamed(context, '/health');
               } else if (value == 'logout') {
                 // Future logout implementation
                 Navigator.pushReplacementNamed(context, '/');
@@ -231,8 +199,8 @@ class _UsersScreenState extends State<UsersScreen> {
                     Text('Edit Profile', style: TextStyle(color: Colors.white)),
               ),
               const PopupMenuItem(
-                value: 'settings',
-                child: Text('Settings', style: TextStyle(color: Colors.white)),
+                value: 'health',
+                child: Text('Health', style: TextStyle(color: Colors.white)),
               ),
               const PopupMenuDivider(height: 1),
               const PopupMenuItem(
@@ -249,216 +217,6 @@ class _UsersScreenState extends State<UsersScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildHealthStatusSection() {
-    if (_healthLoading && _health == null) {
-      return _GlassCard(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: Color(0xFF38BDF8),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              'Checking API health…',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.85),
-                fontSize: 15,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_healthError != null) {
-      return _GlassCard(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.cloud_off_rounded,
-                    color: Color(0xFFFBBF24), size: 22),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Service health unavailable',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: _fetchHealth,
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _healthError!,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.45),
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final h = _health!;
-    final ok = h.overallHealthy;
-    final chipColor =
-        ok ? const Color(0xFF34D399) : const Color(0xFFF87171);
-
-    return _GlassCard(
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: chipColor.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: chipColor.withValues(alpha: 0.35)),
-                ),
-                child: Icon(
-                  Icons.health_and_safety_outlined,
-                  color: chipColor,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      h.service ?? 'Attendance Monitoring API',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    if (h.timestamp != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        h.timestamp!,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.45),
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: chipColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: chipColor.withValues(alpha: 0.4)),
-                ),
-                child: Text(
-                  h.status.toUpperCase(),
-                  style: TextStyle(
-                    color: chipColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (h.database != null) ...[
-            const SizedBox(height: 14),
-            _healthRow(
-              Icons.storage_rounded,
-              'Database',
-              h.database!.connected
-                  ? 'Connected · ${h.database!.status}'
-                  : 'Not connected',
-              h.database!.connected
-                  ? const Color(0xFF34D399)
-                  : const Color(0xFFF87171),
-            ),
-          ],
-          if (h.dataIntegrity != null) ...[
-            const SizedBox(height: 10),
-            _healthRow(
-              Icons.fact_check_outlined,
-              'Data integrity',
-              '${h.dataIntegrity!.status} · orphaned users: ${h.dataIntegrity!.orphanedUserCount}',
-              h.dataIntegrity!.isHealthy
-                  ? const Color(0xFF34D399)
-                  : const Color(0xFFFBBF24),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 36, top: 6),
-              child: Text(
-                'Soft-delete issues: students ${h.dataIntegrity!.softDeleteInconsistencies.students}, '
-                'instructors ${h.dataIntegrity!.softDeleteInconsistencies.instructors}, '
-                'admins ${h.dataIntegrity!.softDeleteInconsistencies.admins}',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _healthRow(
-      IconData icon, String label, String value, Color accent) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 18, color: accent.withValues(alpha: 0.9)),
-        const SizedBox(width: 8),
-        Expanded(
-          child: RichText(
-            text: TextSpan(
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.75),
-                fontSize: 13,
-                height: 1.35,
-              ),
-              children: [
-                TextSpan(
-                  text: '$label · ',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                TextSpan(text: value),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 
