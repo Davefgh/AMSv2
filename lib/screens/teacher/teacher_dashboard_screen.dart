@@ -63,10 +63,16 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   }
 
   // --- Derived stats ---
-  int get _totalSections =>
-      _schedules.map((s) => s.sectionId).whereType<int>().toSet().length;
-  int get _totalSubjects =>
-      _schedules.map((s) => s.subjectId).whereType<int>().toSet().length;
+  int get _totalSections => _schedules
+      .map((s) => (s.section?['id'] as num?)?.toInt() ?? s.sectionId)
+      .whereType<int>()
+      .toSet()
+      .length;
+  int get _totalSubjects => _schedules
+      .map((s) => (s.subject?['id'] as num?)?.toInt() ?? s.subjectId)
+      .whereType<int>()
+      .toSet()
+      .length;
   int get _totalClasses => _schedules.length;
 
   String get _todayDayName {
