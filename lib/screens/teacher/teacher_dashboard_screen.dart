@@ -216,15 +216,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               ),
             ],
           ),
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed: _loadData,
-            icon: Icon(
-              Icons.refresh_rounded,
-              color: Colors.white.withValues(alpha: 0.65),
-              size: 26,
-            ),
-          ),
         ],
       ),
     );
