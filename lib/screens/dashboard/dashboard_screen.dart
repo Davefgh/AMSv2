@@ -182,18 +182,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const SizedBox(height: 16),
       _buildAttendanceOverview(),
       const SizedBox(height: 32),
-      const Text(
-        'Recent User Trace',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          letterSpacing: 0.5,
-        ),
-      ),
-      const SizedBox(height: 16),
-      _buildRecentUsersList(),
-      const SizedBox(height: 32),
     ];
   }
 
@@ -250,73 +238,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildRecentUsersList() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)));
-    }
-
-    if (_users.isEmpty) {
-      return _GlassCard(
-        child: Center(
-          child: Text(
-            'No users found',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-          ),
-        ),
-      );
-    }
-
-    // Show top 5 recent users
-    final recentUsers = _users.take(5).toList();
-
-    return _GlassCard(
-      padding: EdgeInsets.zero,
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: recentUsers.length,
-        separatorBuilder: (context, index) => Divider(
-          color: Colors.white.withValues(alpha: 0.05),
-          height: 1,
-        ),
-        itemBuilder: (context, index) {
-          final user = recentUsers[index];
-          final color = _getRoleColor(user.role);
-          
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            leading: Container(
-              height: 44,
-              width: 44,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color.withValues(alpha: 0.3)),
-              ),
-              child: Icon(_getRoleIcon(user.role), color: color, size: 24),
-            ),
-            title: Text(
-              user.fullName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-            subtitle: Text(
-              user.role,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 13,
-              ),
-            ),
-            trailing: Icon(Icons.arrow_forward_ios_rounded, 
-                color: Colors.white.withValues(alpha: 0.2), size: 14),
-          );
-        },
-      ),
-    );
-  }
 
   Color _getRoleColor(String role) {
     switch (role.toLowerCase()) {

@@ -18,6 +18,9 @@ class _UsersScreenState extends State<UsersScreen> {
   List<AppUser> _users = [];
   bool _isLoading = true;
   bool _adminDataBusy = false;
+  
+  int _selectedLimit = 5;
+  String _selectedRole = 'All';
 
   static const List<String> _adminDataEntities = [
     'users',
@@ -140,7 +143,7 @@ class _UsersScreenState extends State<UsersScreen> {
                       const SizedBox(height: 16),
                       _buildRoleCards(),
                       const SizedBox(height: 32),
-                      _buildSectionTitle('Recently Added'),
+                      _buildSectionTitle('Recently Added', trailing: _buildFilters()),
                       const SizedBox(height: 16),
                       _buildRecentUsersList(),
                       const SizedBox(height: 24),
@@ -1005,16 +1008,102 @@ class _UsersScreenState extends State<UsersScreen> {
     );
   }
 
+  Widget _buildFilters() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          height: 32,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedRole,
+              dropdownColor: const Color(0xFF1E293B),
+              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 16),
+              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+              isDense: true,
+              items: ['All', 'Student', 'Instructor', 'Admin'].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    _selectedRole = newValue;
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          height: 32,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<int>(
+              value: _selectedLimit,
+              dropdownColor: const Color(0xFF1E293B),
+              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 16),
+              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+              isDense: true,
+              items: [5, 10, 15].map((int value) {
+                return DropdownMenuItem<int>(
+                  value: value,
+                  child: Text('$value'),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    _selectedLimit = newValue;
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildRecentUsersList() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)));
     }
 
-    if (_users.isEmpty) {
+    List<AppUser> filteredUsers = _users;
+    if (_selectedRole != 'All') {
+      filteredUsers = filteredUsers.where((u) {
+        final r = u.role.toLowerCase();
+        if (_selectedRole == 'Admin') {
+          return r == 'admin' || r == 'administrator';
+        } else if (_selectedRole == 'Instructor') {
+          return r == 'instructor' || r == 'teacher';
+        }
+        return r == _selectedRole.toLowerCase();
+      }).toList();
+    }
+    
+    filteredUsers = filteredUsers.take(_selectedLimit).toList();
+
+    if (filteredUsers.isEmpty) {
       return _GlassCard(
         child: Center(
           child: Text(
-            'No users found',
+            'No matching users found',
             style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
           ),
         ),
@@ -1026,13 +1115,13 @@ class _UsersScreenState extends State<UsersScreen> {
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: _users.length,
+        itemCount: filteredUsers.length,
         separatorBuilder: (context, index) => Divider(
           color: Colors.white.withValues(alpha: 0.1),
           height: 1,
         ),
         itemBuilder: (context, index) {
-          final user = _users[index];
+          final user = filteredUsers[index];
           final color = _getRoleColor(user.role);
 
           return ListTile(
