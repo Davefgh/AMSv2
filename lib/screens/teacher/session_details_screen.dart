@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../models/classroom_model.dart';
 import '../../services/api_service.dart';
 import '../../models/session_model.dart';
 import '../../models/schedule_model.dart';
@@ -19,6 +20,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   final ApiService _apiService = ApiService();
   ClassSession? _session;
   Schedule? _schedule;
+  List<Classroom> _classrooms = [];
+  String _selectedCategory = 'All';
+  String? _tempSelectedRoom;
   bool _isLoading = false;
   bool _isInitialLoading = true;
 
@@ -32,17 +36,22 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
 
   Future<void> _loadAllData() async {
     try {
+      // Fetch classrooms
+      final classrooms = await _apiService.getClassrooms();
+
       if (_session != null && _schedule == null) {
         final schedule = await _apiService.getSchedule(_session!.scheduleId);
         if (mounted) {
           setState(() {
             _schedule = schedule;
+            _classrooms = classrooms;
             _isInitialLoading = false;
           });
         }
       } else {
         if (mounted) {
           setState(() {
+            _classrooms = classrooms;
             _isInitialLoading = false;
           });
         }
@@ -154,92 +163,197 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     }
   }
 
+  List<Classroom> get _filteredClassrooms {
+    if (_selectedCategory == 'All') return _classrooms;
+    if (_selectedCategory == 'Labs') {
+      return _classrooms.where((c) => 
+        c.name.toLowerCase().contains('lab') || 
+        c.name.toLowerCase().contains('laboratory')
+      ).toList();
+    }
+    if (_selectedCategory == 'Rooms') {
+      return _classrooms.where((c) => 
+        c.name.toLowerCase().contains('room') || 
+        RegExp(r'\d+').hasMatch(c.name)
+      ).where((c) => 
+        !c.name.toLowerCase().contains('lab')
+      ).toList();
+    }
+    return _classrooms;
+  }
+
   void _showStartModal() {
-    String? selectedRoom = _session?.scheduledRoomName ?? _schedule?.classroomName;
+    _tempSelectedRoom = _session?.scheduledRoomName ?? _schedule?.classroomName;
     final TextEditingController cutoffController = TextEditingController(text: _session?.cutoff);
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => _GlassModal(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            const Text(
-              'Session Configuration',
-              style: TextStyle(
-                fontSize: 24, 
-                fontWeight: FontWeight.w900, 
-                color: Colors.white,
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Confirm your classroom and set attendance rules before you begin.',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.4), 
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 32),
-            _buildModalLabel('Actual Classroom'),
-            const SizedBox(height: 12),
-            _buildModalDropdown(
-              value: selectedRoom,
-              items: [selectedRoom ?? 'Room', 'Short Course Laboratory', 'Software Laboratory 1', 'Software Laboratory 2'],
-              onChanged: (val) => selectedRoom = val,
-            ),
-            const SizedBox(height: 24),
-            _buildModalLabel('Attendance Cutoff'),
-            const SizedBox(height: 12),
-            _buildModalTextField(
-              controller: cutoffController,
-              hint: 'e.g., 15 minutes',
-              icon: Icons.timer_outlined,
-            ),
-            const SizedBox(height: 48),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModalButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _handleStartSession(null, null);
-                    },
-                    label: 'Skip',
-                    isOutlined: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => _GlassModal(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModalButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _handleStartSession(selectedRoom, cutoffController.text);
-                    },
-                    label: 'Start Now',
-                    color: const Color(0xFF38BDF8),
-                  ),
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                'Session Configuration',
+                style: TextStyle(
+                  fontSize: 24, 
+                  fontWeight: FontWeight.w900, 
+                  color: Colors.white,
+                  letterSpacing: -0.5,
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Select your classroom category and location.',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4), 
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Category Chips
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: ['All', 'Labs', 'Rooms'].map((cat) {
+                    final isSelected = _selectedCategory == cat;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: GestureDetector(
+                        onTap: () {
+                          setModalState(() => _selectedCategory = cat);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFF38BDF8) : Colors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: isSelected ? Colors.transparent : Colors.white10),
+                          ),
+                          child: Text(
+                            cat,
+                            style: TextStyle(
+                              color: isSelected ? const Color(0xFF0F172A) : Colors.white70,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Rooms Grid
+              Container(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.3),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 2.2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: _filteredClassrooms.length,
+                  itemBuilder: (context, index) {
+                    final room = _filteredClassrooms[index];
+                    final isSelected = _tempSelectedRoom == room.name;
+                    return GestureDetector(
+                      onTap: () {
+                        setModalState(() => _tempSelectedRoom = room.name);
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFF38BDF8).withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.03),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected ? const Color(0xFF38BDF8) : Colors.white.withValues(alpha: 0.05),
+                            width: isSelected ? 2 : 1,
+                          ),
+                          boxShadow: isSelected ? [
+                            BoxShadow(
+                              color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                              blurRadius: 8,
+                            )
+                          ] : [],
+                        ),
+                        child: Text(
+                          room.name,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isSelected ? const Color(0xFF38BDF8) : Colors.white70,
+                            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              _buildModalLabel('Attendance Cutoff'),
+              const SizedBox(height: 12),
+              _buildModalTextField(
+                controller: cutoffController,
+                hint: 'e.g., 15 minutes',
+                icon: Icons.timer_outlined,
+              ),
+              const SizedBox(height: 48),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildModalButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _handleStartSession(null, null);
+                      },
+                      label: 'Skip',
+                      isOutlined: true,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildModalButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _handleStartSession(_tempSelectedRoom, cutoffController.text);
+                      },
+                      label: 'Start Session',
+                      color: const Color(0xFF38BDF8),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
@@ -808,33 +922,6 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     );
   }
 
-  Widget _buildModalDropdown({required String? value, required List<String> items, required Function(String?) onChanged}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          isExpanded: true,
-          dropdownColor: const Color(0xFF1E293B),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white38),
-          elevation: 16,
-          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
-          items: items.map((String val) {
-            return DropdownMenuItem<String>(
-              value: val,
-              child: Text(val),
-            );
-          }).toList(),
-          onChanged: onChanged,
-        ),
-      ),
-    );
-  }
 
   Widget _buildModalTextField({
     required TextEditingController controller, 
