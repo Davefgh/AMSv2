@@ -77,7 +77,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     
     setState(() => _isLoading = true);
     try {
-      // If session doesn't exist yet, create it now
+      // 1. If session doesn't exist yet, create it now
       if (_session == null) {
         final date = _getValidSessionDate(_schedule!);
         final newSession = await _apiService.createSession({
@@ -88,9 +88,14 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
         });
         
         setState(() => _session = newSession);
+      } else {
+        // 2. If it already exists, update the room if changed
+        if (room != null && room.isNotEmpty && room != _session!.actualRoom) {
+          await _apiService.updateSessionRoom(_session!.id, room);
+        }
       }
 
-      // Proceed to start the session (PATCH status)
+      // 3. Proceed to start the session (PATCH status)
       await _apiService.startSession(_session!.id);
       
       final updatedSession = await _apiService.getSessionById(_session!.id);
@@ -151,7 +156,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
 
   void _showStartModal() {
     String? selectedRoom = _session?.scheduledRoomName ?? _schedule?.classroomName;
-    final TextEditingController cutoffController = TextEditingController();
+    final TextEditingController cutoffController = TextEditingController(text: _session?.cutoff);
 
     showModalBottomSheet(
       context: context,
@@ -160,76 +165,118 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       builder: (context) => _GlassModal(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
+            Center(
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             const Text(
-              'Start Session',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+              'Session Configuration',
+              style: TextStyle(
+                fontSize: 24, 
+                fontWeight: FontWeight.w900, 
+                color: Colors.white,
+                letterSpacing: -0.5,
+              ),
             ),
-            const Text(
-              'Confirm session details before starting.',
-              style: TextStyle(color: Colors.white54, fontSize: 13),
+            const SizedBox(height: 8),
+            Text(
+              'Confirm your classroom and set attendance rules before you begin.',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.4), 
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(height: 32),
-            _buildModalLabel('Actual Room (Optional)'),
-            const SizedBox(height: 8),
+            _buildModalLabel('Actual Classroom'),
+            const SizedBox(height: 12),
             _buildModalDropdown(
               value: selectedRoom,
-              items: [selectedRoom ?? 'Room', 'Short Course Laboratory', 'Room 302'],
+              items: [selectedRoom ?? 'Room', 'Short Course Laboratory', 'Software Laboratory 1', 'Software Laboratory 2'],
               onChanged: (val) => selectedRoom = val,
             ),
             const SizedBox(height: 24),
-            _buildModalLabel('Attendance Cutoff (Optional)'),
-            const SizedBox(height: 8),
+            _buildModalLabel('Attendance Cutoff'),
+            const SizedBox(height: 12),
             _buildModalTextField(
               controller: cutoffController,
               hint: 'e.g., 15 minutes',
+              icon: Icons.timer_outlined,
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 48),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
+                  child: _buildModalButton(
                     onPressed: () {
                       Navigator.pop(context);
                       _handleStartSession(null, null);
                     },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.white10),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    child: const Text('Skip & Start', style: TextStyle(color: Colors.white)),
+                    label: 'Skip',
+                    isOutlined: true,
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: ElevatedButton(
+                  child: _buildModalButton(
                     onPressed: () {
                       Navigator.pop(context);
                       _handleStartSession(selectedRoom, cutoffController.text);
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF38BDF8),
-                      foregroundColor: const Color(0xFF0F172A),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    child: const Text('Confirm & Start', style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: 'Start Now',
+                    color: const Color(0xFF38BDF8),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModalButton({
+    required VoidCallback onPressed,
+    required String label,
+    Color color = Colors.white10,
+    bool isOutlined = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: isOutlined ? [] : [
+          BoxShadow(
+            color: color.withValues(alpha: 0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isOutlined ? Colors.transparent : color,
+          foregroundColor: isOutlined ? Colors.white : const Color(0xFF0F172A),
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: isOutlined ? BorderSide(color: Colors.white.withValues(alpha: 0.1)) : BorderSide.none,
+          ),
+          elevation: 0,
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 0.5),
         ),
       ),
     );
@@ -750,21 +797,23 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   }
 
   Widget _buildModalLabel(String text) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+    return Text(
+      text,
+      style: TextStyle(
+        color: Colors.white.withValues(alpha: 0.5), 
+        fontWeight: FontWeight.bold, 
+        fontSize: 12,
+        letterSpacing: 0.5,
       ),
     );
   }
 
   Widget _buildModalDropdown({required String? value, required List<String> items, required Function(String?) onChanged}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: DropdownButtonHideUnderline(
@@ -772,11 +821,13 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           value: value,
           isExpanded: true,
           dropdownColor: const Color(0xFF1E293B),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white38),
+          elevation: 16,
+          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
           items: items.map((String val) {
             return DropdownMenuItem<String>(
               value: val,
-              child: Text(val, style: const TextStyle(color: Colors.white, fontSize: 14)),
+              child: Text(val),
             );
           }).toList(),
           onChanged: onChanged,
@@ -785,21 +836,26 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     );
   }
 
-  Widget _buildModalTextField({required TextEditingController controller, required String hint}) {
+  Widget _buildModalTextField({
+    required TextEditingController controller, 
+    required String hint,
+    IconData? icon,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: TextField(
         controller: controller,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.white24),
+          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.2), fontSize: 15),
           border: InputBorder.none,
+          suffixIcon: icon != null ? Icon(icon, color: Colors.white24, size: 20) : null,
         ),
       ),
     );
