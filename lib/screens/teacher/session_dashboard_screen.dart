@@ -21,9 +21,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
   List<Schedule> _instructorSchedules = [];
   List<ClassSession> _upcomingSessions = [];
+  List<ClassSession> _filteredSessions = [];
   Schedule? _selectedSchedule;
-  Instructor? _instructor;
   Map<int, Schedule> _scheduleMap = {};
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -37,20 +38,14 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       _errorMessage = null;
     });
     try {
-      final profile = await _apiService.getMe();
-      final instructors = await _apiService.getInstructors();
-      _instructor = instructors.firstWhere((i) => i.userId == profile.userId);
-      
-      final schedules = await _apiService.getSchedulesByInstructorAll(_instructor!.id);
+      // Use the correct API to fetch instructor's schedules directly
+      final schedules = await _apiService.getMySchedules();
       final mySessions = await _apiService.getMySessions();
 
-      // Get today's weekday (1=Mon, 7=Sun)
-      final int today = DateTime.now().weekday;
-
       setState(() {
-        // Filter schedules to only show those for the current day to avoid API 400 errors
-        _instructorSchedules = schedules.where((s) => s.dayOfWeek == today).toList();
+        _instructorSchedules = schedules;
         _upcomingSessions = mySessions;
+        _filteredSessions = mySessions;
         
         // Map schedules for easy lookup in the list
         _scheduleMap = {for (var s in schedules) s.id: s};
@@ -66,6 +61,25 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  void _filterSessions(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredSessions = _upcomingSessions;
+      } else {
+        _filteredSessions = _upcomingSessions.where((s) {
+          final title = (s.subjectName.isNotEmpty ? s.subjectName : 'Software Engineering 1').toLowerCase();
+          return title.contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _handleCreateSession() async {
@@ -103,27 +117,53 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildCreateSessionCard(),
           const SizedBox(height: 32),
-          Text(
-            'Upcoming Schedules',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Upcoming Schedules',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${_filteredSessions.length}',
+                  style: const TextStyle(
+                    color: Color(0xFF38BDF8),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           _buildSearchBar(),
-          const SizedBox(height: 16),
-          if (_upcomingSessions.isEmpty)
+          const SizedBox(height: 24),
+          if (_filteredSessions.isEmpty)
             _buildEmptyState()
           else
-            ..._upcomingSessions.map((s) => _buildUpcomingSessionCard(s)),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _filteredSessions.length,
+              itemBuilder: (context, index) => _buildUpcomingSessionCard(_filteredSessions[index]),
+            ),
+          const SizedBox(height: 100), // Extra space for a floating-like bottom 
         ],
       ),
     );
@@ -134,44 +174,109 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
               shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.2)),
             ),
-            child: const Icon(Icons.school_rounded, color: Color(0xFF38BDF8), size: 32),
+            child: const Icon(Icons.school_rounded, color: Color(0xFF38BDF8), size: 40),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           const Text(
             'Create Session',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Colors.white,
+              letterSpacing: -0.5,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           const Text(
             'Select a schedule to begin.',
-            style: TextStyle(color: Colors.white54, fontSize: 13),
+            style: TextStyle(color: Colors.white38, fontSize: 13),
           ),
-          const SizedBox(height: 24),
-          _buildScheduleDropdown(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
+          
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Assigned Schedule',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 10),
+              _buildScheduleDropdown(),
+            ],
+          ),
+          
+          const SizedBox(height: 16),
+          _buildCalendarLink(),
+          const SizedBox(height: 32),
+          
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _handleCreateSession,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: const Color(0xFF0F172A),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-              child: const Text('Create Session', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: ElevatedButton(
+                onPressed: _handleCreateSession,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF38BDF8),
+                  foregroundColor: const Color(0xFF0F172A),
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Create Session',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCalendarLink() {
+    return InkWell(
+      onTap: () {
+        // Implement calendar view
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.calendar_month_rounded, size: 16, color: Colors.white.withValues(alpha: 0.5)),
+            const SizedBox(width: 8),
+            Text(
+              'View Full Calendar',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 13,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -180,22 +285,31 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<Schedule>(
           value: _selectedSchedule,
           isExpanded: true,
           dropdownColor: const Color(0xFF1E293B),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white30),
           items: _instructorSchedules.map((Schedule s) {
             return DropdownMenuItem<Schedule>(
               value: s,
-              child: Text(
-                '${s.subjectName} (${s.sectionName})',
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${s.subjectName} (${s.sectionName})',
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (_selectedSchedule?.id == s.id)
+                    const Icon(Icons.check_circle_rounded, color: Color(0xFF38BDF8), size: 16),
+                ],
               ),
             );
           }).toList(),
@@ -211,13 +325,15 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
-      child: const TextField(
-        style: TextStyle(color: Colors.white),
-        decoration: InputDecoration(
+      child: TextField(
+        controller: _searchController,
+        onChanged: _filterSessions,
+        style: const TextStyle(color: Colors.white, fontSize: 14),
+        decoration: const InputDecoration(
           hintText: 'Search sessions...',
           hintStyle: TextStyle(color: Colors.white24, fontSize: 14),
           border: InputBorder.none,
@@ -228,10 +344,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   }
 
   Widget _buildUpcomingSessionCard(ClassSession s) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       child: _GlassCard(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         onTap: () {
           Navigator.push(
             context,
@@ -246,12 +362,23 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                 children: [
                   Text(
                     s.subjectName.isNotEmpty ? s.subjectName : 'Software Engineering 1',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 16,
+                      letterSpacing: -0.3,
+                    ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _sessionDateLabel(s.sessionDate),
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.access_time_filled_rounded, size: 12, color: Colors.white.withValues(alpha: 0.3)),
+                      const SizedBox(width: 4),
+                      Text(
+                        _sessionDateLabel(s.sessionDate),
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -261,11 +388,20 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
               children: [
                 Text(
                   _formatTime(_scheduleMap[s.scheduleId]?.timeIn ?? '10:00:00'),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   _getDurationText(_scheduleMap[s.scheduleId]),
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
+                  style: TextStyle(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
