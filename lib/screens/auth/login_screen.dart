@@ -57,7 +57,11 @@ class _LoginScreenState extends State<LoginScreen> {
           final role = response['role']?.toString().toLowerCase() ?? 'user';
           context.read<AppProvider>().setUserRole(role);
 
-          Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+          if (role == 'instructor' || role == 'teacher') {
+            Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);
+          } else {
+            Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+          }
         }
       } else {
         setState(() {

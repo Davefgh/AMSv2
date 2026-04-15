@@ -10,6 +10,7 @@ import '../../screens/students/students_screen.dart';
 import '../../screens/instructors/instructors_screen.dart';
 import '../../screens/settings/notifications_screen.dart';
 import '../../screens/health/health_screen.dart';
+import '../../screens/teacher/teacher_dashboard_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -24,6 +25,7 @@ class AppRoutes {
   static const String users = '/users';
   static const String notifications = '/notifications';
   static const String health = '/health';
+  static const String teacherDashboard = '/teacher-dashboard';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -38,6 +40,7 @@ class AppRoutes {
       users: (context) => const UsersScreen(),
       notifications: (context) => const NotificationsScreen(),
       health: (context) => const HealthScreen(),
+      teacherDashboard: (context) => const TeacherDashboardScreen(),
     };
   }
 }
