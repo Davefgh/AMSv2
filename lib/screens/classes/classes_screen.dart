@@ -6,6 +6,7 @@ import '../../models/section_model.dart';
 import '../../models/schedule_model.dart';
 import '../../models/course_model.dart';
 import '../../models/classroom_model.dart';
+import '../../models/instructor_model.dart';
 
 class ClassesScreen extends StatefulWidget {
   const ClassesScreen({super.key});
@@ -28,6 +29,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
   bool _isLoadingSections = false;
   List<Schedule> _schedulesList = [];
   bool _isLoadingSchedules = false;
+  List<Instructor> _instructorsList = [];
+  bool _isLoadingInstructors = false;
 
   @override
   void initState() {
@@ -37,6 +40,28 @@ class _ClassesScreenState extends State<ClassesScreen> {
     _fetchSchedules();
     _fetchCourses();
     _fetchClassrooms();
+    _fetchInstructors();
+  }
+
+  Future<void> _fetchInstructors() async {
+    setState(() => _isLoadingInstructors = true);
+    try {
+      final instructors = await _apiService.getInstructors();
+      setState(() {
+        _instructorsList = instructors;
+        _isLoadingInstructors = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingInstructors = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error fetching instructors: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _fetchClassrooms() async {
@@ -150,6 +175,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
         text: section?.courseId != null ? '${section!.courseId}' : '');
     final isEditing = section != null;
     bool isSaving = false;
+    Map<String, List<String>> _fieldErrors = {};
 
     showModalBottomSheet(
       context: context,
@@ -200,13 +226,22 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Section Name',
                       hint: 'e.g. CS31A',
                       icon: Icons.layers,
+                      errorText: _fieldErrors['name']?.first ?? _fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 16),
-                    _buildDialogTextField(
-                      controller: courseIdController,
-                      label: 'Course ID',
-                      hint: 'e.g. 1',
+                    _buildDialogDropdownField<int>(
+                      label: 'Course',
+                      hint: 'Select a course',
                       icon: Icons.book_outlined,
+                      value: int.tryParse(courseIdController.text),
+                      items: _coursesList.map((c) => DropdownMenuItem(
+                        value: c.id,
+                        child: Text(c.name, overflow: TextOverflow.ellipsis),
+                      )).toList(),
+                      onChanged: (val) {
+                        if (val != null) courseIdController.text = val.toString();
+                      },
+                      errorText: _fieldErrors['courseId']?.first ?? _fieldErrors['CourseId']?.first,
                     ),
                     const SizedBox(height: 28),
                     SizedBox(
@@ -240,7 +275,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                   );
                                   return;
                                 }
-                                setModalState(() => isSaving = true);
+                                setModalState(() {
+                                  isSaving = true;
+                                  _fieldErrors = {};
+                                });
                                 try {
                                   if (isEditing) {
                                     await _updateSection(
@@ -249,6 +287,11 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                     await _createSection(name, courseId);
                                   }
                                   if (ctx.mounted) Navigator.pop(ctx);
+                                } on ApiException catch (e) {
+                                  setModalState(() {
+                                    isSaving = false;
+                                    _fieldErrors = e.fieldErrors.map((k, v) => MapEntry(k.replaceAll('\$.', ''), v));
+                                  });
                                 } catch (_) {
                                   setModalState(() => isSaving = false);
                                 }
@@ -405,6 +448,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     final codeController = TextEditingController(text: subject?.code ?? '');
     final isEditing = subject != null;
     bool isSaving = false;
+    Map<String, List<String>> _fieldErrors = {};
 
     showModalBottomSheet(
       context: context,
@@ -453,6 +497,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Subject Name',
                       hint: 'e.g. Computing Fundamentals',
                       icon: Icons.subject,
+                      errorText: _fieldErrors['name']?.first ?? _fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 16),
                     _buildDialogTextField(
@@ -460,6 +505,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Subject Code',
                       hint: 'e.g. IT1008',
                       icon: Icons.tag,
+                      errorText: _fieldErrors['code']?.first ?? _fieldErrors['Code']?.first,
                     ),
                     const SizedBox(height: 28),
                     SizedBox(
@@ -480,7 +526,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                   );
                                   return;
                                 }
-                                setModalState(() => isSaving = true);
+                                setModalState(() {
+                                  isSaving = true;
+                                  _fieldErrors = {};
+                                });
                                 try {
                                   if (isEditing) {
                                     await _updateSubject(subject.id, name, code);
@@ -488,6 +537,11 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                     await _createSubject(name, code);
                                   }
                                   if (ctx.mounted) Navigator.pop(ctx);
+                                } on ApiException catch (e) {
+                                  setModalState(() {
+                                    isSaving = false;
+                                    _fieldErrors = e.fieldErrors.map((k, v) => MapEntry(k.replaceAll('\$.', ''), v));
+                                  });
                                 } catch (_) {
                                   setModalState(() => isSaving = false);
                                 }
@@ -532,6 +586,9 @@ class _ClassesScreenState extends State<ClassesScreen> {
     required String label,
     required String hint,
     required IconData icon,
+    String? errorText,
+    bool readOnly = false,
+    VoidCallback? onTap,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -547,10 +604,13 @@ class _ClassesScreenState extends State<ClassesScreen> {
         const SizedBox(height: 8),
         TextField(
           controller: controller,
+          readOnly: readOnly,
+          onTap: onTap,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+            errorText: errorText,
             prefixIcon: Icon(icon, color: const Color(0xFF38BDF8), size: 20),
             filled: true,
             fillColor: Colors.white.withValues(alpha: 0.07),
@@ -569,6 +629,264 @@ class _ClassesScreenState extends State<ClassesScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildDialogDropdownField<T>({
+    required String label,
+    required T? value,
+    required List<DropdownMenuItem<T>> items,
+    required void Function(T?) onChanged,
+    required IconData icon,
+    String hint = 'Select an option',
+    String? errorText,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<T>(
+          value: value,
+          items: items,
+          onChanged: onChanged,
+          dropdownColor: const Color(0xFF1E293B),
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+            errorText: errorText,
+            prefixIcon: Icon(icon, color: const Color(0xFF38BDF8), size: 20),
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.07),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFF38BDF8)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDialogTimePickerField({
+    required BuildContext context,
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    String? errorText,
+  }) {
+    return _buildDialogTextField(
+      controller: controller,
+      label: label,
+      hint: hint,
+      icon: icon,
+      errorText: errorText,
+      readOnly: true,
+      onTap: () => _showScrollableTimePicker(context: context, controller: controller),
+    );
+  }
+
+  Future<void> _showScrollableTimePicker({
+    required BuildContext context,
+    required TextEditingController controller,
+  }) async {
+    // Parse existing value
+    int selectedHour = 6;
+    int selectedMinute = 0;
+    bool isAM = true;
+
+    if (controller.text.isNotEmpty) {
+      try {
+        final parts = controller.text.split(':');
+        final h = int.parse(parts[0]);
+        selectedMinute = int.parse(parts[1]);
+        isAM = h < 12;
+        selectedHour = h == 0 ? 12 : (h > 12 ? h - 12 : h);
+      } catch (_) {}
+    }
+
+    final hourCtrl = FixedExtentScrollController(initialItem: selectedHour - 1);
+    final minCtrl  = FixedExtentScrollController(initialItem: selectedMinute);
+    final amPmCtrl = FixedExtentScrollController(initialItem: isAM ? 0 : 1);
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return StatefulBuilder(builder: (ctx, setS) {
+          Widget _wheel({
+            required FixedExtentScrollController ctrl,
+            required int count,
+            required String Function(int) label,
+            required int selectedIndex,
+            required void Function(int) onChanged,
+            double width = 90,
+          }) {
+            return SizedBox(
+              width: width,
+              child: ListWheelScrollView.useDelegate(
+                controller: ctrl,
+                itemExtent: 70,
+                physics: const FixedExtentScrollPhysics(),
+                perspective: 0.002,
+                diameterRatio: 1.5,
+                onSelectedItemChanged: (i) => setS(() => onChanged(i)),
+                childDelegate: ListWheelChildBuilderDelegate(
+                  childCount: count,
+                  builder: (_, index) {
+                    final isSel = index == selectedIndex;
+                    return Center(
+                      child: Text(
+                        label(index),
+                        style: TextStyle(
+                          color: isSel ? Colors.white : Colors.white.withValues(alpha: 0.25),
+                          fontSize: isSel ? 46 : 30,
+                          fontWeight: isSel ? FontWeight.bold : FontWeight.w300,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            );
+          }
+
+          return Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF080808),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 40),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle
+                Container(
+                  width: 40, height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+
+                SizedBox(
+                  height: 220,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Selection indicator lines
+                      Positioned(
+                        child: Container(
+                          height: 70,
+                          decoration: const BoxDecoration(
+                            border: Border.symmetric(
+                              horizontal: BorderSide(color: Colors.white12, width: 1),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Hours
+                          _wheel(
+                            ctrl: hourCtrl,
+                            count: 12,
+                            label: (i) => '${i + 1}',
+                            selectedIndex: selectedHour - 1,
+                            onChanged: (i) => selectedHour = i + 1,
+                          ),
+
+                          // Colon separator
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 6),
+                            child: Text(
+                              ':',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 46,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+
+                          // Minutes
+                          _wheel(
+                            ctrl: minCtrl,
+                            count: 60,
+                            label: (i) => i.toString().padLeft(2, '0'),
+                            selectedIndex: selectedMinute,
+                            onChanged: (i) => selectedMinute = i,
+                          ),
+
+                          const SizedBox(width: 8),
+
+                          // AM / PM
+                          _wheel(
+                            ctrl: amPmCtrl,
+                            count: 2,
+                            label: (i) => i == 0 ? 'AM' : 'PM',
+                            selectedIndex: isAM ? 0 : 1,
+                            onChanged: (i) => isAM = i == 0,
+                            width: 72,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      int h = selectedHour;
+                      if (!isAM && h != 12) h += 12;
+                      if (isAM && h == 12) h = 0;
+                      controller.text =
+                          '${h.toString().padLeft(2, '0')}:${selectedMinute.toString().padLeft(2, '0')}:00';
+                      Navigator.pop(ctx);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF38BDF8),
+                      foregroundColor: const Color(0xFF0F172A),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: const Text(
+                      'Set Time',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+      },
     );
   }
 
@@ -687,6 +1005,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     final nameController = TextEditingController(text: course?.name ?? '');
     final isEditing = course != null;
     bool isSaving = false;
+    Map<String, List<String>> _fieldErrors = {};
 
     showModalBottomSheet(
       context: context,
@@ -737,6 +1056,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Course Name',
                       hint: 'e.g. Bachelor of Science in Computer Science',
                       icon: Icons.book_outlined,
+                      errorText: _fieldErrors['name']?.first ?? _fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 28),
                     SizedBox(
@@ -756,7 +1076,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                   );
                                   return;
                                 }
-                                setModalState(() => isSaving = true);
+                                setModalState(() {
+                                  isSaving = true;
+                                  _fieldErrors = {};
+                                });
                                 try {
                                   if (isEditing) {
                                     await _updateCourse(course.id, name);
@@ -764,6 +1087,11 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                     await _createCourse(name);
                                   }
                                   if (ctx.mounted) Navigator.pop(ctx);
+                                } on ApiException catch (e) {
+                                  setModalState(() {
+                                    isSaving = false;
+                                    _fieldErrors = e.fieldErrors.map((k, v) => MapEntry(k.replaceAll('\$.', ''), v));
+                                  });
                                 } catch (_) {
                                   setModalState(() => isSaving = false);
                                 }
@@ -918,6 +1246,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     final nameController = TextEditingController(text: classroom?.name ?? '');
     final isEditing = classroom != null;
     bool isSaving = false;
+    Map<String, List<String>> _fieldErrors = {};
 
     showModalBottomSheet(
       context: context,
@@ -968,6 +1297,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Classroom Name',
                       hint: 'e.g. Software Laboratory 1',
                       icon: Icons.meeting_room_outlined,
+                      errorText: _fieldErrors['name']?.first ?? _fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -997,7 +1327,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                   );
                                   return;
                                 }
-                                setModalState(() => isSaving = true);
+                                setModalState(() {
+                                  isSaving = true;
+                                  _fieldErrors = {};
+                                });
                                 try {
                                   if (isEditing) {
                                     await _updateClassroom(classroom.id, name);
@@ -1005,6 +1338,11 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                     await _createClassroom(name);
                                   }
                                   if (ctx.mounted) Navigator.pop(ctx);
+                                } on ApiException catch (e) {
+                                  setModalState(() {
+                                    isSaving = false;
+                                    _fieldErrors = e.fieldErrors.map((k, v) => MapEntry(k.replaceAll('\$.', ''), v));
+                                  });
                                 } catch (_) {
                                   setModalState(() => isSaving = false);
                                 }
@@ -1158,6 +1496,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
   void _showAddEditScheduleDialog({Schedule? schedule}) {
     final isEditing = schedule != null;
     bool isSaving = false;
+    Map<String, List<String>> _fieldErrors = {};
 
     String? initialDayOfWeek;
     if (schedule?.dayOfWeek != null) {
@@ -1227,53 +1566,102 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      _buildDialogTextField(
+                      _buildDialogTimePickerField(
+                        context: context,
                         controller: timeInController,
                         label: 'Time In',
                         hint: 'e.g. 08:00:00',
                         icon: Icons.login,
+                        errorText: _fieldErrors['timeIn']?.first ?? _fieldErrors['TimeIn']?.first,
                       ),
                       const SizedBox(height: 16),
-                      _buildDialogTextField(
+                      _buildDialogTimePickerField(
+                        context: context,
                         controller: timeOutController,
                         label: 'Time Out',
                         hint: 'e.g. 09:00:00',
                         icon: Icons.logout,
+                        errorText: _fieldErrors['timeOut']?.first ?? _fieldErrors['TimeOut']?.first,
                       ),
                       const SizedBox(height: 16),
-                      _buildDialogTextField(
-                        controller: dayOfWeekController,
+                      _buildDialogDropdownField<int>(
                         label: 'Day of Week',
-                        hint: '1-7 or Monday',
+                        hint: 'Select day',
                         icon: Icons.calendar_today,
+                        value: int.tryParse(dayOfWeekController.text),
+                        items: const [
+                          DropdownMenuItem(value: 1, child: Text('Monday')),
+                          DropdownMenuItem(value: 2, child: Text('Tuesday')),
+                          DropdownMenuItem(value: 3, child: Text('Wednesday')),
+                          DropdownMenuItem(value: 4, child: Text('Thursday')),
+                          DropdownMenuItem(value: 5, child: Text('Friday')),
+                          DropdownMenuItem(value: 6, child: Text('Saturday')),
+                          DropdownMenuItem(value: 7, child: Text('Sunday')),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) dayOfWeekController.text = val.toString();
+                        },
+                        errorText: _fieldErrors['dayOfWeek']?.first ?? _fieldErrors['DayOfWeek']?.first,
                       ),
                       const SizedBox(height: 16),
-                      _buildDialogTextField(
-                        controller: subjectIdController,
-                        label: 'Subject ID',
-                        hint: 'e.g. 1',
+                      _buildDialogDropdownField<int>(
+                        label: 'Subject',
+                        hint: 'Select a subject',
                         icon: Icons.subject,
+                        value: int.tryParse(subjectIdController.text),
+                        items: _subjectsList.map((s) => DropdownMenuItem(
+                          value: s.id,
+                          child: Text(s.name, overflow: TextOverflow.ellipsis),
+                        )).toList(),
+                        onChanged: (val) {
+                          if (val != null) subjectIdController.text = val.toString();
+                        },
+                        errorText: _fieldErrors['subjectId']?.first ?? _fieldErrors['SubjectId']?.first,
                       ),
                       const SizedBox(height: 16),
-                      _buildDialogTextField(
-                        controller: classroomIdController,
-                        label: 'Classroom ID',
-                        hint: 'e.g. 1',
+                      _buildDialogDropdownField<int>(
+                        label: 'Classroom',
+                        hint: 'Select a classroom',
                         icon: Icons.meeting_room,
+                        value: int.tryParse(classroomIdController.text),
+                        items: _classroomsList.map((c) => DropdownMenuItem(
+                          value: c.id,
+                          child: Text(c.name, overflow: TextOverflow.ellipsis),
+                        )).toList(),
+                        onChanged: (val) {
+                          if (val != null) classroomIdController.text = val.toString();
+                        },
+                        errorText: _fieldErrors['classroomId']?.first ?? _fieldErrors['ClassroomId']?.first,
                       ),
                       const SizedBox(height: 16),
-                      _buildDialogTextField(
-                        controller: sectionIdController,
-                        label: 'Section ID',
-                        hint: 'e.g. 1',
+                      _buildDialogDropdownField<int>(
+                        label: 'Section',
+                        hint: 'Select a section',
                         icon: Icons.layers,
+                        value: int.tryParse(sectionIdController.text),
+                        items: _sectionsList.map((s) => DropdownMenuItem(
+                          value: s.id,
+                          child: Text(s.name, overflow: TextOverflow.ellipsis),
+                        )).toList(),
+                        onChanged: (val) {
+                          if (val != null) sectionIdController.text = val.toString();
+                        },
+                        errorText: _fieldErrors['sectionId']?.first ?? _fieldErrors['SectionId']?.first,
                       ),
                       const SizedBox(height: 16),
-                      _buildDialogTextField(
-                        controller: instructorIdController,
-                        label: 'Instructor ID',
-                        hint: 'e.g. 1',
+                      _buildDialogDropdownField<int>(
+                        label: 'Instructor',
+                        hint: 'Select an instructor',
                         icon: Icons.person,
+                        value: int.tryParse(instructorIdController.text),
+                        items: _instructorsList.map((i) => DropdownMenuItem(
+                          value: i.id,
+                          child: Text('${i.firstname} ${i.lastname}', overflow: TextOverflow.ellipsis),
+                        )).toList(),
+                        onChanged: (val) {
+                          if (val != null) instructorIdController.text = val.toString();
+                        },
+                        errorText: _fieldErrors['instructorId']?.first ?? _fieldErrors['InstructorId']?.first,
                       ),
                       const SizedBox(height: 28),
                       SizedBox(
@@ -1334,7 +1722,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                             .trim()),
                                   };
 
-                                  setModalState(() => isSaving = true);
+                                  setModalState(() {
+                                    isSaving = true;
+                                    _fieldErrors = {};
+                                  });
                                   try {
                                     if (isEditing) {
                                       await _apiService.updateSchedule(
@@ -1344,6 +1735,11 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                     }
                                     await _fetchSchedules();
                                     if (ctx.mounted) Navigator.pop(ctx);
+                                  } on ApiException catch (e) {
+                                    setModalState(() {
+                                      isSaving = false;
+                                      _fieldErrors = e.fieldErrors.map((k, v) => MapEntry(k.replaceAll('\$.', ''), v));
+                                    });
                                   } catch (e) {
                                     setModalState(() => isSaving = false);
                                     if (mounted) {
