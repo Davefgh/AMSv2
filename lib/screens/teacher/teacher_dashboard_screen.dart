@@ -4,6 +4,7 @@ import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/user_profile.dart';
 import '../../models/instructor_model.dart';
+import 'attendance_screen.dart';
 
 class TeacherDashboardScreen extends StatefulWidget {
   const TeacherDashboardScreen({super.key});
@@ -162,7 +163,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                         )
                       : _errorMessage != null
                           ? _buildErrorState()
-                          : _buildContent(),
+                          : _getBodyContent(),
                 ),
               ],
             ),
@@ -251,6 +252,22 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     );
   }
 
+  Widget _getBodyContent() {
+    switch (_selectedIndex) {
+      case 0:
+        return _buildContent();
+      case 1:
+        return const AttendanceScreen();
+      default:
+        return Center(
+          child: Text(
+            'Coming Soon',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+          ),
+        );
+    }
+  }
+
   Widget _buildContent() {
     return RefreshIndicator(
       color: const Color(0xFF38BDF8),
@@ -262,7 +279,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         children: [
           _buildSectionTitle('Overview'),
           const SizedBox(height: 16),
-          _buildStatsGrid(),
+          _buildStatsList(),
           const SizedBox(height: 32),
           _buildSectionTitle("Today's Schedule"),
           const SizedBox(height: 4),
@@ -303,14 +320,8 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     );
   }
 
-  Widget _buildStatsGrid() {
-    return GridView.count(
-      crossAxisCount: 3,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 0.95,
+  Widget _buildStatsList() {
+    return Column(
       children: [
         _buildStatCard(
           '$_totalSections',
@@ -318,12 +329,14 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           Icons.view_module_rounded,
           const Color(0xFF38BDF8),
         ),
+        const SizedBox(height: 12),
         _buildStatCard(
           '$_totalSubjects',
           'Subjects',
           Icons.menu_book_rounded,
           const Color(0xFF34D399),
         ),
+        const SizedBox(height: 12),
         _buildStatCard(
           '$_totalClasses',
           'Schedules',
@@ -335,41 +348,43 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   }
 
   Widget _buildStatCard(String value, String label, IconData icon, Color color) {
-    return _GlassCard(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withValues(alpha: 0.3)),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 26),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.6),
-                ),
-              ),
-            ],
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ],
       ),

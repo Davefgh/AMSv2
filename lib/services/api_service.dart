@@ -14,6 +14,7 @@ import '../models/schedule_model.dart';
 import '../models/course_model.dart';
 import '../models/classroom_model.dart';
 import '../models/health_status.dart';
+import '../models/attendance_model.dart';
 
 class ApiException implements Exception {
   final int statusCode;
@@ -613,6 +614,94 @@ class ApiService {
       await delete('/api/schedules/$id');
     } catch (e) {
       _logger.e('deleteSchedule Error: $e');
+      rethrow;
+    }
+  }
+
+  // --- Attendance APIs ---
+
+  Future<AttendanceResponse> getAttendances({
+    int pageNumber = 1,
+    int pageSize = 50,
+  }) async {
+    try {
+      final response = await get('/api/attendance?pageNumber=$pageNumber&pageSize=$pageSize');
+      return AttendanceResponse.fromJson(response);
+    } catch (e) {
+      _logger.e('getAttendances Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<AttendanceRecord> getAttendanceById(int id) async {
+    try {
+      final response = await get('/api/attendance/$id');
+      return AttendanceRecord.fromJson(response);
+    } catch (e) {
+      _logger.e('getAttendanceById Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<AttendanceRecord> createAttendance(Map<String, dynamic> data) async {
+    try {
+      final response = await post('/api/attendance', data);
+      return AttendanceRecord.fromJson(response);
+    } catch (e) {
+      _logger.e('createAttendance Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateAttendance(int id, Map<String, dynamic> data) async {
+    try {
+      await put('/api/attendance/$id', data);
+    } catch (e) {
+      _logger.e('updateAttendance Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAttendance(int id) async {
+    try {
+      await delete('/api/attendance/$id');
+    } catch (e) {
+      _logger.e('deleteAttendance Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<AttendanceRecord>> getAttendanceByStudent(int studentId) async {
+    try {
+      final response = await get('/api/attendance/student/$studentId');
+      if (response is List) {
+        return response.map((e) => AttendanceRecord.fromJson(e)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getAttendanceByStudent Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<AttendanceRecord>> getAttendanceBySession(int sessionId) async {
+    try {
+      final response = await get('/api/attendance/session/$sessionId');
+      if (response is List) {
+        return response.map((e) => AttendanceRecord.fromJson(e)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getAttendanceBySession Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<dynamic> getAttendanceSummary() async {
+    try {
+      return await get('/api/attendance/summary');
+    } catch (e) {
+      _logger.e('getAttendanceSummary Error: $e');
       rethrow;
     }
   }
