@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../models/session_model.dart';
+import '../../models/schedule_model.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:intl/intl.dart';
 import 'dart:ui';
 
 class SessionDetailsScreen extends StatefulWidget {
@@ -15,12 +17,33 @@ class SessionDetailsScreen extends StatefulWidget {
 class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   final ApiService _apiService = ApiService();
   late ClassSession _session;
+  Schedule? _schedule;
   bool _isLoading = false;
+  bool _isInitialLoading = true;
 
   @override
   void initState() {
     super.initState();
     _session = widget.session;
+    _loadAllData();
+  }
+
+  Future<void> _loadAllData() async {
+    setState(() => _isInitialLoading = true);
+    try {
+      final schedule = await _apiService.getSchedule(_session.scheduleId);
+      setState(() {
+        _schedule = schedule;
+        _isInitialLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isInitialLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading schedule: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _refreshSession() async {
@@ -157,11 +180,17 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     bool isActive = _session.status == 'active';
     bool isEnded = _session.status == 'ended';
+
+    if (_isInitialLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0F172A),
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8))),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -190,12 +219,18 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                           ),
                         ),
                         const SizedBox(height: 40),
-                        _buildInfoRow(Icons.access_time_rounded, '9:00 AM - 10:30 AM', '90 minutes'),
+                        _buildInfoRow(
+                          Icons.access_time_rounded, 
+                          _schedule != null 
+                              ? '${_formatTime(_schedule!.timeIn)} - ${_formatTime(_schedule!.timeOut)}'
+                              : '9:00 AM - 10:30 AM', 
+                          'Scheduled Time'
+                        ),
                         _buildInfoRow(
                           Icons.location_on_outlined, 
-                          _session.scheduledRoomName.isNotEmpty ? _session.scheduledRoomName : 'Room 301',
-                          null,
-                          badge: _session.status == 'active' ? 'Room Changed' : null,
+                          _session.actualRoom ?? _session.scheduledRoomName,
+                          'Room',
+                          badge: _hasRoomChanged ? 'Room Changed' : null,
                         ),
                         _buildInfoRow(
                           isActive ? Icons.play_circle_outline : Icons.hourglass_empty_rounded,
@@ -203,8 +238,14 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                           'Status',
                           color: isActive ? const Color(0xFF34D399) : (isEnded ? Colors.redAccent : const Color(0xFFFBBF24)),
                         ),
-                        if (isActive)
-                          _buildInfoRow(Icons.history_rounded, '9:02 AM', 'Session Start Time'),
+                        if (_session.cutoff != null && _session.cutoff!.isNotEmpty)
+                          _buildInfoRow(Icons.timer_outlined, _session.cutoff!, 'Attendance Cutoff'),
+                        if (isActive && _session.sessionDate != null)
+                          _buildInfoRow(
+                            Icons.history_rounded, 
+                            DateFormat('h:mm a').format(_session.sessionDate!), 
+                            'Session Start Time'
+                          ),
                         _buildInfoRow(Icons.person_outline, 'Jovelyn Comaingking', 'Instructor'),
                       ],
                     ),
@@ -375,6 +416,25 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
         ],
       ),
     );
+  }
+
+  bool get _hasRoomChanged {
+    if (_session.actualRoom == null || _schedule == null) return false;
+    return _session.actualRoom != _schedule!.classroomName;
+  }
+
+  String _formatTime(String raw) {
+    if (raw.isEmpty) return '--:--';
+    try {
+      final parts = raw.split(':');
+      int h = int.parse(parts[0]);
+      final m = parts[1].padLeft(2, '0');
+      final suffix = h >= 12 ? 'PM' : 'AM';
+      h = h == 0 ? 12 : (h > 12 ? h - 12 : h);
+      return '$h:$m $suffix';
+    } catch (_) {
+      return raw;
+    }
   }
 
   void _showQRCodeDialog() {

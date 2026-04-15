@@ -9,6 +9,8 @@ class ClassSession {
   final String subjectName;
   final String sectionName;
   final String scheduledRoomName;
+  final String? actualRoom;
+  final String? cutoff;
 
   ClassSession({
     this.id = 0,
@@ -21,6 +23,8 @@ class ClassSession {
     this.subjectName = '',
     this.sectionName = '',
     this.scheduledRoomName = '',
+    this.actualRoom,
+    this.cutoff,
   });
 
   factory ClassSession.fromJson(Map<String, dynamic> json) {
@@ -44,6 +48,8 @@ class ClassSession {
       subjectName: json['subjectName'] ?? '',
       sectionName: json['sectionName'] ?? '',
       scheduledRoomName: json['scheduledRoomName'] ?? '',
+      actualRoom: json['actualRoom'] ?? json['room'],
+      cutoff: json['cutoff'],
     );
   }
 
@@ -53,6 +59,8 @@ class ClassSession {
       'scheduleId': scheduleId,
       'status': status,
       if (sessionDate != null) 'sessionDate': sessionDate!.toIso8601String(),
+      if (actualRoom != null) 'actualRoom': actualRoom,
+      if (cutoff != null) 'cutoff': cutoff,
     };
   }
 }

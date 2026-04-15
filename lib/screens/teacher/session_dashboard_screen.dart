@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/session_model.dart';
@@ -22,6 +23,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   List<ClassSession> _upcomingSessions = [];
   Schedule? _selectedSchedule;
   Instructor? _instructor;
+  Map<int, Schedule> _scheduleMap = {};
 
   @override
   void initState() {
@@ -42,9 +44,17 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       final schedules = await _apiService.getSchedulesByInstructorAll(_instructor!.id);
       final mySessions = await _apiService.getMySessions();
 
+      // Get today's weekday (1=Mon, 7=Sun)
+      final int today = DateTime.now().weekday;
+
       setState(() {
-        _instructorSchedules = schedules;
+        // Filter schedules to only show those for the current day to avoid API 400 errors
+        _instructorSchedules = schedules.where((s) => s.dayOfWeek == today).toList();
         _upcomingSessions = mySessions;
+        
+        // Map schedules for easy lookup in the list
+        _scheduleMap = {for (var s in schedules) s.id: s};
+        
         if (_instructorSchedules.isNotEmpty) {
           _selectedSchedule = _instructorSchedules.first;
         }
@@ -240,7 +250,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Today',
+                    _sessionDateLabel(s.sessionDate),
                     style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
                   ),
                 ],
@@ -249,12 +259,12 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                const Text(
-                  '10:00 AM',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
+                Text(
+                  _formatTime(_scheduleMap[s.scheduleId]?.timeIn ?? '10:00:00'),
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
                 ),
                 Text(
-                  '45 min',
+                  _getDurationText(_scheduleMap[s.scheduleId]),
                   style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
                 ),
               ],
@@ -263,6 +273,51 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         ),
       ),
     );
+  }
+
+  String _sessionDateLabel(DateTime? date) {
+    if (date == null) return 'No Date';
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final sessionDate = DateTime(date.year, date.month, date.day);
+
+    if (sessionDate == today) {
+      return 'Today';
+    } else if (sessionDate == today.subtract(const Duration(days: 1))) {
+      return 'Yesterday';
+    } else if (sessionDate == today.add(const Duration(days: 1))) {
+      return 'Tomorrow';
+    } else {
+      return DateFormat('EEEE, MMM d').format(date);
+    }
+  }
+
+  String _formatTime(String raw) {
+    if (raw.isEmpty) return '--:--';
+    try {
+      final parts = raw.split(':');
+      int h = int.parse(parts[0]);
+      final m = parts[1].padLeft(2, '0');
+      final suffix = h >= 12 ? 'PM' : 'AM';
+      h = h == 0 ? 12 : (h > 12 ? h - 12 : h);
+      return '$h:$m $suffix';
+    } catch (_) {
+      return raw;
+    }
+  }
+
+  String _getDurationText(Schedule? s) {
+    if (s == null) return '45 min';
+    try {
+      final t1 = s.timeIn.split(':').map((e) => int.parse(e)).toList();
+      final t2 = s.timeOut.split(':').map((e) => int.parse(e)).toList();
+      final start = DateTime(2000, 1, 1, t1[0], t1[1]);
+      final end = DateTime(2000, 1, 1, t2[0], t2[1]);
+      final diff = end.difference(start).inMinutes;
+      return '$diff min';
+    } catch (_) {
+      return '45 min';
+    }
   }
 
   Widget _buildEmptyState() {
