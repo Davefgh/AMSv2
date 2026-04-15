@@ -1,8 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../services/api_service.dart';
 import '../../models/user_profile.dart';
+import '../../widgets/main_scaffold.dart';
+import '../../providers/app_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -23,115 +26,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F172A), // Slate 900
-      body: Stack(
-        children: [
-          // Background Glowing Orbs
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                    blurRadius: 100,
-                    spreadRadius: 50,
-                  )
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -50,
-            left: -50,
-            child: Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-                    blurRadius: 80,
-                    spreadRadius: 40,
-                  )
-                ],
-              ),
-            ),
-          ),
-          IgnorePointer(
-            ignoring: true,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(color: Colors.transparent),
-            ),
-          ),
+    final role = context.watch<AppProvider>().userRole;
+    final isTeacher = role == 'instructor' || role == 'teacher';
 
-          SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(context),
-                Expanded(
-                  child: FutureBuilder<UserProfile>(
-                    future: _profileFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
-                        );
-                      } else if (snapshot.hasError) {
-                        return _buildErrorState(snapshot.error.toString());
-                      } else if (!snapshot.hasData) {
-                        return _buildErrorState('No profile data found');
-                      }
+    return MainScaffold(
+      title: 'Profile',
+      currentIndex: isTeacher ? 4 : -1,
+      isAdmin: !isTeacher,
+      body: FutureBuilder<UserProfile>(
+        future: _profileFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+            );
+          } else if (snapshot.hasError) {
+            return _buildErrorState(snapshot.error.toString());
+          } else if (!snapshot.hasData) {
+            return _buildErrorState('No profile data found');
+          }
 
-                      final profile = snapshot.data!;
-                      return _buildProfileContent(profile);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          final profile = snapshot.data!;
+          return _buildProfileContent(profile);
+        },
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withValues(alpha: 0.05),
-              padding: const EdgeInsets.all(12),
-            ),
-          ),
-          const SizedBox(width: 20),
-          const Text(
-            'User Profile',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildErrorState(String error) {
     return Center(

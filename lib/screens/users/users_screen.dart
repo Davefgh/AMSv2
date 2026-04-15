@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import '../../widgets/register_user_modal.dart';
 import '../../services/api_service.dart';
 import '../../models/app_user.dart';
+import '../../widgets/main_scaffold.dart';
+import '../../utils/responsive.dart';
+import '../../config/routes/app_routes.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -64,232 +67,142 @@ class _UsersScreenState extends State<UsersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F172A), // Slate 900
-      body: Stack(
-        children: [
-          // Background Glowing Orbs for ambiance
-          Positioned(
-            top: -100,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
-                boxShadow: [
-                  BoxShadow(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
-                      blurRadius: 100,
-                      spreadRadius: 50)
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 100,
-            right: -150,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
-                boxShadow: [
-                  BoxShadow(
-                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
-                      blurRadius: 120,
-                      spreadRadius: 60)
-                ],
-              ),
-            ),
-          ),
-          // Backdrop blur for the glowing orbs to look smoothly ambient
-          IgnorePointer(
-            ignoring: true,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-
-          SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: RefreshIndicator(
-                    color: const Color(0xFF38BDF8),
-                    onRefresh: () async {
-                      await _refreshUsers();
-                    },
-                    child: ListView(
-                      physics: const AlwaysScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics(
-                            parent: AlwaysScrollableScrollPhysics()),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                      children: [
-                        _buildSectionTitle('User Growth'),
-                        const SizedBox(height: 16),
-                        _buildUserGrowthChart(),
-                      const SizedBox(height: 32),
-                      _buildSectionTitle(
-                        'Role Distribution',
-                        trailing: _buildAddButton(),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildRoleCards(),
-                      const SizedBox(height: 32),
-                      _buildSectionTitle('Recently Added', trailing: _buildFilters()),
-                      const SizedBox(height: 16),
-                      _buildRecentUsersList(),
-                      const SizedBox(height: 24),
-                    ],
+    return MainScaffold(
+      title: 'Admin',
+      currentIndex: 3,
+      actions: [
+        Row(
+          children: [
+            PopupMenuButton<String>(
+              tooltip: 'Data Management',
+              icon: _adminDataBusy
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : Icon(
+                      Icons.swap_vert_rounded,
+                      color: Colors.white.withValues(alpha: 0.75),
                     ),
+              onSelected: (value) {
+                if (value == 'export') {
+                  _openAdminDataExport();
+                } else if (value == 'import') {
+                  _openAdminDataImport();
+                }
+              },
+              color: const Color(0xFF1E293B),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              offset: const Offset(0, 50),
+              padding: EdgeInsets.zero,
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'import',
+                  child: Row(
+                    children: [
+                      Icon(Icons.file_upload_outlined, color: Colors.white, size: 20),
+                      SizedBox(width: 12),
+                      Text('Import Data', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'export',
+                  child: Row(
+                    children: [
+                      Icon(Icons.file_download_outlined, color: Colors.white, size: 20),
+                      SizedBox(width: 12),
+                      Text('Export Data', style: TextStyle(color: Colors.white)),
+                    ],
                   ),
                 ),
               ],
             ),
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'profile') {
+                  Navigator.pushNamed(context, AppRoutes.profile);
+                } else if (value == 'edit_profile') {
+                  Navigator.pushNamed(context, AppRoutes.editProfile);
+                } else if (value == 'health') {
+                  Navigator.pushNamed(context, AppRoutes.health);
+                } else if (value == 'logout') {
+                  Navigator.pushReplacementNamed(context, AppRoutes.home);
+                }
+              },
+              color: const Color(0xFF1E293B),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              offset: const Offset(0, 50),
+              padding: EdgeInsets.zero,
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'profile',
+                  child: Text('Profile', style: TextStyle(color: Colors.white)),
+                ),
+                const PopupMenuItem(
+                  value: 'edit_profile',
+                  child: Text('Edit Profile',
+                      style: TextStyle(color: Colors.white)),
+                ),
+                const PopupMenuItem(
+                  value: 'health',
+                  child: Text('Health', style: TextStyle(color: Colors.white)),
+                ),
+                const PopupMenuDivider(height: 1),
+                const PopupMenuItem(
+                  value: 'logout',
+                  child: Text('Log out',
+                      style: TextStyle(color: Colors.redAccent)),
+                ),
+              ],
+              child: const CircleAvatar(
+                radius: 18,
+                backgroundColor: Color(0xFF38BDF8),
+                backgroundImage:
+                    NetworkImage('https://i.pravatar.cc/150?img=11'),
+              ),
+            ),
+          ],
+        ),
+      ],
+      body: RefreshIndicator(
+        color: const Color(0xFF38BDF8),
+        onRefresh: () async {
+          await _refreshUsers();
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics()),
           ),
-        ],
+          padding: const EdgeInsets.symmetric(
+              horizontal: 24, vertical: 12),
+          children: [
+            _buildSectionTitle('User Growth'),
+            const SizedBox(height: 16),
+            _buildUserGrowthChart(),
+            const SizedBox(height: 32),
+            _buildSectionTitle(
+              'Role Distribution',
+              trailing: _buildAddButton(),
+            ),
+            const SizedBox(height: 16),
+            _buildRoleCards(),
+            const SizedBox(height: 32),
+            _buildSectionTitle('Recently Added', trailing: _buildFilters()),
+            const SizedBox(height: 16),
+            _buildRecentUsersList(),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
-      bottomNavigationBar: _buildBottomNavBar(),
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Image.asset(
-                'assets/aclc_logo.png',
-                height: 48,
-                width: 48,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.shield, color: Colors.white, size: 40),
-              ),
-              const SizedBox(width: 16),
-              const Text(
-                'Admin',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              PopupMenuButton<String>(
-                tooltip: 'Data Management',
-                icon: _adminDataBusy
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      )
-                    : Icon(
-                        Icons.swap_vert_rounded,
-                        color: Colors.white.withValues(alpha: 0.75),
-                      ),
-                onSelected: (value) {
-                  if (value == 'export') {
-                    _openAdminDataExport();
-                  } else if (value == 'import') {
-                    _openAdminDataImport();
-                  }
-                },
-                color: const Color(0xFF1E293B),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                offset: const Offset(0, 50),
-                padding: EdgeInsets.zero,
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'import',
-                    child: Row(
-                      children: [
-                        Icon(Icons.file_upload_outlined, color: Colors.white, size: 20),
-                        SizedBox(width: 12),
-                        Text('Import Data', style: TextStyle(color: Colors.white)),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'export',
-                    child: Row(
-                      children: [
-                        Icon(Icons.file_download_outlined, color: Colors.white, size: 20),
-                        SizedBox(width: 12),
-                        Text('Export Data', style: TextStyle(color: Colors.white)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'profile') {
-                    Navigator.pushNamed(context, '/profile');
-                  } else if (value == 'edit_profile') {
-                    Navigator.pushNamed(context, '/edit-profile');
-                  } else if (value == 'health') {
-                    Navigator.pushNamed(context, '/health');
-                  } else if (value == 'logout') {
-                    // Future logout implementation
-                    Navigator.pushReplacementNamed(context, '/');
-                  }
-                },
-                color: const Color(0xFF1E293B), // Dark slate
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                offset: const Offset(0, 50),
-                padding: EdgeInsets.zero,
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'profile',
-                    child:
-                        Text('Profile', style: TextStyle(color: Colors.white)),
-                  ),
-                  const PopupMenuItem(
-                    value: 'edit_profile',
-                    child: Text('Edit Profile',
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                  const PopupMenuItem(
-                    value: 'health',
-                    child: Text('Health', style: TextStyle(color: Colors.white)),
-                  ),
-                  const PopupMenuDivider(height: 1),
-                  const PopupMenuItem(
-                    value: 'logout',
-                    child: Text('Log out',
-                        style: TextStyle(color: Colors.redAccent)),
-                  ),
-                ],
-                child: const CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Color(0xFF38BDF8),
-                  backgroundImage:
-                      NetworkImage('https://i.pravatar.cc/150?img=11'),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   IconData _getIconForEntity(String entity) {
     switch (entity.toLowerCase()) {

@@ -7,6 +7,8 @@ import '../../models/session_model.dart';
 import '../../models/instructor_model.dart';
 import 'session_details_screen.dart';
 import 'dart:ui';
+import '../../utils/responsive.dart';
+import '../../widgets/main_scaffold.dart';
 
 class SessionDashboardScreen extends StatefulWidget {
   const SessionDashboardScreen({super.key});
@@ -140,75 +142,76 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)));
-    }
-
-    return RefreshIndicator(
-      color: const Color(0xFF38BDF8),
-      backgroundColor: const Color(0xFF1E293B),
-      onRefresh: _loadInitialData,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            _buildCreateSessionCard(),
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Upcoming Schedules',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                Row(
-                  children: [
-                    _buildViewToggle(),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Color(0xFF38BDF8).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '${_filteredSessions.length}',
-                        style: const TextStyle(
-                          color: Color(0xFF38BDF8),
+    return MainScaffold(
+      title: 'Sessions',
+      currentIndex: 2,
+      isAdmin: false,
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+            )
+          : RefreshIndicator(
+              color: const Color(0xFF38BDF8),
+              backgroundColor: const Color(0xFF1E293B),
+              onRefresh: _loadInitialData,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics()),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                children: [
+                  const SizedBox(height: 8),
+                  _buildCreateSessionCard(),
+                  const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Upcoming Schedules',
+                        style: TextStyle(
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          color: Colors.white,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildSearchBar(),
-            const SizedBox(height: 24),
-            if (_filteredSessions.isEmpty)
-              _buildEmptyState()
-            else if (_isGridView)
-              _buildGridView()
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _filteredSessions.length,
-                itemBuilder: (context, index) => _buildUpcomingSessionCard(_filteredSessions[index]),
+                      Row(
+                        children: [
+                          _buildViewToggle(),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF38BDF8).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${_filteredSessions.length}',
+                              style: const TextStyle(
+                                color: Color(0xFF38BDF8),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSearchBar(),
+                  const SizedBox(height: 24),
+                  if (_filteredSessions.isEmpty)
+                    _buildEmptyState()
+                  else if (_isGridView)
+                    _buildGridView()
+                  else
+                    ..._filteredSessions
+                        .map((s) => _buildUpcomingSessionCard(s)),
+                  const SizedBox(height: 100),
+                ],
               ),
-            const SizedBox(height: 100),
-          ],
-        ),
-      ),
+            ),
     );
   }
 
@@ -292,17 +295,19 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   }
 
   Widget _buildGridView() {
+    final isDesktop = Responsive.isDesktop(context);
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _filteredSessions.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        mainAxisExtent: 175,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isDesktop ? 4 : 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        mainAxisExtent: 180,
       ),
-      itemBuilder: (context, index) => _buildUpcomingSessionGridItem(_filteredSessions[index]),
+      itemBuilder: (context, index) =>
+          _buildUpcomingSessionGridItem(_filteredSessions[index]),
     );
   }
 

@@ -5,6 +5,9 @@ import '../../models/enrollment_model.dart';
 import '../../models/student_model.dart';
 import '../../models/section_model.dart';
 import '../../models/subject_model.dart';
+import '../../widgets/main_scaffold.dart';
+import '../../utils/responsive.dart';
+import '../../config/routes/app_routes.dart';
 
 class EnrollmentScreen extends StatefulWidget {
   const EnrollmentScreen({super.key});
@@ -78,117 +81,36 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F172A), // Slate 900
-      body: Stack(
+    return MainScaffold(
+      title: 'Enrollment',
+      currentIndex: 1,
+      actions: [
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF38BDF8).withOpacity(0.2),
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.add, color: Color(0xFF38BDF8)),
+            onPressed: _showAddEnrollmentDialog,
+          ),
+        ),
+      ],
+      body: Column(
         children: [
-          // Background Glowing Orbs for ambiance
-          Positioned(
-            top: -100,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color:
-                    const Color(0xFF38BDF8).withValues(alpha: 0.3), // Sky Blue
-                boxShadow: [
-                  BoxShadow(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                      blurRadius: 100,
-                      spreadRadius: 50)
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 100,
-            right: -150,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color:
-                    const Color(0xFF1E3A8A).withValues(alpha: 0.5), // Navy Blue
-                boxShadow: [
-                  BoxShadow(
-                      color: const Color(0xFF1E3A8A).withValues(alpha: 0.5),
-                      blurRadius: 120,
-                      spreadRadius: 60)
-                ],
-              ),
-            ),
-          ),
-          // Backdrop blur for the glowing orbs
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-            child: Container(color: Colors.transparent),
-          ),
-
-          SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
-                _buildSearchBar(),
-                Expanded(
-                  child: _isLoading
-                      ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
-                      : _enrollments.isEmpty
-                          ? _buildEmptyState()
-                          : _buildEnrollmentList(),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _buildBottomNavBar(),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Image.asset(
-                'assets/aclc_logo.png',
-                height: 48,
-                width: 48,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.shield, color: Colors.white, size: 40),
-              ),
-              const SizedBox(width: 16),
-              const Text(
-                'Enrollment',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.add, color: Color(0xFF38BDF8)),
-              onPressed: _showAddEnrollmentDialog,
-            ),
+          _buildSearchBar(),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+                : _enrollments.isEmpty
+                    ? _buildEmptyState()
+                    : _buildEnrollmentList(),
           ),
         ],
       ),
     );
   }
+
 
   Widget _buildSearchBar() {
     return Padding(
@@ -557,53 +479,6 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
     );
   }
 
-  Widget _buildBottomNavBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        border: Border(
-          top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1,
-          ),
-        ),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
-        showUnselectedLabels: true,
-        selectedLabelStyle:
-            const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-        unselectedLabelStyle:
-            const TextStyle(fontWeight: FontWeight.normal, fontSize: 11),
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_add_rounded), label: 'Enrollment'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.class_rounded), label: 'Classes'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.people_rounded), label: 'Users'),
-        ],
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/dashboard');
-          } else if (index == 1) {
-            // Already on enrollment
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/classes');
-          } else if (index == 3) {
-            Navigator.pushReplacementNamed(context, '/users');
-          }
-        },
-      ),
-    );
-  }
 }
 
 class _GlassCard extends StatelessWidget {
