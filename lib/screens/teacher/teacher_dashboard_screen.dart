@@ -6,6 +6,9 @@ import '../../models/user_profile.dart';
 import '../../models/instructor_model.dart';
 import 'attendance_screen.dart';
 import 'session_dashboard_screen.dart';
+import '../../widgets/main_scaffold.dart';
+import '../../utils/responsive.dart';
+import '../../config/routes/app_routes.dart';
 
 class TeacherDashboardScreen extends StatefulWidget {
   const TeacherDashboardScreen({super.key});
@@ -15,7 +18,6 @@ class TeacherDashboardScreen extends StatefulWidget {
 }
 
 class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
-  int _selectedIndex = 0;
   final ApiService _apiService = ApiService();
 
   bool _isLoading = true;
@@ -105,119 +107,78 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
-      body: Stack(
-        children: [
-          // Glowing orbs
-          Positioned(
-            top: -100,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                    blurRadius: 100,
-                    spreadRadius: 50,
-                  )
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 100,
-            right: -150,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF1E3A8A).withValues(alpha: 0.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1E3A8A).withValues(alpha: 0.5),
-                    blurRadius: 120,
-                    spreadRadius: 60,
-                  )
-                ],
-              ),
-            ),
-          ),
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-            child: Container(color: Colors.transparent),
-          ),
-
-          SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: _isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
-                        )
-                      : _errorMessage != null
-                          ? _buildErrorState()
-                          : _getBodyContent(),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _buildBottomNavBar(),
+    return MainScaffold(
+      title: 'Teacher Dashboard',
+      currentIndex: 0,
+      isAdmin: false,
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+            )
+          : _errorMessage != null
+              ? _buildErrorState()
+              : _buildContent(),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildContent() {
     final name = _instructor != null
         ? '${_instructor!.firstname} ${_instructor!.lastname}'
         : _profile?.username ?? 'Instructor';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return RefreshIndicator(
+      color: const Color(0xFF38BDF8),
+      backgroundColor: const Color(0xFF1E293B),
+      onRefresh: _loadData,
+      child: ListView(
+        physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics()),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         children: [
-          Row(
-            children: [
-              Image.asset(
-                'assets/aclc_logo.png',
-                height: 48,
-                width: 48,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.shield, color: Colors.white, size: 40),
-              ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Welcome back,',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white54,
-                    ),
-                  ),
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+          const Text(
+            'Welcome back,',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.white54,
+            ),
           ),
+          Text(
+            name,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              letterSpacing: 0.3,
+            ),
+          ),
+          const SizedBox(height: 32),
+          _buildSectionTitle('Overview'),
+          const SizedBox(height: 16),
+          _buildStatsList(),
+          const SizedBox(height: 32),
+          _buildSectionTitle("Today's Schedule"),
+          const SizedBox(height: 4),
+          Text(
+            _todayDayName,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.white.withValues(alpha: 0.45),
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (_todaySchedules.isEmpty)
+            _buildEmptyState('No classes scheduled for today.')
+          else
+            ..._todaySchedules
+                .map((s) => _buildScheduleCard(s, highlight: true)),
+          const SizedBox(height: 32),
+          _buildSectionTitle('All Schedules'),
+          const SizedBox(height: 16),
+          if (_schedules.isEmpty)
+            _buildEmptyState('No schedules assigned yet.')
+          else
+            ..._schedules.map((s) => _buildScheduleCard(s, highlight: false)),
+          const SizedBox(height: 40),
         ],
       ),
     );
@@ -253,45 +214,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     );
   }
 
-  Widget _buildContent() {
-    return RefreshIndicator(
-      color: const Color(0xFF38BDF8),
-      backgroundColor: const Color(0xFF1E293B),
-      onRefresh: _loadData,
-      child: ListView(
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        children: [
-          _buildSectionTitle('Overview'),
-          const SizedBox(height: 16),
-          _buildStatsList(),
-          const SizedBox(height: 32),
-          _buildSectionTitle("Today's Schedule"),
-          const SizedBox(height: 4),
-          Text(
-            _todayDayName,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.white.withValues(alpha: 0.45),
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (_todaySchedules.isEmpty)
-            _buildEmptyState('No classes scheduled for today.')
-          else
-            ..._todaySchedules.map((s) => _buildScheduleCard(s, highlight: true)),
-          const SizedBox(height: 32),
-          _buildSectionTitle('All Schedules'),
-          const SizedBox(height: 16),
-          if (_schedules.isEmpty)
-            _buildEmptyState('No schedules assigned yet.')
-          else
-            ..._schedules.map((s) => _buildScheduleCard(s, highlight: false)),
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSectionTitle(String title) {
     return Text(
@@ -305,23 +227,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     );
   }
 
-  Widget _getBodyContent() {
-    switch (_selectedIndex) {
-      case 0:
-        return _buildContent();
-      case 1:
-        return const AttendanceScreen();
-      case 2:
-        return const SessionDashboardScreen();
-      default:
-        return Center(
-          child: Text(
-            'Coming Soon',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-          ),
-        );
-    }
-  }
 
   Widget _buildStatsList() {
     return Column(
@@ -522,35 +427,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     );
   }
 
-  Widget _buildBottomNavBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
-        showUnselectedLabels: true,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 10),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.library_books_rounded), label: 'Attendance'),
-          BottomNavigationBarItem(icon: Icon(Icons.qr_code_scanner_rounded), label: 'QR'),
-          BottomNavigationBarItem(icon: Icon(Icons.people_alt_rounded), label: 'Sections'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
-        ],
-        onTap: (index) => setState(() => _selectedIndex = index),
-      ),
-    );
-  }
 }
 
 class _GlassCard extends StatelessWidget {

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/session_model.dart';
 import '../../models/instructor_model.dart';
 import 'session_details_screen.dart';
 import 'dart:ui';
+import '../../utils/responsive.dart';
+import '../../widgets/main_scaffold.dart';
 
 class SessionDashboardScreen extends StatefulWidget {
   const SessionDashboardScreen({super.key});
@@ -25,11 +28,30 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   Schedule? _selectedSchedule;
   Map<int, Schedule> _scheduleMap = {};
   final TextEditingController _searchController = TextEditingController();
+  Timer? _timer;
+  String _currentTime = '';
+  bool _isGridView = false;
 
   @override
   void initState() {
     super.initState();
     _loadInitialData();
+    _startClock();
+  }
+
+  void _startClock() {
+    _updateTime();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        _updateTime();
+      }
+    });
+  }
+
+  void _updateTime() {
+    setState(() {
+      _currentTime = DateFormat('hh:mm:ss a').format(DateTime.now());
+    });
   }
 
   Future<void> _loadInitialData() async {
@@ -38,7 +60,6 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       _errorMessage = null;
     });
     try {
-      // Use the correct API to fetch instructor's schedules directly
       final schedules = await _apiService.getMySchedules();
       final mySessions = await _apiService.getMySessions();
 
@@ -47,11 +68,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         _upcomingSessions = mySessions;
         _filteredSessions = mySessions;
         
-        // Map schedules for easy lookup in the list
         _scheduleMap = {for (var s in schedules) s.id: s};
         
         if (_instructorSchedules.isNotEmpty) {
-          _selectedSchedule = _instructorSchedules.first;
+          _selectedSchedule = _findNearestSchedule(schedules);
         }
         _isLoading = false;
       });
@@ -61,6 +81,30 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Schedule? _findNearestSchedule(List<Schedule> schedules) {
+    if (schedules.isEmpty) return null;
+    
+    final now = DateTime.now();
+    final todayWeekday = now.weekday;
+    final currentTimeStr = DateFormat('HH:mm:ss').format(now);
+    
+    final todaySchedules = schedules.where((s) => s.dayOfWeek == todayWeekday).toList();
+    if (todaySchedules.isNotEmpty) {
+      todaySchedules.sort((a, b) => a.timeIn.compareTo(b.timeIn));
+      for (var s in todaySchedules) {
+        if (s.timeIn.compareTo(currentTimeStr) <= 0 && s.timeOut.compareTo(currentTimeStr) >= 0) {
+          return s;
+        }
+        if (s.timeIn.compareTo(currentTimeStr) > 0) {
+          return s;
+        }
+      }
+      return todaySchedules.first;
+    }
+    
+    return schedules.first;
   }
 
   void _filterSessions(String query) {
@@ -79,6 +123,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -91,66 +136,233 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         builder: (context) => SessionDetailsScreen(schedule: _selectedSchedule),
       ),
     ).then((_) {
-      // Refresh schedules when returning
       _loadInitialData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)));
-    }
+    return MainScaffold(
+      title: 'Sessions',
+      currentIndex: 2,
+      isAdmin: false,
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+            )
+          : RefreshIndicator(
+              color: const Color(0xFF38BDF8),
+              backgroundColor: const Color(0xFF1E293B),
+              onRefresh: _loadInitialData,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics()),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                children: [
+                  const SizedBox(height: 8),
+                  _buildCreateSessionCard(),
+                  const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Upcoming Schedules',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          _buildViewToggle(),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF38BDF8).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${_filteredSessions.length}',
+                              style: const TextStyle(
+                                color: Color(0xFF38BDF8),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSearchBar(),
+                  const SizedBox(height: 24),
+                  if (_filteredSessions.isEmpty)
+                    _buildEmptyState()
+                  else if (_isGridView)
+                    _buildGridView()
+                  else
+                    ..._filteredSessions
+                        .map((s) => _buildUpcomingSessionCard(s)),
+                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
+    );
+  }
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildClock() {
+    return _GlassCard(
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+      onTap: () {}, // Make it clickable or just visual
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildCreateSessionCard(),
-          const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Upcoming Schedules',
+              Text(
+                DateFormat('EEEE, MMM d').format(DateTime.now()),
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Colors.white.withOpacity(0.5),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '${_filteredSessions.length}',
-                  style: const TextStyle(
-                    color: Color(0xFF38BDF8),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
+              const SizedBox(height: 4),
+              const Text(
+                'Current Time',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          _buildSearchBar(),
-          const SizedBox(height: 24),
-          if (_filteredSessions.isEmpty)
-            _buildEmptyState()
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _filteredSessions.length,
-              itemBuilder: (context, index) => _buildUpcomingSessionCard(_filteredSessions[index]),
+          Text(
+            _currentTime,
+            style: const TextStyle(
+              color: Color(0xFF38BDF8),
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              fontFamily: 'Courier',
+              letterSpacing: -0.5,
             ),
-          const SizedBox(height: 100), // Extra space for a floating-like bottom 
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildViewToggle() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildToggleItem(Icons.list_rounded, !_isGridView),
+          _buildToggleItem(Icons.grid_view_rounded, _isGridView),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleItem(IconData icon, bool active) {
+    return GestureDetector(
+      onTap: () => setState(() => _isGridView = icon == Icons.grid_view_rounded),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: active ? const Color(0xFF38BDF8) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: active ? const Color(0xFF0F172A) : Colors.white38,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGridView() {
+    final isDesktop = Responsive.isDesktop(context);
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _filteredSessions.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isDesktop ? 4 : 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        mainAxisExtent: 180,
+      ),
+      itemBuilder: (context, index) =>
+          _buildUpcomingSessionGridItem(_filteredSessions[index]),
+    );
+  }
+
+  Widget _buildUpcomingSessionGridItem(ClassSession s) {
+    return _GlassCard(
+      padding: const EdgeInsets.all(16),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s)),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF38BDF8).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.class_rounded, color: Color(0xFF38BDF8), size: 18),
+          ),
+          const Spacer(),
+          Text(
+            s.subjectName.isNotEmpty ? s.subjectName : 'Software Engineering 1',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 14,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _formatTime(_scheduleMap[s.scheduleId]?.timeIn ?? '10:00:00'),
+            style: const TextStyle(
+              color: Color(0xFF38BDF8),
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(Icons.calendar_today, size: 10, color: Colors.white.withOpacity(0.3)),
+              const SizedBox(width: 4),
+              Text(
+                _sessionDateLabel(s.sessionDate),
+                style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 10),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -163,9 +375,9 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+              color: const Color(0xFF38BDF8).withOpacity(0.1),
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.2)),
+              border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.2)),
             ),
             child: const Icon(Icons.school_rounded, color: Color(0xFF38BDF8), size: 40),
           ),
@@ -203,8 +415,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
             ],
           ),
           
-          const SizedBox(height: 16),
-          _buildCalendarLink(),
+          const SizedBox(height: 24),
+          _buildClockSection(),
           const SizedBox(height: 32),
           
           SizedBox(
@@ -214,7 +426,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                    color: const Color(0xFF38BDF8).withOpacity(0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
@@ -241,30 +453,29 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     );
   }
 
-  Widget _buildCalendarLink() {
-    return InkWell(
-      onTap: () {
-        // Implement calendar view
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.calendar_month_rounded, size: 16, color: Colors.white.withValues(alpha: 0.5)),
-            const SizedBox(width: 8),
-            Text(
-              'View Full Calendar',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 13,
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ],
+  Widget _buildClockSection() {
+    return Column(
+      children: [
+        Text(
+          _currentTime,
+          style: const TextStyle(
+            color: Color(0xFF38BDF8),
+            fontSize: 28,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'Courier',
+            letterSpacing: -0.5,
+          ),
         ),
-      ),
+        const SizedBox(height: 4),
+        Text(
+          DateFormat('EEEE, MMM d, yyyy').format(DateTime.now()),
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.4),
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 
@@ -272,9 +483,9 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<Schedule>(
@@ -312,9 +523,9 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
       child: TextField(
         controller: _searchController,
@@ -359,11 +570,11 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.access_time_filled_rounded, size: 12, color: Colors.white.withValues(alpha: 0.3)),
+                      Icon(Icons.access_time_filled_rounded, size: 12, color: Colors.white.withOpacity(0.3)),
                       const SizedBox(width: 4),
                       Text(
                         _sessionDateLabel(s.sessionDate),
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
+                        style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
                       ),
                     ],
                   ),
@@ -385,7 +596,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                 Text(
                   _getDurationText(_scheduleMap[s.scheduleId]),
                   style: TextStyle(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                    color: const Color(0xFF38BDF8).withOpacity(0.6),
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../config/routes/app_routes.dart';
 import '../../services/api_service.dart';
 import '../../models/app_user.dart';
+import '../../widgets/main_scaffold.dart';
+import '../../utils/responsive.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -42,119 +44,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F172A), // Slate 900
-      body: Stack(
-        children: [
-          // Background Glowing Orbs for ambiance (Navy and Sky Blue theme)
-          Positioned(
-            top: -100,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color:
-                    const Color(0xFF38BDF8).withValues(alpha: 0.3), // Sky Blue
-                boxShadow: [
-                  BoxShadow(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                      blurRadius: 100,
-                      spreadRadius: 50)
-                ],
-              ),
-            ),
+    return MainScaffold(
+      title: 'Dashboard',
+      currentIndex: 0,
+      actions: [
+        IconButton(
+          tooltip: 'Notifications',
+          onPressed: () {
+            Navigator.pushNamed(context, AppRoutes.notifications);
+          },
+          icon: Icon(
+            Icons.notifications_active_outlined,
+            color: Colors.white.withOpacity(0.55),
+            size: 26,
           ),
-          Positioned(
-            bottom: 100,
-            right: -150,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color:
-                    const Color(0xFF1E3A8A).withValues(alpha: 0.5), // Navy Blue
-                boxShadow: [
-                  BoxShadow(
-                      color: const Color(0xFF1E3A8A).withValues(alpha: 0.5),
-                      blurRadius: 120,
-                      spreadRadius: 60)
-                ],
-              ),
-            ),
-          ),
-          // Backdrop blur for the glowing orbs
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-            child: Container(color: Colors.transparent),
-          ),
-
-          SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: ListView(
-                    physics: const BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics()),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
-                    children: _buildDashboardMainSections(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _buildBottomNavBar(),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Image.asset(
-                'assets/aclc_logo.png',
-                height: 48,
-                width: 48,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.shield, color: Colors.white, size: 40),
-              ),
-              const SizedBox(width: 16),
-              const Text(
-                'Dashboard',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-          IconButton(
-            tooltip: 'Notifications',
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.notifications);
-            },
-            icon: Icon(
-              Icons.notifications_active_outlined,
-              color: Colors.white.withValues(alpha: 0.55),
-              size: 26,
-            ),
-          ),
-        ],
+        ),
+      ],
+      body: ListView(
+        physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics()),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 24, vertical: 12),
+        children: _buildDashboardMainSections(),
       ),
     );
   }
+
 
   List<Widget> _buildDashboardMainSections() {
     return [
@@ -195,8 +110,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final int admins =
         _users.where((u) => u.role.toLowerCase() == 'admin' || u.role.toLowerCase() == 'administrator').length;
 
+    int crossAxisCount = 2;
+    if (Responsive.isDesktop(context)) {
+      crossAxisCount = 4;
+    } else if (Responsive.isTablet(context)) {
+      crossAxisCount = 3;
+    }
+
     return GridView.count(
-      crossAxisCount: 2,
+      crossAxisCount: crossAxisCount,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 16,
@@ -496,53 +418,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildBottomNavBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        border: Border(
-          top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1,
-          ),
-        ),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: 0, // Dashboard tab
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
-        showUnselectedLabels: true,
-        selectedLabelStyle:
-            const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-        unselectedLabelStyle:
-            const TextStyle(fontWeight: FontWeight.normal, fontSize: 11),
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_add_rounded), label: 'Enrollment'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.class_rounded), label: 'Classes'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.people_rounded), label: 'Users'),
-        ],
-        onTap: (index) {
-          if (index == 0) {
-            // Navigator.pushReplacementNamed(context, '/dashboard');
-          } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/enrollment');
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/classes');
-          } else if (index == 3) {
-            Navigator.pushReplacementNamed(context, '/users');
-          }
-        },
-      ),
-    );
-  }
 }
 
 class _GlassCard extends StatelessWidget {
