@@ -7,8 +7,9 @@ import 'package:intl/intl.dart';
 import 'dart:ui';
 
 class SessionDetailsScreen extends StatefulWidget {
-  final ClassSession session;
-  const SessionDetailsScreen({super.key, required this.session});
+  final ClassSession? session;
+  final Schedule? schedule;
+  const SessionDetailsScreen({super.key, this.session, this.schedule});
 
   @override
   State<SessionDetailsScreen> createState() => _SessionDetailsScreenState();
@@ -16,7 +17,7 @@ class SessionDetailsScreen extends StatefulWidget {
 
 class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   final ApiService _apiService = ApiService();
-  late ClassSession _session;
+  ClassSession? _session;
   Schedule? _schedule;
   bool _isLoading = false;
   bool _isInitialLoading = true;
@@ -25,31 +26,42 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   void initState() {
     super.initState();
     _session = widget.session;
+    _schedule = widget.schedule;
     _loadAllData();
   }
 
   Future<void> _loadAllData() async {
-    setState(() => _isInitialLoading = true);
     try {
-      final schedule = await _apiService.getSchedule(_session.scheduleId);
-      setState(() {
-        _schedule = schedule;
-        _isInitialLoading = false;
-      });
+      if (_session != null && _schedule == null) {
+        final schedule = await _apiService.getSchedule(_session!.scheduleId);
+        if (mounted) {
+          setState(() {
+            _schedule = schedule;
+            _isInitialLoading = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isInitialLoading = false;
+          });
+        }
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isInitialLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading schedule: $e')),
+          SnackBar(content: Text('Error loading session details: $e')),
         );
       }
     }
   }
 
   Future<void> _refreshSession() async {
+    if (_session == null) return;
     setState(() => _isLoading = true);
     try {
-      final updated = await _apiService.getSessionById(_session.id);
+      final updated = await _apiService.getSessionById(_session!.id);
       setState(() => _session = updated);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -60,34 +72,73 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     }
   }
 
-  Future<void> _handleStartSession({String? actualRoom, String? cutoff}) async {
+  Future<void> _handleStartSession(String? room, String? cutoff) async {
+    if (_schedule == null) return;
+    
     setState(() => _isLoading = true);
     try {
-      // 1. If room is provided, update it first
-      if (actualRoom != null && actualRoom.isNotEmpty) {
-        await _apiService.updateSessionRoom(_session.id, actualRoom);
+      // If session doesn't exist yet, create it now
+      if (_session == null) {
+        final date = _getValidSessionDate(_schedule!);
+        final newSession = await _apiService.createSession({
+          'scheduleId': _schedule!.id,
+          'sessionDate': date.toIso8601String(),
+          if (room != null && room.isNotEmpty) 'actualRoom': room,
+          if (cutoff != null && cutoff.isNotEmpty) 'cutoff': cutoff,
+        });
+        
+        setState(() => _session = newSession);
       }
+
+      // Proceed to start the session (PATCH status)
+      await _apiService.startSession(_session!.id);
       
-      // 2. Start session
-      await _apiService.startSession(_session.id);
-      await _refreshSession();
+      final updatedSession = await _apiService.getSessionById(_session!.id);
+      setState(() {
+        _session = updatedSession;
+        _isLoading = false;
+      });
       
       if (mounted) {
-        Navigator.pop(context); // Close modal
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Session started successfully!'),
+            backgroundColor: Color(0xFF34D399),
+          ),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error starting session: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error starting session: $e')),
+        );
+      }
     }
   }
 
+  DateTime _getValidSessionDate(Schedule schedule) {
+    final now = DateTime.now();
+    int? targetWeekday = schedule.dayOfWeek;
+
+    if (targetWeekday == null && schedule.dayName != null) {
+      final days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      final idx = days.indexOf(schedule.dayName!.toLowerCase());
+      if (idx != -1) targetWeekday = idx + 1;
+    }
+
+    if (targetWeekday == null) return now;
+
+    int diff = targetWeekday - now.weekday;
+    if (diff < 0) diff += 7;
+    return now.add(Duration(days: diff));
+  }
+
   Future<void> _handleEndSession() async {
+    if (_session == null) return;
     setState(() => _isLoading = true);
     try {
-      await _apiService.endSession(_session.id);
+      await _apiService.endSession(_session!.id);
       await _refreshSession();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -99,7 +150,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   }
 
   void _showStartModal() {
-    String? selectedRoom = _session.scheduledRoomName;
+    String? selectedRoom = _session?.scheduledRoomName ?? _schedule?.classroomName;
     final TextEditingController cutoffController = TextEditingController();
 
     showModalBottomSheet(
@@ -132,7 +183,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             const SizedBox(height: 8),
             _buildModalDropdown(
               value: selectedRoom,
-              items: [_session.scheduledRoomName, 'Short Course Laboratory', 'Room 302'],
+              items: [selectedRoom ?? 'Room', 'Short Course Laboratory', 'Room 302'],
               onChanged: (val) => selectedRoom = val,
             ),
             const SizedBox(height: 24),
@@ -147,7 +198,10 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => _handleStartSession(),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _handleStartSession(null, null);
+                    },
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.white10),
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -159,10 +213,10 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => _handleStartSession(
-                      actualRoom: selectedRoom,
-                      cutoff: cutoffController.text,
-                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _handleStartSession(selectedRoom, cutoffController.text);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF38BDF8),
                       foregroundColor: const Color(0xFF0F172A),
@@ -180,17 +234,36 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
-    bool isActive = _session.status == 'active';
-    bool isEnded = _session.status == 'ended';
-
     if (_isInitialLoading) {
       return const Scaffold(
         backgroundColor: Color(0xFF0F172A),
         body: Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8))),
       );
     }
+
+    final isActive = _session?.status == 'active' || _session?.status == 'started';
+    final isEnded = _session?.status == 'ended' || _session?.status == 'completed';
+
+    // Room name logic
+    String roomName = 'Room';
+    if (_session != null) {
+      roomName = _session!.actualRoom ?? _session!.scheduledRoomName;
+    } else if (_schedule != null) {
+      roomName = _schedule!.classroomName;
+    }
+
+    // Section/Subject logic
+    String titleText = 'Session Details';
+    if (_session != null && _session!.sectionName.isNotEmpty) {
+      titleText = '${_session!.sectionName} - ${_session!.subjectName}';
+    } else if (_schedule != null) {
+      titleText = '${_schedule!.sectionName} - ${_schedule!.subjectName}';
+    }
+
+    bool _hasRoomChanged = _session?.actualRoom != null && _session?.actualRoom != _session?.scheduledRoomName;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -209,9 +282,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                       children: [
                         const SizedBox(height: 12),
                         Text(
-                          _session.sectionName.isNotEmpty 
-                              ? '${_session.sectionName} - ${_session.subjectName}'
-                              : 'CS31A - Software Engineering 1',
+                          titleText,
                           style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w900,
@@ -243,7 +314,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                               _buildDivider(),
                               _buildInfoRow(
                                 icon: Icons.location_on_rounded, 
-                                title: _session.actualRoom ?? _session.scheduledRoomName,
+                                title: roomName,
                                 subtitle: 'Classroom Location',
                                 badge: _hasRoomChanged ? 'Updated' : null,
                                 iconColor: const Color(0xFF38BDF8),
@@ -256,10 +327,10 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                                 iconColor: isActive ? const Color(0xFF34D399) : (isEnded ? Colors.redAccent : const Color(0xFFFBBF24)),
                               ),
                               _buildDivider(),
-                              if (_session.cutoff != null && _session.cutoff!.isNotEmpty) ...[
+                              if (_session?.cutoff != null && _session!.cutoff!.isNotEmpty) ...[
                                 _buildInfoRow(
                                   icon: Icons.timer_rounded, 
-                                  title: _session.cutoff!, 
+                                  title: _session!.cutoff!, 
                                   subtitle: 'Attendance Cutoff',
                                   iconColor: const Color(0xFF38BDF8),
                                 ),
@@ -571,8 +642,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   }
 
   bool get _hasRoomChanged {
-    if (_session.actualRoom == null || _schedule == null) return false;
-    return _session.actualRoom != _schedule!.classroomName;
+    if (_session?.actualRoom == null || _schedule == null) return false;
+    return _session!.actualRoom != _schedule!.classroomName;
   }
 
   String _formatTime(String raw) {
@@ -591,7 +662,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
 
   void _showQRCodeDialog() {
     // We encode the sessionId as the data for the student to scan.
-    final String qrData = 'session:${_session.id}';
+    final String qrData = 'session:${_session?.id ?? 0}';
 
     showDialog(
       context: context,
@@ -650,7 +721,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                '${_session.sectionName} - ${_session.subjectName}',
+                '${_session?.sectionName ?? _schedule?.sectionName ?? ""} - ${_session?.subjectName ?? _schedule?.subjectName ?? ""}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
