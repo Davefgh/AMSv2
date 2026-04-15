@@ -203,50 +203,79 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 _buildAppBar(),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const SizedBox(height: 12),
                         Text(
                           _session.sectionName.isNotEmpty 
                               ? '${_session.sectionName} - ${_session.subjectName}'
                               : 'CS31A - Software Engineering 1',
                           style: const TextStyle(
-                            fontSize: 28,
+                            fontSize: 32,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
-                            height: 1.2,
+                            letterSpacing: -1.2,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        
+                        // Glass Container for Details
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.03),
+                            borderRadius: BorderRadius.circular(32),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                          ),
+                          child: Column(
+                            children: [
+                              _buildInfoRow(
+                                icon: Icons.access_time_filled_rounded, 
+                                title: _schedule != null 
+                                    ? '${_formatTime(_schedule!.timeIn)} - ${_formatTime(_schedule!.timeOut)}'
+                                    : '10:30 AM - 12:30 PM', 
+                                subtitle: _getDurationText(_schedule),
+                                iconColor: const Color(0xFF38BDF8),
+                              ),
+                              _buildDivider(),
+                              _buildInfoRow(
+                                icon: Icons.location_on_rounded, 
+                                title: _session.actualRoom ?? _session.scheduledRoomName,
+                                subtitle: 'Classroom Location',
+                                badge: _hasRoomChanged ? 'Updated' : null,
+                                iconColor: const Color(0xFF38BDF8),
+                              ),
+                              _buildDivider(),
+                              _buildInfoRow(
+                                icon: isActive ? Icons.play_circle_fill_rounded : (isEnded ? Icons.stop_circle_rounded : Icons.hourglass_full_rounded),
+                                title: isActive ? 'Session Active' : (isEnded ? 'Session Ended' : 'Session Not Started'),
+                                subtitle: 'Current Status',
+                                iconColor: isActive ? const Color(0xFF34D399) : (isEnded ? Colors.redAccent : const Color(0xFFFBBF24)),
+                              ),
+                              _buildDivider(),
+                              if (_session.cutoff != null && _session.cutoff!.isNotEmpty) ...[
+                                _buildInfoRow(
+                                  icon: Icons.timer_rounded, 
+                                  title: _session.cutoff!, 
+                                  subtitle: 'Attendance Cutoff',
+                                  iconColor: const Color(0xFF38BDF8),
+                                ),
+                                _buildDivider(),
+                              ],
+                              _buildInfoRow(
+                                icon: Icons.person_rounded, 
+                                title: 'Jovelyn Comaingking', 
+                                subtitle: 'Subject Instructor',
+                                iconColor: const Color(0xFF38BDF8),
+                                isInstructor: true,
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 40),
-                        _buildInfoRow(
-                          Icons.access_time_rounded, 
-                          _schedule != null 
-                              ? '${_formatTime(_schedule!.timeIn)} - ${_formatTime(_schedule!.timeOut)}'
-                              : '9:00 AM - 10:30 AM', 
-                          'Scheduled Time'
-                        ),
-                        _buildInfoRow(
-                          Icons.location_on_outlined, 
-                          _session.actualRoom ?? _session.scheduledRoomName,
-                          'Room',
-                          badge: _hasRoomChanged ? 'Room Changed' : null,
-                        ),
-                        _buildInfoRow(
-                          isActive ? Icons.play_circle_outline : Icons.hourglass_empty_rounded,
-                          isActive ? 'Session Active' : (isEnded ? 'Session Ended' : 'Session Not Started'),
-                          'Status',
-                          color: isActive ? const Color(0xFF34D399) : (isEnded ? Colors.redAccent : const Color(0xFFFBBF24)),
-                        ),
-                        if (_session.cutoff != null && _session.cutoff!.isNotEmpty)
-                          _buildInfoRow(Icons.timer_outlined, _session.cutoff!, 'Attendance Cutoff'),
-                        if (isActive && _session.sessionDate != null)
-                          _buildInfoRow(
-                            Icons.history_rounded, 
-                            DateFormat('h:mm a').format(_session.sessionDate!), 
-                            'Session Start Time'
-                          ),
-                        _buildInfoRow(Icons.person_outline, 'Jovelyn Comaingking', 'Instructor'),
                       ],
                     ),
                   ),
@@ -257,7 +286,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black26,
+              color: Colors.black45,
               child: const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8))),
             ),
         ],
@@ -265,23 +294,64 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     );
   }
 
+  String _getDurationText(Schedule? s) {
+    if (s == null) return '90 minutes';
+    try {
+      final t1 = s.timeIn.split(':').map((e) => int.parse(e)).toList();
+      final t2 = s.timeOut.split(':').map((e) => int.parse(e)).toList();
+      final start = DateTime(2000, 1, 1, t1[0], t1[1]);
+      final end = DateTime(2000, 1, 1, t2[0], t2[1]);
+      final diff = end.difference(start).inMinutes;
+      return '$diff minutes';
+    } catch (_) {
+      return '90 minutes';
+    }
+  }
+
   Widget _buildBackground() {
     return Stack(
       children: [
+        // Top Right Orb
         Positioned(
           top: -100,
-          right: -100,
+          right: -50,
           child: Container(
             width: 300,
             height: 300,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+            ),
+          ),
+        ),
+        // Middle Left Orb
+        Positioned(
+          top: 300,
+          left: -100,
+          child: Container(
+            width: 350,
+            height: 350,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.05),
+            ),
+          ),
+        ),
+        // Bottom Right Orb
+        Positioned(
+          bottom: -50,
+          right: -80,
+          child: Container(
+            width: 250,
+            height: 250,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
             ),
           ),
         ),
         BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
+          filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
           child: Container(color: Colors.transparent),
         ),
       ],
@@ -290,17 +360,28 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
 
   Widget _buildAppBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+            ),
           ),
           const Text(
             'Session Details',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(
+              color: Colors.white, 
+              fontWeight: FontWeight.bold, 
+              fontSize: 16,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(width: 48),
         ],
@@ -308,50 +389,84 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String title, String? subtitle, {Color? color, String? badge}) {
+  Widget _buildInfoRow({
+    required IconData icon, 
+    required String title, 
+    String? subtitle, 
+    Color? iconColor, 
+    String? badge,
+    bool isInstructor = false,
+  }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(14),
+              color: (iconColor ?? Colors.white).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: (iconColor ?? Colors.white).withValues(alpha: 0.1)),
             ),
-            child: Icon(icon, color: color ?? Colors.white54, size: 24),
+            child: isInstructor 
+              ? Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    image: const DecorationImage(
+                      image: NetworkImage('https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                )
+              : Icon(icon, color: iconColor ?? Colors.white70, size: 24),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white, 
+                          fontWeight: FontWeight.bold, 
+                          fontSize: 16,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
                     ),
                     if (badge != null) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFBBF24).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(6),
+                          color: const Color(0xFFFBBF24).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           badge,
-                          style: const TextStyle(color: Color(0xFFFBBF24), fontSize: 10, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: Color(0xFFFBBF24), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5),
                         ),
                       ),
                     ],
                   ],
                 ),
                 if (subtitle != null)
-                  Text(
-                    subtitle,
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.3), 
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -361,59 +476,96 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     );
   }
 
-  Widget _buildBottomActions(bool isActive, bool isEnded) {
+  Widget _buildDivider() {
     return Padding(
+      padding: const EdgeInsets.only(left: 68),
+      child: Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
+    );
+  }
+
+  Widget _buildBottomActions(bool isActive, bool isEnded) {
+    return Container(
       padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B).withValues(alpha: 0.5),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (!isActive && !isEnded)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _showStartModal,
-                icon: const Icon(Icons.play_arrow_rounded),
-                label: const Text('Start Session', style: TextStyle(fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF38BDF8),
-                  foregroundColor: const Color(0xFF0F172A),
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                ),
-              ),
+            _buildActionButton(
+              onPressed: _showStartModal,
+              icon: Icons.play_arrow_rounded,
+              label: 'Start Session',
+              color: const Color(0xFF38BDF8),
+              textColor: const Color(0xFF0F172A),
             ),
           if (isActive) ...[
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _showQRCodeDialog,
-                icon: const Icon(Icons.qr_code_rounded),
-                label: const Text('Generate QR Code', style: TextStyle(fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF38BDF8),
-                  foregroundColor: const Color(0xFF0F172A),
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                ),
-              ),
+            _buildActionButton(
+              onPressed: _showQRCodeDialog,
+              icon: Icons.qr_code_rounded,
+              label: 'QR Code',
+              color: const Color(0xFF38BDF8),
+              textColor: const Color(0xFF0F172A),
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _handleEndSession,
-                icon: const Icon(Icons.stop_rounded),
-                label: const Text('End Session', style: TextStyle(fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                ),
-              ),
+            _buildActionButton(
+              onPressed: _handleEndSession,
+              icon: Icons.stop_rounded,
+              label: 'End Session',
+              color: Colors.redAccent.withValues(alpha: 0.1),
+              textColor: Colors.redAccent,
+              isOutlined: true,
             ),
           ],
+          if (isEnded)
+            _buildActionButton(
+              onPressed: () => Navigator.pop(context),
+              icon: Icons.check_rounded,
+              label: 'Done',
+              color: Colors.white.withValues(alpha: 0.05),
+              textColor: Colors.white,
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required VoidCallback onPressed,
+    required IconData icon,
+    required String label,
+    required Color color,
+    required Color textColor,
+    bool isOutlined = false,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: isOutlined ? [] : [
+          BoxShadow(
+            color: color.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 20),
+        label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isOutlined ? Colors.transparent : color,
+          foregroundColor: textColor,
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: isOutlined ? BorderSide(color: color.withValues(alpha: 0.3)) : BorderSide.none,
+          ),
+          elevation: 0,
+        ),
       ),
     );
   }
