@@ -168,10 +168,10 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       crossAxisSpacing: 16,
       childAspectRatio: 1.15,
       children: [
-        _buildStatCard('156', 'Students', Icons.people_alt_rounded, const Color(0xFF38BDF8)),
-        _buildStatCard('5', 'Classes', Icons.class_rounded, const Color(0xFF34D399)),
-        _buildStatCard('92%', 'Attendance', Icons.check_circle_outline_rounded, const Color(0xFFA78BFA)),
-        _buildStatCard('12', 'Teachers', Icons.person_outline_rounded, const Color(0xFFFBBF24)),
+        _buildStatCard('3', 'Sections', Icons.view_module_rounded, const Color(0xFF38BDF8)),
+        _buildStatCard('5', 'Subjects', Icons.menu_book_rounded, const Color(0xFF34D399)),
+        _buildStatCard('156', 'Students', Icons.people_alt_rounded, const Color(0xFFA78BFA)),
+        _buildStatCard('8', 'Classes', Icons.class_rounded, const Color(0xFFFBBF24)),
       ],
     );
   }
