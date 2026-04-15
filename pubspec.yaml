@@ -19,6 +19,7 @@ dependencies:
   connectivity_plus: ^5.0.0
   logger: ^2.0.0
   flutter_slidable: ^3.0.0
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
