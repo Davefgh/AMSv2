@@ -15,6 +15,22 @@ import '../models/course_model.dart';
 import '../models/classroom_model.dart';
 import '../models/health_status.dart';
 
+class ApiException implements Exception {
+  final int statusCode;
+  final String message;
+  final Map<String, List<String>> fieldErrors;
+
+  ApiException(this.statusCode, this.message, {this.fieldErrors = const {}});
+
+  @override
+  String toString() {
+    if (fieldErrors.isNotEmpty) {
+      return 'API Error ($statusCode): $message\nValidation errors: $fieldErrors';
+    }
+    return 'API Error ($statusCode): $message';
+  }
+}
+
 class ApiService {
   static const String baseUrl = AppConstants.apiBaseUrl;
   final Logger _logger = Logger();
@@ -707,7 +723,39 @@ class ApiService {
       if (body.isEmpty) return null;
       return jsonDecode(response.body);
     } else {
-      throw Exception('API Error: ${response.statusCode} - ${response.body}');
+      String errorMessage = 'Unknown error';
+      Map<String, List<String>> fieldErrors = {};
+
+      try {
+        final body = response.body.trim();
+        if (body.isNotEmpty) {
+          final decoded = jsonDecode(body);
+          if (decoded is Map<String, dynamic>) {
+            errorMessage = decoded['title'] ?? decoded['message'] ?? response.body;
+
+            if (decoded['errors'] != null) {
+              final errorsObj = decoded['errors'] as Map<String, dynamic>;
+              errorsObj.forEach((key, value) {
+                if (value is List) {
+                  fieldErrors[key] = value.map((e) => e.toString()).toList();
+                } else if (value is String) {
+                  fieldErrors[key] = [value];
+                }
+              });
+            }
+          } else {
+            errorMessage = body;
+          }
+        }
+      } catch (_) {
+        errorMessage = response.body.isNotEmpty ? response.body : response.reasonPhrase ?? 'Unknown error';
+      }
+
+      throw ApiException(
+        response.statusCode,
+        errorMessage,
+        fieldErrors: fieldErrors,
+      );
     }
   }
 }
