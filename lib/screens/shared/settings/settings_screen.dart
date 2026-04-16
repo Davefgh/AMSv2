@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../config/routes/app_routes.dart';
-import '../../providers/app_provider.dart';
+import '../../../config/routes/app_routes.dart';
+import '../../../providers/app_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

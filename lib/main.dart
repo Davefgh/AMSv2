@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'config/theme/app_theme.dart';
 import 'config/routes/app_routes.dart';
 import 'providers/app_provider.dart';
-import 'screens/auth/login_screen.dart';
+import 'screens/shared/auth/login_screen.dart';
 import 'services/storage_service.dart';
 
 void main() async {
