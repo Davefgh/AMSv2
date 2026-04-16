@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../services/api_service.dart';
 import '../../models/user_profile.dart';
+import '../../models/instructor_model.dart';
 import '../../widgets/main_scaffold.dart';
 import '../../providers/app_provider.dart';
 
@@ -16,24 +17,27 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final ApiService _apiService = ApiService();
-  late Future<UserProfile> _profileFuture;
+  late Future<dynamic> _profileFuture;
+  late String _userRole;
 
   @override
   void initState() {
     super.initState();
-    _profileFuture = _apiService.getMe();
+    _userRole = context.read<AppProvider>().userRole;
+    final isTeacher = _userRole == 'instructor' || _userRole == 'teacher';
+    _profileFuture = isTeacher ? _apiService.getInstructorProfile() : _apiService.getMe();
   }
 
   @override
   Widget build(BuildContext context) {
-    final role = context.watch<AppProvider>().userRole;
-    final isTeacher = role == 'instructor' || role == 'teacher';
+    final isTeacher = _userRole == 'instructor' || _userRole == 'teacher';
 
     return MainScaffold(
       title: 'Profile',
-      currentIndex: isTeacher ? 4 : -1,
+      currentIndex: -1,
+      showBackButton: true,
       isAdmin: !isTeacher,
-      body: FutureBuilder<UserProfile>(
+      body: FutureBuilder<dynamic>(
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -46,11 +50,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return _buildErrorState('No profile data found');
           }
 
-          final profile = snapshot.data!;
-          return _buildProfileContent(profile);
+          final profileData = snapshot.data!;
+          return _buildProfileContent(profileData);
         },
       ),
     );
+  }
+
+  void _reloadProfile() {
+    final isTeacher = _userRole == 'instructor' || _userRole == 'teacher';
+    setState(() {
+      _profileFuture = isTeacher ? _apiService.getInstructorProfile() : _apiService.getMe();
+    });
   }
 
 
@@ -75,7 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () => setState(() => _profileFuture = _apiService.getMe()),
+              onPressed: _reloadProfile,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
                 foregroundColor: Colors.white,
@@ -90,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileContent(UserProfile profile) {
+  Widget _buildProfileContent(dynamic profile) {
     return ListView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -103,7 +114,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildUserCard(UserProfile profile) {
+  Widget _buildUserCard(dynamic profile) {
+    String username;
+    String roleName;
+
+    if (profile is Instructor) {
+      username = profile.fullName;
+      roleName = 'Instructor';
+    } else if (profile is UserProfile) {
+      username = profile.username;
+      roleName = profile.role.toUpperCase();
+    } else {
+      username = 'Unknown User';
+      roleName = 'N/A';
+    }
+
     return _GlassCard(
       child: Column(
         children: [
@@ -113,15 +138,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFF38BDF8), width: 2),
             ),
-            child: const CircleAvatar(
+            child: CircleAvatar(
               radius: 50,
-              backgroundColor: Color(0xFF1E293B),
-              backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+              backgroundColor: const Color(0xFF1E293B),
+              backgroundImage: NetworkImage(
+                profile is Instructor 
+                  ? 'https://i.pravatar.cc/150?u=${profile.id}' 
+                  : 'https://i.pravatar.cc/150?u=${(profile as UserProfile).userId}'
+              ),
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            profile.username,
+            username,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -137,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
             ),
             child: Text(
-              profile.role.toUpperCase(),
+              roleName,
               style: const TextStyle(
                 color: Color(0xFF38BDF8),
                 fontSize: 12,
@@ -151,20 +180,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDetailSection(UserProfile profile) {
+  Widget _buildDetailSection(dynamic profile) {
     final dateFormat = DateFormat('MMMM dd, yyyy');
     
     return _GlassCard(
       padding: EdgeInsets.zero,
       child: Column(
         children: [
-          _buildDetailTile(Icons.perm_identity_rounded, 'User ID', profile.userId),
-          _buildDivider(),
-          _buildDetailTile(Icons.email_outlined, 'Email Address', profile.email),
-          _buildDivider(),
-          _buildDetailTile(Icons.calendar_month_outlined, 'Member Since', dateFormat.format(profile.createdAt)),
-          _buildDivider(),
-          _buildDetailTile(Icons.update_rounded, 'Last Updated', dateFormat.format(profile.updatedAt)),
+          if (profile is Instructor) ...[
+            _buildDetailTile(Icons.perm_identity_rounded, 'Instructor ID', profile.id.toString()),
+            _buildDivider(),
+            _buildDetailTile(Icons.person_outline_rounded, 'First Name', profile.firstname),
+            _buildDivider(),
+            _buildDetailTile(Icons.person_outline_rounded, 'Last Name', profile.lastname),
+            _buildDivider(),
+            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since', dateFormat.format(profile.createdAt)),
+            _buildDivider(),
+            _buildDetailTile(Icons.update_rounded, 'Last Updated', dateFormat.format(profile.updatedAt)),
+          ] else if (profile is UserProfile) ...[
+            _buildDetailTile(Icons.perm_identity_rounded, 'User ID', profile.userId),
+            _buildDivider(),
+            _buildDetailTile(Icons.email_outlined, 'Email Address', profile.email),
+            _buildDivider(),
+            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since', dateFormat.format(profile.createdAt)),
+            _buildDivider(),
+            _buildDetailTile(Icons.update_rounded, 'Last Updated', dateFormat.format(profile.updatedAt)),
+          ],
         ],
       ),
     );

@@ -10,6 +10,7 @@ class MainScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? floatingActionButton;
   final bool isAdmin;
+  final bool showBackButton;
 
   const MainScaffold({
     super.key,
@@ -19,6 +20,7 @@ class MainScaffold extends StatelessWidget {
     this.actions,
     this.floatingActionButton,
     this.isAdmin = true,
+    this.showBackButton = false,
   });
 
   @override
@@ -30,7 +32,7 @@ class MainScaffold extends StatelessWidget {
         tablet: _buildTabletLayout(context),
         desktop: _buildDesktopLayout(context),
       ),
-      bottomNavigationBar: Responsive.isMobile(context)
+      bottomNavigationBar: (currentIndex >= 0 && Responsive.isMobile(context))
           ? _buildBottomNavBar(context)
           : null,
       floatingActionButton: floatingActionButton,
@@ -163,7 +165,17 @@ class MainScaffold extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (showLogo) ...[
+              if (showBackButton) ...[
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white, size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  splashRadius: 20,
+                ),
+                const SizedBox(width: 16),
+              ] else if (showLogo) ...[
                 Image.asset(
                   'assets/aclc_logo.png',
                   height: 40,
@@ -184,7 +196,11 @@ class MainScaffold extends StatelessWidget {
               ),
             ],
           ),
-          if (actions != null) ...actions!,
+          if (actions != null)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: actions!,
+            ),
         ],
       ),
     );
@@ -281,7 +297,6 @@ class MainScaffold extends StatelessWidget {
             Icons.library_books_rounded, 'Attendance', AppRoutes.attendance),
         _NavDestination(Icons.qr_code_scanner_rounded, 'Sessions', AppRoutes.sessionDashboard),
         _NavDestination(Icons.people_alt_rounded, 'Sections', AppRoutes.teacherSections),
-        _NavDestination(Icons.person_rounded, 'Profile', AppRoutes.profile),
       ];
 
   Widget _buildBottomNavBar(BuildContext context) {

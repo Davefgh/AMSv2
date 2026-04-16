@@ -51,6 +51,19 @@ class ApiService {
     }
   }
 
+  Future<List<Student>> getStudentsBySection(int sectionId) async {
+    try {
+      final response = await get('/api/sections/$sectionId/all-students');
+      if (response is List) {
+        return response.map((s) => Student.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getStudentsBySection Error: $e');
+      rethrow;
+    }
+  }
+
   Future<Section> createSection(Map<String, dynamic> data) async {
     try {
       final response = await post('/api/sections', data);
@@ -277,20 +290,6 @@ class ApiService {
     }
   }
 
-  Future<List<Student>> getStudentsBySection(int sectionId) async {
-    try {
-      final response =
-          await get('/api/StudentEnrollment/section/$sectionId/students');
-      if (response is List) {
-        return response.map((s) => Student.fromJson(s)).toList();
-      }
-      return [];
-    } catch (e) {
-      _logger.e('getStudentsBySection Error: $e');
-      rethrow;
-    }
-  }
-
   Future<List<Instructor>> getInstructors({bool includeDeleted = false}) async {
     try {
       final endpoint =
@@ -302,6 +301,16 @@ class ApiService {
       return [];
     } catch (e) {
       _logger.e('getInstructors Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Instructor> getInstructorProfile() async {
+    try {
+      final response = await get('/api/instructors/profile');
+      return Instructor.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getInstructorProfile Error: $e');
       rethrow;
     }
   }
@@ -644,6 +653,27 @@ class ApiService {
       return response as Map<String, dynamic>;
     } catch (e) {
       _logger.e('getQrCodeByHash Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> getNotificationPreference() async {
+    try {
+      final response = await get('/api/NotificationPreference/realtime-checkin');
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      _logger.e('getNotificationPreference Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateNotificationPreference(bool enabled) async {
+    try {
+      await put('/api/NotificationPreference/realtime-checkin', {
+        'enabled': enabled,
+      });
+    } catch (e) {
+      _logger.e('updateNotificationPreference Error: $e');
       rethrow;
     }
   }
