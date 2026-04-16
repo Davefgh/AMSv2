@@ -10,6 +10,7 @@ class MainScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? floatingActionButton;
   final bool isAdmin;
+  final bool isStudent;
   final bool showBackButton;
 
   const MainScaffold({
@@ -20,6 +21,7 @@ class MainScaffold extends StatelessWidget {
     this.actions,
     this.floatingActionButton,
     this.isAdmin = true,
+    this.isStudent = false,
     this.showBackButton = false,
   });
 
@@ -207,7 +209,14 @@ class MainScaffold extends StatelessWidget {
   }
 
   Widget _buildNavigationRail(BuildContext context, {required bool extended}) {
-    final destinations = isAdmin ? _adminDestinations : _teacherDestinations;
+    List<_NavDestination> destinations;
+    if (isAdmin) {
+      destinations = _adminDestinations;
+    } else if (isStudent) {
+      destinations = _studentDestinations;
+    } else {
+      destinations = _teacherDestinations;
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -299,8 +308,21 @@ class MainScaffold extends StatelessWidget {
         _NavDestination(Icons.people_alt_rounded, 'Sections', AppRoutes.teacherSections),
       ];
 
+  List<_NavDestination> get _studentDestinations => const [
+        _NavDestination(
+            Icons.dashboard_rounded, 'Dashboard', AppRoutes.studentDashboard),
+        _NavDestination(Icons.person_rounded, 'Profile', AppRoutes.profile),
+      ];
+
   Widget _buildBottomNavBar(BuildContext context) {
-    final destinations = isAdmin ? _adminDestinations : _teacherDestinations;
+    List<_NavDestination> destinations;
+    if (isAdmin) {
+      destinations = _adminDestinations;
+    } else if (isStudent) {
+      destinations = _studentDestinations;
+    } else {
+      destinations = _teacherDestinations;
+    }
 
     return Container(
       decoration: BoxDecoration(

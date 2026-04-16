@@ -59,6 +59,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
           if (role == 'instructor' || role == 'teacher') {
             Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);
+          } else if (role == 'student') {
+            Navigator.pushReplacementNamed(context, AppRoutes.studentDashboard);
           } else {
             Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
           }
