@@ -32,7 +32,7 @@ class MainScaffold extends StatelessWidget {
         tablet: _buildTabletLayout(context),
         desktop: _buildDesktopLayout(context),
       ),
-      bottomNavigationBar: Responsive.isMobile(context)
+      bottomNavigationBar: (currentIndex >= 0 && Responsive.isMobile(context))
           ? _buildBottomNavBar(context)
           : null,
       floatingActionButton: floatingActionButton,
@@ -196,7 +196,11 @@ class MainScaffold extends StatelessWidget {
               ),
             ],
           ),
-          if (actions != null) ...actions!,
+          if (actions != null)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: actions!,
+            ),
         ],
       ),
     );
@@ -293,7 +297,6 @@ class MainScaffold extends StatelessWidget {
             Icons.library_books_rounded, 'Attendance', AppRoutes.attendance),
         _NavDestination(Icons.qr_code_scanner_rounded, 'Sessions', AppRoutes.sessionDashboard),
         _NavDestination(Icons.people_alt_rounded, 'Sections', AppRoutes.teacherSections),
-        _NavDestination(Icons.person_rounded, 'Profile', AppRoutes.profile),
       ];
 
   Widget _buildBottomNavBar(BuildContext context) {

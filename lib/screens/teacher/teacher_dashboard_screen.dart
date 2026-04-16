@@ -39,21 +39,14 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       _errorMessage = null;
     });
     try {
-      // 1. Get logged-in user profile
-      final profile = await _apiService.getMe();
+      // 1. Get logged-in instructor profile via the direct endpoint
+      final profileData = await _apiService.getInstructorProfile();
+      final instructor = Instructor.fromJson(profileData);
 
-      // 2. Find the matching instructor by userId
-      final instructors = await _apiService.getInstructors();
-      final instructor = instructors.firstWhere(
-        (i) => i.userId == profile.userId,
-        orElse: () => throw Exception('No instructor profile found for this account.'),
-      );
-
-      // 3. Fetch all schedules for this instructor
+      // 2. Fetch all schedules for this instructor
       final schedules = await _apiService.getSchedulesByInstructorAll(instructor.id);
 
       setState(() {
-        _profile = profile;
         _instructor = instructor;
         _schedules = schedules;
         _isLoading = false;
@@ -111,6 +104,31 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       title: 'Teacher Dashboard',
       currentIndex: 0,
       isAdmin: false,
+      actions: [
+        IconButton(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('No new notifications')),
+            );
+          },
+          icon: const Icon(Icons.notifications_none_rounded, color: Colors.white70),
+          splashRadius: 20,
+        ),
+        const SizedBox(width: 4),
+        IconButton(
+          onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
+          icon: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white24, width: 1),
+            ),
+            child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
+          ),
+          splashRadius: 20,
+        ),
+        const SizedBox(width: 12),
+      ],
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFF38BDF8)),

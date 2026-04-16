@@ -305,6 +305,16 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> getInstructorProfile() async {
+    try {
+      final response = await get('/api/instructors/profile');
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      _logger.e('getInstructorProfile Error: $e');
+      rethrow;
+    }
+  }
+
   Future<Instructor> getInstructor(int id) async {
     try {
       final response = await get('/api/instructors/$id');
