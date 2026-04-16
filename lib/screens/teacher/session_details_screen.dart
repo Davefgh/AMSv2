@@ -821,10 +821,34 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     }
   }
 
-  void _showQRCodeDialog() {
-    // We encode the sessionId as the data for the student to scan.
-    final String qrData = 'session:${_session?.id ?? 0}';
+  void _showQRCodeDialog() async {
+    if (_session == null) return;
 
+    setState(() => _isLoading = true);
+
+    try {
+      final qrResponse = await _apiService.generateQrCode(_session!.id);
+      final String qrHash = qrResponse['qrHash'] ?? '';
+      
+      setState(() => _isLoading = false);
+      
+      if (!mounted) return;
+      
+      _displayQRCodeModal(qrHash);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error generating QR code: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
+  void _displayQRCodeModal(String qrHash) {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -866,7 +890,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: QrImageView(
-                  data: qrData,
+                  data: qrHash,
                   version: QrVersions.auto,
                   size: 240.0,
                   gapless: false,
