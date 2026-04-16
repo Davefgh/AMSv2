@@ -13,6 +13,7 @@ import '../models/subject_model.dart';
 import '../models/enrollment_model.dart';
 import '../models/schedule_model.dart';
 import '../models/course_model.dart';
+import '../models/student_subject_detail.dart';
 import '../models/classroom_model.dart';
 import '../models/health_status.dart';
 import '../models/attendance_model.dart';
@@ -674,6 +675,17 @@ class ApiService {
       });
     } catch (e) {
       _logger.e('updateNotificationPreference Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<StudentSubjectDetail>> getStudentSubjects() async {
+    try {
+      final response = await get('/api/students/my-subjects');
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((json) => StudentSubjectDetail.fromJson(json as Map<String, dynamic>)).toList();
+    } catch (e) {
+      _logger.e('getStudentSubjects Error: $e');
       rethrow;
     }
   }
