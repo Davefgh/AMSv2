@@ -1,0 +1,298 @@
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import '../../services/api_service.dart';
+import '../../widgets/main_scaffold.dart';
+
+class TeacherNotificationScreen extends StatefulWidget {
+  const TeacherNotificationScreen({super.key});
+
+  @override
+  State<TeacherNotificationScreen> createState() => _TeacherNotificationScreenState();
+}
+
+class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
+  final ApiService _apiService = ApiService();
+  bool _isLoading = true;
+  String? _errorMessage;
+  bool _notificationsEnabled = false;
+  String _statusMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreference();
+  }
+
+  Future<void> _loadPreference() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final preference = await _apiService.getNotificationPreference();
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = preference['enabled'] ?? false;
+          _statusMessage = preference['message'] ?? '';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _togglePreference(bool value) async {
+    final originalValue = _notificationsEnabled;
+    setState(() {
+      _notificationsEnabled = value;
+    });
+
+    try {
+      await _apiService.updateNotificationPreference(value);
+      // Reload to get the fresh status message from API
+      await _loadPreference();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(value ? 'Notifications enabled' : 'Notifications disabled'),
+            backgroundColor: const Color(0xFF1E293B),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = originalValue;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update preference: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MainScaffold(
+      title: 'Notifications',
+      currentIndex: -1,
+      showBackButton: true,
+      isAdmin: false,
+      body: Stack(
+        children: [
+          _buildBackground(),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+              : _errorMessage != null
+                  ? _buildErrorState()
+                  : _buildContent(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      children: [
+        _buildPreferenceCard(),
+        const SizedBox(height: 32),
+        _buildEmptyState(),
+      ],
+    );
+  }
+
+  Widget _buildPreferenceCard() {
+    return _GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Real-time Check-in',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Get alerted when students check in',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch.adaptive(
+                value: _notificationsEnabled,
+                onChanged: _togglePreference,
+                activeColor: const Color(0xFF38BDF8),
+                activeTrackColor: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+              ),
+            ],
+          ),
+          if (_statusMessage.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: (_notificationsEnabled ? Colors.green : Colors.orange).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: (_notificationsEnabled ? Colors.green : Colors.orange).withValues(alpha: 0.2),
+                ),
+              ),
+              child: Text(
+                _statusMessage,
+                style: TextStyle(
+                  color: _notificationsEnabled ? Colors.greenAccent : Colors.orangeAccent,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Column(
+      children: [
+        const SizedBox(height: 40),
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.notifications_none_rounded,
+            size: 48,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+        ),
+        const SizedBox(height: 20),
+        const Text(
+          'No messages yet',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Check-in activity and alerts will appear here.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.4),
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBackground() {
+    return Stack(
+      children: [
+        Positioned(
+          top: -150,
+          left: -100,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.05),
+            ),
+          ),
+        ),
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+          child: Container(color: Colors.transparent),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _loadPreference,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF38BDF8),
+                foregroundColor: const Color(0xFF0F172A),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassCard extends StatelessWidget {
+  final Widget child;
+  const _GlassCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
+            ),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}

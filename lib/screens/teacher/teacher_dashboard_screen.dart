@@ -105,11 +105,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       isAdmin: false,
       actions: [
         IconButton(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('No new notifications')),
-            );
-          },
+          onPressed: () => Navigator.pushNamed(context, AppRoutes.teacherNotifications),
           icon: const Icon(Icons.notifications_none_rounded, color: Colors.white70),
           splashRadius: 20,
         ),

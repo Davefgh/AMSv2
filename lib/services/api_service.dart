@@ -657,6 +657,27 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> getNotificationPreference() async {
+    try {
+      final response = await get('/api/NotificationPreference/realtime-checkin');
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      _logger.e('getNotificationPreference Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateNotificationPreference(bool enabled) async {
+    try {
+      await put('/api/NotificationPreference/realtime-checkin', {
+        'enabled': enabled,
+      });
+    } catch (e) {
+      _logger.e('updateNotificationPreference Error: $e');
+      rethrow;
+    }
+  }
+
   // --- Attendance APIs ---
 
   Future<AttendanceResponse> getAttendances({
