@@ -40,8 +40,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     });
     try {
       // 1. Get logged-in instructor profile via the direct endpoint
-      final profileData = await _apiService.getInstructorProfile();
-      final instructor = Instructor.fromJson(profileData);
+      final instructor = await _apiService.getInstructorProfile();
 
       // 2. Fetch all schedules for this instructor
       final schedules = await _apiService.getSchedulesByInstructorAll(instructor.id);
