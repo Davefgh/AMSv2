@@ -1587,22 +1587,22 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         errorText: _fieldErrors['timeOut']?.first ?? _fieldErrors['TimeOut']?.first,
                       ),
                       const SizedBox(height: 16),
-                      _buildDialogDropdownField<int>(
+                      _buildDialogDropdownField<String>(
                         label: 'Day of Week',
                         hint: 'Select day',
                         icon: Icons.calendar_today,
-                        value: int.tryParse(dayOfWeekController.text),
+                        value: dayOfWeekController.text.isEmpty ? null : dayOfWeekController.text,
                         items: const [
-                          DropdownMenuItem(value: 1, child: Text('Monday')),
-                          DropdownMenuItem(value: 2, child: Text('Tuesday')),
-                          DropdownMenuItem(value: 3, child: Text('Wednesday')),
-                          DropdownMenuItem(value: 4, child: Text('Thursday')),
-                          DropdownMenuItem(value: 5, child: Text('Friday')),
-                          DropdownMenuItem(value: 6, child: Text('Saturday')),
-                          DropdownMenuItem(value: 7, child: Text('Sunday')),
+                          DropdownMenuItem(value: 'Monday', child: Text('Monday')),
+                          DropdownMenuItem(value: 'Tuesday', child: Text('Tuesday')),
+                          DropdownMenuItem(value: 'Wednesday', child: Text('Wednesday')),
+                          DropdownMenuItem(value: 'Thursday', child: Text('Thursday')),
+                          DropdownMenuItem(value: 'Friday', child: Text('Friday')),
+                          DropdownMenuItem(value: 'Saturday', child: Text('Saturday')),
+                          DropdownMenuItem(value: 'Sunday', child: Text('Sunday')),
                         ],
                         onChanged: (val) {
-                          if (val != null) dayOfWeekController.text = val.toString();
+                          if (val != null) dayOfWeekController.text = val;
                         },
                         errorText: _fieldErrors['dayOfWeek']?.first ?? _fieldErrors['DayOfWeek']?.first,
                       ),
@@ -1695,10 +1695,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                     'dayOfWeek':
                                         dayOfWeekController.text.trim().isEmpty
                                             ? null
-                                            : (int.tryParse(
-                                                    dayOfWeekController.text
-                                                        .trim()) ??
-                                                dayOfWeekController.text.trim()),
+                                            : dayOfWeekController.text.trim(),
                                     'subjectId': subjectIdController.text
                                             .trim()
                                             .isEmpty

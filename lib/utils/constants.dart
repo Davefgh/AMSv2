@@ -1,7 +1,7 @@
 class AppConstants {
   // API
   static const String apiBaseUrl =
-      'https://lanes-parallel-phi-saver.trycloudflare.com';
+      'https://dawn-stopping-navigate-contain.trycloudflare.com';
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Storage Keys
