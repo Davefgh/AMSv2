@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import 'package:uuid/uuid.dart';
 import '../utils/constants.dart';
 import 'storage_service.dart';
 import '../models/user_profile.dart';
@@ -615,6 +616,34 @@ class ApiService {
       await delete('/api/schedules/$id');
     } catch (e) {
       _logger.e('deleteSchedule Error: $e');
+      rethrow;
+    }
+  }
+
+  // --- QR Code Methods ---
+
+  Future<Map<String, dynamic>> generateQrCode(int sessionId) async {
+    try {
+      final String uniqueId = const Uuid().v4();
+      final response = await post('/api/QrCode/generate', {
+        'SessionId': sessionId,
+        'ExpirationMinutes': 60,
+        'MaxUsage': null,
+        'UniqueHash': uniqueId,
+      });
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      _logger.e('generateQrCode Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> getQrCodeByHash(String hash) async {
+    try {
+      final response = await get('/api/QrCode/hash/$hash');
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      _logger.e('getQrCodeByHash Error: $e');
       rethrow;
     }
   }
