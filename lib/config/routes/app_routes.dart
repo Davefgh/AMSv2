@@ -16,6 +16,7 @@ import '../../screens/teacher/session_dashboard_screen.dart';
 import '../../screens/teacher/teacher_sections_screen.dart';
 import '../../screens/teacher/teacher_notification_screen.dart';
 import '../../screens/student/student_dashboard_screen.dart';
+import '../../screens/student/student_scan_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -35,6 +36,7 @@ class AppRoutes {
   static const String sessionDashboard = '/session-dashboard';
   static const String teacherSections = '/teacher-sections';
   static const String studentDashboard = '/student-dashboard';
+  static const String studentScan = '/student-scan';
   static const String teacherNotifications = '/teacher-notifications';
 
   static Map<String, WidgetBuilder> get routes {
@@ -55,6 +57,7 @@ class AppRoutes {
       sessionDashboard: (context) => const SessionDashboardScreen(),
       teacherSections: (context) => const TeacherSectionsScreen(),
       studentDashboard: (context) => const StudentDashboardScreen(),
+      studentScan: (context) => const StudentScanScreen(),
       teacherNotifications: (context) => const TeacherNotificationScreen(),
     };
   }

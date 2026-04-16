@@ -35,7 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return MainScaffold(
       title: 'Profile',
-      currentIndex: -1,
+      currentIndex: isStudent ? 2 : -1,
       showBackButton: true,
       isAdmin: isAdmin,
       isStudent: isStudent,
