@@ -30,13 +30,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTeacher = _userRole == 'instructor' || _userRole == 'teacher';
+    final isAdmin = _userRole == 'admin';
+    final isStudent = _userRole == 'student';
 
     return MainScaffold(
       title: 'Profile',
       currentIndex: -1,
       showBackButton: true,
-      isAdmin: !isTeacher,
+      isAdmin: isAdmin,
+      isStudent: isStudent,
       body: FutureBuilder<dynamic>(
         future: _profileFuture,
         builder: (context, snapshot) {

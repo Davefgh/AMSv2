@@ -218,6 +218,8 @@ class MainScaffold extends StatelessWidget {
       destinations = _teacherDestinations;
     }
 
+    if (destinations.length < 2) return const SizedBox.shrink();
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
@@ -311,7 +313,6 @@ class MainScaffold extends StatelessWidget {
   List<_NavDestination> get _studentDestinations => const [
         _NavDestination(
             Icons.dashboard_rounded, 'Dashboard', AppRoutes.studentDashboard),
-        _NavDestination(Icons.person_rounded, 'Profile', AppRoutes.profile),
       ];
 
   Widget _buildBottomNavBar(BuildContext context) {
@@ -322,6 +323,39 @@ class MainScaffold extends StatelessWidget {
       destinations = _studentDestinations;
     } else {
       destinations = _teacherDestinations;
+    }
+
+    // BottomNavigationBar requires at least 2 items.
+    // For a single item, we show a custom layout that matches the look & feel.
+    if (destinations.length == 1) {
+      final d = destinations[0];
+      return Container(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 8, top: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          border: Border(
+            top: BorderSide(
+              color: Colors.white.withOpacity(0.1),
+              width: 1,
+            ),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(d.icon, color: const Color(0xFF38BDF8)),
+            const SizedBox(height: 4),
+            Text(
+              d.label,
+              style: const TextStyle(
+                color: Color(0xFF38BDF8),
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     return Container(
@@ -360,7 +394,15 @@ class MainScaffold extends StatelessWidget {
   void _onNavigate(BuildContext context, int index) {
     if (index == currentIndex) return;
 
-    final destinations = isAdmin ? _adminDestinations : _teacherDestinations;
+    List<_NavDestination> destinations;
+    if (isAdmin) {
+      destinations = _adminDestinations;
+    } else if (isStudent) {
+      destinations = _studentDestinations;
+    } else {
+      destinations = _teacherDestinations;
+    }
+
     if (index < 0 || index >= destinations.length) return;
 
     Navigator.pushReplacementNamed(context, destinations[index].route);
