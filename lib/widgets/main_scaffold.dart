@@ -10,6 +10,7 @@ class MainScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? floatingActionButton;
   final bool isAdmin;
+  final bool showBackButton;
 
   const MainScaffold({
     super.key,
@@ -19,6 +20,7 @@ class MainScaffold extends StatelessWidget {
     this.actions,
     this.floatingActionButton,
     this.isAdmin = true,
+    this.showBackButton = false,
   });
 
   @override
@@ -163,7 +165,17 @@ class MainScaffold extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (showLogo) ...[
+              if (showBackButton) ...[
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white, size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  splashRadius: 20,
+                ),
+                const SizedBox(width: 16),
+              ] else if (showLogo) ...[
                 Image.asset(
                   'assets/aclc_logo.png',
                   height: 40,
