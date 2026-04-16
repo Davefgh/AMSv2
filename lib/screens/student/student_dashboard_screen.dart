@@ -91,9 +91,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                       children: [
                         _buildWelcomeHeader(),
                         const SizedBox(height: 32),
-                        _buildUpcomingSessions(),
-                        const SizedBox(height: 32),
                         _buildAttendanceStats(),
+                        const SizedBox(height: 32),
+                        _buildUpcomingSessions(),
                       ],
                     ),
                   ),
