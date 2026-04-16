@@ -51,6 +51,19 @@ class ApiService {
     }
   }
 
+  Future<List<Student>> getStudentsBySection(int sectionId) async {
+    try {
+      final response = await get('/api/sections/$sectionId/all-students');
+      if (response is List) {
+        return response.map((s) => Student.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getStudentsBySection Error: $e');
+      rethrow;
+    }
+  }
+
   Future<Section> createSection(Map<String, dynamic> data) async {
     try {
       final response = await post('/api/sections', data);
@@ -273,20 +286,6 @@ class ApiService {
       return [];
     } catch (e) {
       _logger.e('getEnrollmentsByStudent Error: $e');
-      rethrow;
-    }
-  }
-
-  Future<List<Student>> getStudentsBySection(int sectionId) async {
-    try {
-      final response =
-          await get('/api/StudentEnrollment/section/$sectionId/students');
-      if (response is List) {
-        return response.map((s) => Student.fromJson(s)).toList();
-      }
-      return [];
-    } catch (e) {
-      _logger.e('getStudentsBySection Error: $e');
       rethrow;
     }
   }
