@@ -165,38 +165,44 @@ class MainScaffold extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              if (showBackButton) ...[
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 20),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  splashRadius: 20,
+          Expanded(
+            child: Row(
+              children: [
+                if (showBackButton) ...[
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white, size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    splashRadius: 20,
+                  ),
+                  const SizedBox(width: 16),
+                ] else if (showLogo) ...[
+                  Image.asset(
+                    'assets/aclc_logo.png',
+                    height: 40,
+                    width: 40,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.shield, color: Colors.white, size: 32),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 16),
-              ] else if (showLogo) ...[
-                Image.asset(
-                  'assets/aclc_logo.png',
-                  height: 40,
-                  width: 40,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.shield, color: Colors.white, size: 32),
-                ),
-                const SizedBox(width: 12),
               ],
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
+            ),
           ),
           if (actions != null)
             Row(

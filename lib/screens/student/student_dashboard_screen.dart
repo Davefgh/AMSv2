@@ -260,9 +260,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 '${detail.schedule.timeIn.substring(0, 5)} - ${detail.schedule.timeOut.substring(0, 5)}',
               ),
               const SizedBox(width: 12),
-              _buildInfoChip(
-                Icons.room_rounded,
-                detail.classroom.name,
+              Flexible(
+                child: _buildInfoChip(
+                  Icons.room_rounded,
+                  detail.classroom.name,
+                ),
               ),
             ],
           ),
@@ -306,11 +308,15 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         children: [
           Icon(icon, size: 14, color: Colors.white.withValues(alpha: 0.4)),
           const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
-              fontSize: 12,
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 12,
+              ),
             ),
           ),
         ],
