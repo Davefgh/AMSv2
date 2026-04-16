@@ -49,37 +49,6 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
     }
   }
 
-  Future<void> _togglePreference(bool value) async {
-    final originalValue = _notificationsEnabled;
-    setState(() {
-      _notificationsEnabled = value;
-    });
-
-    try {
-      await _apiService.updateNotificationPreference(value);
-      // Reload to get the fresh status message from API
-      await _loadPreference();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(value ? 'Notifications enabled' : 'Notifications disabled'),
-            backgroundColor: const Color(0xFF1E293B),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _notificationsEnabled = originalValue;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update preference: $e')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
@@ -105,83 +74,16 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       children: [
-        _buildPreferenceCard(),
         const SizedBox(height: 32),
         _buildEmptyState(),
       ],
     );
   }
 
-  Widget _buildPreferenceCard() {
-    return _GlassCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Real-time Check-in',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Get alerted when students check in',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Switch.adaptive(
-                value: _notificationsEnabled,
-                onChanged: _togglePreference,
-                activeColor: const Color(0xFF38BDF8),
-                activeTrackColor: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-              ),
-            ],
-          ),
-          if (_statusMessage.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: (_notificationsEnabled ? Colors.green : Colors.orange).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: (_notificationsEnabled ? Colors.green : Colors.orange).withValues(alpha: 0.2),
-                ),
-              ),
-              child: Text(
-                _statusMessage,
-                style: TextStyle(
-                  color: _notificationsEnabled ? Colors.greenAccent : Colors.orangeAccent,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildEmptyState() {
     return Column(
       children: [
-        const SizedBox(height: 40),
+        const SizedBox(height: 100),
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
