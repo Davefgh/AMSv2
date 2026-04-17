@@ -10,6 +10,7 @@ class MainScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? floatingActionButton;
   final bool isAdmin;
+  final bool isStudent;
   final bool showBackButton;
 
   const MainScaffold({
@@ -20,6 +21,7 @@ class MainScaffold extends StatelessWidget {
     this.actions,
     this.floatingActionButton,
     this.isAdmin = true,
+    this.isStudent = false,
     this.showBackButton = false,
   });
 
@@ -163,38 +165,44 @@ class MainScaffold extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              if (showBackButton) ...[
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 20),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  splashRadius: 20,
+          Expanded(
+            child: Row(
+              children: [
+                if (showBackButton) ...[
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white, size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    splashRadius: 20,
+                  ),
+                  const SizedBox(width: 16),
+                ] else if (showLogo) ...[
+                  Image.asset(
+                    'assets/aclc_logo.png',
+                    height: 40,
+                    width: 40,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.shield, color: Colors.white, size: 32),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 16),
-              ] else if (showLogo) ...[
-                Image.asset(
-                  'assets/aclc_logo.png',
-                  height: 40,
-                  width: 40,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.shield, color: Colors.white, size: 32),
-                ),
-                const SizedBox(width: 12),
               ],
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
+            ),
           ),
           if (actions != null)
             Row(
@@ -207,7 +215,14 @@ class MainScaffold extends StatelessWidget {
   }
 
   Widget _buildNavigationRail(BuildContext context, {required bool extended}) {
-    final destinations = isAdmin ? _adminDestinations : _teacherDestinations;
+    List<_NavDestination> destinations;
+    if (isAdmin) {
+      destinations = _adminDestinations;
+    } else if (isStudent) {
+      destinations = _studentDestinations;
+    } else {
+      destinations = _teacherDestinations;
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -299,8 +314,23 @@ class MainScaffold extends StatelessWidget {
         _NavDestination(Icons.people_alt_rounded, 'Sections', AppRoutes.teacherSections),
       ];
 
+  List<_NavDestination> get _studentDestinations => const [
+        _NavDestination(
+            Icons.dashboard_rounded, 'Dashboard', AppRoutes.studentDashboard),
+        _NavDestination(
+            Icons.qr_code_scanner_rounded, 'Scan', AppRoutes.studentScan),
+        _NavDestination(Icons.person_rounded, 'Profile', AppRoutes.profile),
+      ];
+
   Widget _buildBottomNavBar(BuildContext context) {
-    final destinations = isAdmin ? _adminDestinations : _teacherDestinations;
+    List<_NavDestination> destinations;
+    if (isAdmin) {
+      destinations = _adminDestinations;
+    } else if (isStudent) {
+      destinations = _studentDestinations;
+    } else {
+      destinations = _teacherDestinations;
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -338,7 +368,15 @@ class MainScaffold extends StatelessWidget {
   void _onNavigate(BuildContext context, int index) {
     if (index == currentIndex) return;
 
-    final destinations = isAdmin ? _adminDestinations : _teacherDestinations;
+    List<_NavDestination> destinations;
+    if (isAdmin) {
+      destinations = _adminDestinations;
+    } else if (isStudent) {
+      destinations = _studentDestinations;
+    } else {
+      destinations = _teacherDestinations;
+    }
+
     if (index < 0 || index >= destinations.length) return;
 
     Navigator.pushReplacementNamed(context, destinations[index].route);

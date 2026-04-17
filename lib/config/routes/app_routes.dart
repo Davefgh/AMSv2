@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
-import '../../screens/dashboard/dashboard_screen.dart';
-import '../../screens/profile/profile_screen.dart';
-import '../../screens/settings/settings_screen.dart';
-import '../../screens/enrollment/enrollment_screen.dart';
-import '../../screens/users/users_screen.dart';
-import '../../screens/classes/classes_screen.dart';
-import '../../screens/profile/edit_profile_screen.dart';
-import '../../screens/students/students_screen.dart';
-import '../../screens/instructors/instructors_screen.dart';
-import '../../screens/settings/notifications_screen.dart';
-import '../../screens/health/health_screen.dart';
+import '../../screens/admin/dashboard/dashboard_screen.dart';
+import '../../screens/shared/profile/profile_screen.dart';
+import '../../screens/shared/settings/settings_screen.dart';
+import '../../screens/admin/enrollment/enrollment_screen.dart';
+import '../../screens/admin/users/users_screen.dart';
+import '../../screens/admin/classes/classes_screen.dart';
+import '../../screens/shared/profile/edit_profile_screen.dart';
+import '../../screens/admin/students/students_screen.dart';
+import '../../screens/admin/instructors/instructors_screen.dart';
+import '../../screens/shared/settings/notifications_screen.dart';
+import '../../screens/admin/health/health_screen.dart';
 import '../../screens/teacher/teacher_dashboard_screen.dart';
 import '../../screens/teacher/attendance_screen.dart';
 import '../../screens/teacher/session_dashboard_screen.dart';
 import '../../screens/teacher/teacher_sections_screen.dart';
 import '../../screens/teacher/teacher_notification_screen.dart';
+import '../../screens/student/student_dashboard_screen.dart';
+import '../../screens/student/student_scan_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -33,6 +35,8 @@ class AppRoutes {
   static const String attendance = '/attendance';
   static const String sessionDashboard = '/session-dashboard';
   static const String teacherSections = '/teacher-sections';
+  static const String studentDashboard = '/student-dashboard';
+  static const String studentScan = '/student-scan';
   static const String teacherNotifications = '/teacher-notifications';
 
   static Map<String, WidgetBuilder> get routes {
@@ -52,6 +56,8 @@ class AppRoutes {
       attendance: (context) => const AttendanceScreen(),
       sessionDashboard: (context) => const SessionDashboardScreen(),
       teacherSections: (context) => const TeacherSectionsScreen(),
+      studentDashboard: (context) => const StudentDashboardScreen(),
+      studentScan: (context) => const StudentScanScreen(),
       teacherNotifications: (context) => const TeacherNotificationScreen(),
     };
   }

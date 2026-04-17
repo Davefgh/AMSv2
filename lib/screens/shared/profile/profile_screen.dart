@@ -2,11 +2,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../services/api_service.dart';
-import '../../models/user_profile.dart';
-import '../../models/instructor_model.dart';
-import '../../widgets/main_scaffold.dart';
-import '../../providers/app_provider.dart';
+import '../../../services/api_service.dart';
+import '../../../models/user_profile.dart';
+import '../../../models/instructor_model.dart';
+import '../../../widgets/main_scaffold.dart';
+import '../../../providers/app_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -30,13 +30,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTeacher = _userRole == 'instructor' || _userRole == 'teacher';
+    final isAdmin = _userRole == 'admin';
+    final isStudent = _userRole == 'student';
 
     return MainScaffold(
       title: 'Profile',
-      currentIndex: -1,
+      currentIndex: isStudent ? 2 : -1,
       showBackButton: true,
-      isAdmin: !isTeacher,
+      isAdmin: isAdmin,
+      isStudent: isStudent,
       body: FutureBuilder<dynamic>(
         future: _profileFuture,
         builder: (context, snapshot) {

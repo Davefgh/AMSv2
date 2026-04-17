@@ -1,10 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../config/routes/app_routes.dart';
-import '../../services/api_service.dart';
-import '../../services/storage_service.dart';
-import '../../providers/app_provider.dart';
+import '../../../config/routes/app_routes.dart';
+import '../../../services/api_service.dart';
+import '../../../services/storage_service.dart';
+import '../../../providers/app_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -59,6 +59,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
           if (role == 'instructor' || role == 'teacher') {
             Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);
+          } else if (role == 'student') {
+            Navigator.pushReplacementNamed(context, AppRoutes.studentDashboard);
           } else {
             Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
           }

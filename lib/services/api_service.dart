@@ -13,6 +13,7 @@ import '../models/subject_model.dart';
 import '../models/enrollment_model.dart';
 import '../models/schedule_model.dart';
 import '../models/course_model.dart';
+import '../models/student_subject_detail.dart';
 import '../models/classroom_model.dart';
 import '../models/health_status.dart';
 import '../models/attendance_model.dart';
@@ -678,6 +679,17 @@ class ApiService {
     }
   }
 
+  Future<List<StudentSubjectDetail>> getStudentSubjects() async {
+    try {
+      final response = await get('/api/students/my-subjects');
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((json) => StudentSubjectDetail.fromJson(json as Map<String, dynamic>)).toList();
+    } catch (e) {
+      _logger.e('getStudentSubjects Error: $e');
+      rethrow;
+    }
+  }
+
   // --- Attendance APIs ---
 
   Future<AttendanceResponse> getAttendances({
@@ -846,6 +858,32 @@ class ApiService {
       await patch('/api/sessions/$id/end', {});
     } catch (e) {
       _logger.e('endSession Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Student> getStudentProfile() async {
+    try {
+      final response = await get('/api/students/profile');
+      return Student.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getStudentProfile Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> scanQrCode({
+    required String qrHash,
+    required int studentId,
+  }) async {
+    try {
+      final response = await post('/api/QrCode/scan', {
+        'qrHash': qrHash,
+        'studentId': studentId,
+      });
+      return response as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('scanQrCode Error: $e');
       rethrow;
     }
   }

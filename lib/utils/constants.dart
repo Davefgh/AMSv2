@@ -1,7 +1,7 @@
 class AppConstants {
   // API
   static const String apiBaseUrl =
-      'https://dawn-stopping-navigate-contain.trycloudflare.com';
+      'https://stopped-location-switching-rrp.trycloudflare.com';
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Storage Keys
