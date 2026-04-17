@@ -862,6 +862,32 @@ class ApiService {
     }
   }
 
+  Future<Student> getStudentProfile() async {
+    try {
+      final response = await get('/api/students/profile');
+      return Student.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getStudentProfile Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> scanQrCode({
+    required String qrHash,
+    required int studentId,
+  }) async {
+    try {
+      final response = await post('/api/QrCode/scan', {
+        'qrHash': qrHash,
+        'studentId': studentId,
+      });
+      return response as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('scanQrCode Error: $e');
+      rethrow;
+    }
+  }
+
   Future<Map<String, String>> _getHeaders() async {
     final token = StorageService.getString('accessToken');
     return {
