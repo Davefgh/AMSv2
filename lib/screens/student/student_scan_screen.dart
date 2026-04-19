@@ -20,6 +20,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
   final MobileScannerController _cameraController = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
     facing: CameraFacing.back,
+    formats: const [BarcodeFormat.qrCode],
   );
 
   _ScanState _scanState = _ScanState.idle;
@@ -92,24 +93,42 @@ class _StudentScanScreenState extends State<StudentScanScreen>
     });
 
     try {
-      // Ensure we have the student profile
-      _studentProfile ??= await _apiService.getStudentProfile();
+      // Ensure we have the student profile and a valid ID
+      if (_studentProfile == null || _studentProfile!.id == 0) {
+        _studentProfile = await _apiService.getStudentProfile();
+      }
+      
+      final scanStudentId = _studentProfile!.id;
+      if (scanStudentId == 0) {
+        throw Exception('Invalid Student ID. Please log in again.');
+      }
 
-      await _apiService.scanQrCode(
+      debugPrint('Scanning QR for student ID: $scanStudentId');
+
+      debugPrint('Sending QR scan request: qrHash=$rawValue, studentId=$scanStudentId');
+      
+      final result = await _apiService.scanQrCode(
         qrHash: rawValue,
-        studentId: _studentProfile!.id,
+        studentId: scanStudentId,
       );
+
+      debugPrint('QR scan response: $result');
+
+      if (result['success'] == false) {
+        throw ApiException(400, result['message'] ?? 'Check-in failed');
+      }
 
       if (!mounted) return;
       setState(() {
         _scanState = _ScanState.success;
-        _statusMessage = 'Attendance recorded!';
+        _statusMessage = result['message'] ?? 'Attendance recorded!';
         _errorDetail = null;
       });
       _resultCtrl.forward(from: 0);
       _autoReset();
     } on ApiException catch (e) {
       if (!mounted) return;
+      debugPrint('ApiException during scan: ${e.message}');
       setState(() {
         _scanState = _ScanState.error;
         _statusMessage = 'Check-in failed';
@@ -119,6 +138,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
       _autoReset();
     } catch (e) {
       if (!mounted) return;
+      debugPrint('Exception during scan: $e');
       setState(() {
         _scanState = _ScanState.error;
         _statusMessage = 'Something went wrong';
@@ -157,23 +177,37 @@ class _StudentScanScreenState extends State<StudentScanScreen>
       currentIndex: 1,
       isAdmin: false,
       isStudent: true,
-      body: Stack(
-        children: [
-          _buildScannerView(),
-          _buildOverlay(),
-          if (_scanState == _ScanState.success || _scanState == _ScanState.error)
-            _buildResultOverlay(),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final side = constraints.maxWidth * 0.68;
+          final frameTop = (constraints.maxHeight - side) / 2.2;
+          final scanWindow = Rect.fromLTWH(
+            (constraints.maxWidth - side) / 2,
+            frameTop,
+            side,
+            side,
+          );
+
+          return Stack(
+            children: [
+              _buildScannerView(scanWindow),
+              _buildOverlay(constraints, side, frameTop, scanWindow),
+              if (_scanState == _ScanState.success || _scanState == _ScanState.error)
+                _buildResultOverlay(),
+            ],
+          );
+        },
       ),
     );
   }
 
   // ── Camera preview ───────────────────────────────────────────────────────────
-  Widget _buildScannerView() {
+  Widget _buildScannerView(Rect scanWindow) {
     if (_scanState == _ScanState.idle || _scanState == _ScanState.scanning ||
         _scanState == _ScanState.processing) {
       return MobileScanner(
         controller: _cameraController,
+        scanWindow: scanWindow,
         onDetect: _onDetect,
         errorBuilder: (context, error, child) => _buildCameraError(error),
       );
@@ -207,27 +241,18 @@ class _StudentScanScreenState extends State<StudentScanScreen>
   }
 
   // ── Dark vignette + frame + controls ────────────────────────────────────────
-  Widget _buildOverlay() {
-    return LayoutBuilder(builder: (context, constraints) {
-      final side = constraints.maxWidth * 0.68;
-      final frameTop = (constraints.maxHeight - side) / 2.2;
-
-      return Stack(
-        children: [
-          // ── Vignette cutout ──
-          CustomPaint(
-            size: Size(constraints.maxWidth, constraints.maxHeight),
-            painter: _VignettePainter(
-              frameRect: Rect.fromLTWH(
-                (constraints.maxWidth - side) / 2,
-                frameTop,
-                side,
-                side,
-              ),
-            ),
+  Widget _buildOverlay(BoxConstraints constraints, double side, double frameTop, Rect scanWindow) {
+    return Stack(
+      children: [
+        // ── Vignette cutout ──
+        CustomPaint(
+          size: Size(constraints.maxWidth, constraints.maxHeight),
+          painter: _VignettePainter(
+            frameRect: scanWindow,
           ),
+        ),
 
-          // ── Animated scan line ──
+        // ── Animated scan line ──
           Positioned(
             left: (constraints.maxWidth - side) / 2 + 2,
             top: frameTop,
@@ -281,14 +306,13 @@ class _StudentScanScreenState extends State<StudentScanScreen>
           ),
 
           // ── Torch & flip buttons at top ──
-          Positioned(
-            top: 12,
-            right: 16,
-            child: _buildTopControls(),
-          ),
-        ],
-      );
-    });
+        Positioned(
+          top: 12,
+          right: 16,
+          child: _buildTopControls(),
+        ),
+      ],
+    );
   }
 
   Widget _buildTopControls() {

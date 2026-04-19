@@ -1,0 +1,448 @@
+﻿diff --git a/ios/Runner/Info.plist b/ios/Runner/Info.plist
+index bccfc51..c1ae190 100644
+--- a/ios/Runner/Info.plist
++++ b/ios/Runner/Info.plist
+@@ -66,5 +66,9 @@
+ 		<string>UIInterfaceOrientationLandscapeLeft</string>
+ 		<string>UIInterfaceOrientationLandscapeRight</string>
+ 	</array>
++	<key>NSCameraUsageDescription</key>
++	<string>This app needs camera access to scan QR codes for attendance tracking.</string>
++	<key>NSPhotoLibraryUsageDescription</key>
++	<string>This app needs photo library access to select images.</string>
+ </dict>
+ </plist>
+diff --git a/lib/models/user_profile.dart b/lib/models/user_profile.dart
+index 81f4a26..e11ca50 100644
+--- a/lib/models/user_profile.dart
++++ b/lib/models/user_profile.dart
+@@ -5,6 +5,8 @@ class UserProfile {
+   final String role;
+   final DateTime createdAt;
+   final DateTime updatedAt;
++  final StudentProfileInfo? studentProfile;
++  final InstructorProfileInfo? instructorProfile;
+ 
+   UserProfile({
+     required this.userId,
+@@ -13,6 +15,8 @@ class UserProfile {
+     required this.role,
+     required this.createdAt,
+     required this.updatedAt,
++    this.studentProfile,
++    this.instructorProfile,
+   });
+ 
+   factory UserProfile.fromJson(Map<String, dynamic> json) {
+@@ -23,6 +27,12 @@ class UserProfile {
+       role: json['role'] ?? '',
+       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toString()),
+       updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toString()),
++      studentProfile: json['studentProfile'] != null
++          ? StudentProfileInfo.fromJson(json['studentProfile'])
++          : null,
++      instructorProfile: json['instructorProfile'] != null
++          ? InstructorProfileInfo.fromJson(json['instructorProfile'])
++          : null,
+     );
+   }
+ 
+@@ -34,6 +44,100 @@ class UserProfile {
+       'role': role,
+       'createdAt': createdAt.toIso8601String(),
+       'updatedAt': updatedAt.toIso8601String(),
++      'studentProfile': studentProfile?.toJson(),
++      'instructorProfile': instructorProfile?.toJson(),
++    };
++  }
++}
++
++class StudentProfileInfo {
++  final int id;
++  final String? firstname;
++  final String? lastname;
++  final bool isRegular;
++  final int sectionId;
++  final String sectionName;
++  final int courseId;
++  final String courseName;
++  final DateTime createdAt;
++  final DateTime updatedAt;
++
++  StudentProfileInfo({
++    required this.id,
++    this.firstname,
++    this.lastname,
++    required this.isRegular,
++    required this.sectionId,
++    required this.sectionName,
++    required this.courseId,
++    required this.courseName,
++    required this.createdAt,
++    required this.updatedAt,
++  });
++
++  factory StudentProfileInfo.fromJson(Map<String, dynamic> json) {
++    return StudentProfileInfo(
++      id: json['id'] ?? 0,
++      firstname: json['firstname'],
++      lastname: json['lastname'],
++      isRegular: json['isRegular'] ?? false,
++      sectionId: json['sectionId'] ?? 0,
++      sectionName: json['sectionName'] ?? '',
++      courseId: json['courseId'] ?? 0,
++      courseName: json['courseName'] ?? '',
++      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toString()),
++      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toString()),
++    );
++  }
++
++  Map<String, dynamic> toJson() {
++    return {
++      'id': id,
++      'firstname': firstname,
++      'lastname': lastname,
++      'isRegular': isRegular,
++      'sectionId': sectionId,
++      'sectionName': sectionName,
++      'courseId': courseId,
++      'courseName': courseName,
++      'createdAt': createdAt.toIso8601String(),
++      'updatedAt': updatedAt.toIso8601String(),
++    };
++  }
++}
++
++class InstructorProfileInfo {
++  final int id;
++  final String? firstname;
++  final String? lastname;
++  final DateTime createdAt;
++  final DateTime updatedAt;
++
++  InstructorProfileInfo({
++    required this.id,
++    this.firstname,
++    this.lastname,
++    required this.createdAt,
++    required this.updatedAt,
++  });
++
++  factory InstructorProfileInfo.fromJson(Map<String, dynamic> json) {
++    return InstructorProfileInfo(
++      id: json['id'] ?? 0,
++      firstname: json['firstname'],
++      lastname: json['lastname'],
++      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toString()),
++      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toString()),
++    );
++  }
++
++  Map<String, dynamic> toJson() {
++    return {
++      'id': id,
++      'firstname': firstname,
++      'lastname': lastname,
++      'createdAt': createdAt.toIso8601String(),
++      'updatedAt': updatedAt.toIso8601String(),
+     };
+   }
+ }
+diff --git a/lib/screens/shared/auth/login_screen.dart b/lib/screens/shared/auth/login_screen.dart
+index d57e2b8..30868f0 100644
+--- a/lib/screens/shared/auth/login_screen.dart
++++ b/lib/screens/shared/auth/login_screen.dart
+@@ -5,6 +5,7 @@ import '../../../config/routes/app_routes.dart';
+ import '../../../services/api_service.dart';
+ import '../../../services/storage_service.dart';
+ import '../../../providers/app_provider.dart';
++import '../../../utils/constants.dart';
+ 
+ class LoginScreen extends StatefulWidget {
+   const LoginScreen({super.key});
+@@ -47,11 +48,11 @@ class _LoginScreenState extends State<LoginScreen> {
+       if (response['success'] == true) {
+         // Save tokens and user info
+         await StorageService.setString(
+-            'accessToken', response['accessToken'] ?? '');
++            AppConstants.storageKeyToken, response['accessToken'] ?? '');
+         await StorageService.setString(
+-            'refreshToken', response['refreshToken'] ?? '');
+-        await StorageService.setString('userEmail', response['user'] ?? '');
+-        await StorageService.setString('userRole', response['role'] ?? 'user');
++            AppConstants.storageKeyRefreshToken, response['refreshToken'] ?? '');
++        await StorageService.setString(AppConstants.storageKeyUser, response['user'] ?? '');
++        await StorageService.setString(AppConstants.storageKeyRole, response['role'] ?? 'user');
+ 
+         if (mounted) {
+           final role = response['role']?.toString().toLowerCase() ?? 'user';
+diff --git a/lib/screens/student/student_scan_screen.dart b/lib/screens/student/student_scan_screen.dart
+index ba2e763..e1c3afb 100644
+--- a/lib/screens/student/student_scan_screen.dart
++++ b/lib/screens/student/student_scan_screen.dart
+@@ -20,6 +20,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
+   final MobileScannerController _cameraController = MobileScannerController(
+     detectionSpeed: DetectionSpeed.noDuplicates,
+     facing: CameraFacing.back,
++    formats: const [BarcodeFormat.qrCode],
+   );
+ 
+   _ScanState _scanState = _ScanState.idle;
+@@ -92,24 +93,42 @@ class _StudentScanScreenState extends State<StudentScanScreen>
+     });
+ 
+     try {
+-      // Ensure we have the student profile
+-      _studentProfile ??= await _apiService.getStudentProfile();
+-
+-      await _apiService.scanQrCode(
++      // Ensure we have the student profile and a valid ID
++      if (_studentProfile == null || _studentProfile!.id == 0) {
++        _studentProfile = await _apiService.getStudentProfile();
++      }
++      
++      final scanStudentId = _studentProfile!.id;
++      if (scanStudentId == 0) {
++        throw Exception('Invalid Student ID. Please log in again.');
++      }
++
++      debugPrint('Scanning QR for student ID: $scanStudentId');
++
++      debugPrint('Sending QR scan request: qrHash=$rawValue, studentId=$scanStudentId');
++      
++      final result = await _apiService.scanQrCode(
+         qrHash: rawValue,
+-        studentId: _studentProfile!.id,
++        studentId: scanStudentId,
+       );
+ 
++      debugPrint('QR scan response: $result');
++
++      if (result['success'] == false) {
++        throw ApiException(400, result['message'] ?? 'Check-in failed');
++      }
++
+       if (!mounted) return;
+       setState(() {
+         _scanState = _ScanState.success;
+-        _statusMessage = 'Attendance recorded!';
++        _statusMessage = result['message'] ?? 'Attendance recorded!';
+         _errorDetail = null;
+       });
+       _resultCtrl.forward(from: 0);
+       _autoReset();
+     } on ApiException catch (e) {
+       if (!mounted) return;
++      debugPrint('ApiException during scan: ${e.message}');
+       setState(() {
+         _scanState = _ScanState.error;
+         _statusMessage = 'Check-in failed';
+@@ -119,6 +138,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
+       _autoReset();
+     } catch (e) {
+       if (!mounted) return;
++      debugPrint('Exception during scan: $e');
+       setState(() {
+         _scanState = _ScanState.error;
+         _statusMessage = 'Something went wrong';
+@@ -157,23 +177,37 @@ class _StudentScanScreenState extends State<StudentScanScreen>
+       currentIndex: 1,
+       isAdmin: false,
+       isStudent: true,
+-      body: Stack(
+-        children: [
+-          _buildScannerView(),
+-          _buildOverlay(),
+-          if (_scanState == _ScanState.success || _scanState == _ScanState.error)
+-            _buildResultOverlay(),
+-        ],
++      body: LayoutBuilder(
++        builder: (context, constraints) {
++          final side = constraints.maxWidth * 0.68;
++          final frameTop = (constraints.maxHeight - side) / 2.2;
++          final scanWindow = Rect.fromLTWH(
++            (constraints.maxWidth - side) / 2,
++            frameTop,
++            side,
++            side,
++          );
++
++          return Stack(
++            children: [
++              _buildScannerView(scanWindow),
++              _buildOverlay(constraints, side, frameTop, scanWindow),
++              if (_scanState == _ScanState.success || _scanState == _ScanState.error)
++                _buildResultOverlay(),
++            ],
++          );
++        },
+       ),
+     );
+   }
+ 
+   // ΓöÇΓöÇ Camera preview ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+-  Widget _buildScannerView() {
++  Widget _buildScannerView(Rect scanWindow) {
+     if (_scanState == _ScanState.idle || _scanState == _ScanState.scanning ||
+         _scanState == _ScanState.processing) {
+       return MobileScanner(
+         controller: _cameraController,
++        scanWindow: scanWindow,
+         onDetect: _onDetect,
+         errorBuilder: (context, error, child) => _buildCameraError(error),
+       );
+@@ -207,27 +241,18 @@ class _StudentScanScreenState extends State<StudentScanScreen>
+   }
+ 
+   // ΓöÇΓöÇ Dark vignette + frame + controls ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+-  Widget _buildOverlay() {
+-    return LayoutBuilder(builder: (context, constraints) {
+-      final side = constraints.maxWidth * 0.68;
+-      final frameTop = (constraints.maxHeight - side) / 2.2;
+-
+-      return Stack(
+-        children: [
+-          // ΓöÇΓöÇ Vignette cutout ΓöÇΓöÇ
+-          CustomPaint(
+-            size: Size(constraints.maxWidth, constraints.maxHeight),
+-            painter: _VignettePainter(
+-              frameRect: Rect.fromLTWH(
+-                (constraints.maxWidth - side) / 2,
+-                frameTop,
+-                side,
+-                side,
+-              ),
+-            ),
++  Widget _buildOverlay(BoxConstraints constraints, double side, double frameTop, Rect scanWindow) {
++    return Stack(
++      children: [
++        // ΓöÇΓöÇ Vignette cutout ΓöÇΓöÇ
++        CustomPaint(
++          size: Size(constraints.maxWidth, constraints.maxHeight),
++          painter: _VignettePainter(
++            frameRect: scanWindow,
+           ),
++        ),
+ 
+-          // ΓöÇΓöÇ Animated scan line ΓöÇΓöÇ
++        // ΓöÇΓöÇ Animated scan line ΓöÇΓöÇ
+           Positioned(
+             left: (constraints.maxWidth - side) / 2 + 2,
+             top: frameTop,
+@@ -281,14 +306,13 @@ class _StudentScanScreenState extends State<StudentScanScreen>
+           ),
+ 
+           // ΓöÇΓöÇ Torch & flip buttons at top ΓöÇΓöÇ
+-          Positioned(
+-            top: 12,
+-            right: 16,
+-            child: _buildTopControls(),
+-          ),
+-        ],
+-      );
+-    });
++        Positioned(
++          top: 12,
++          right: 16,
++          child: _buildTopControls(),
++        ),
++      ],
++    );
+   }
+ 
+   Widget _buildTopControls() {
+diff --git a/lib/services/api_service.dart b/lib/services/api_service.dart
+index b94f703..f38e6ee 100644
+--- a/lib/services/api_service.dart
++++ b/lib/services/api_service.dart
+@@ -449,6 +449,19 @@ class ApiService {
+     }
+   }
+ 
++  Future<List<Student>> searchStudentsByEmail(String email) async {
++    try {
++      final response = await get('/api/students/search/email?email=$email');
++      if (response is List) {
++        return response.map((s) => Student.fromJson(s)).toList();
++      }
++      return [];
++    } catch (e) {
++      _logger.e('searchStudentsByEmail Error: $e');
++      rethrow;
++    }
++  }
++
+   Future<List<AppUser>> getUsers() async {
+     try {
+       final response = await get('/api/users');
+@@ -636,10 +649,10 @@ class ApiService {
+     try {
+       final String uniqueId = const Uuid().v4();
+       final response = await post('/api/QrCode/generate', {
+-        'SessionId': sessionId,
+-        'ExpirationMinutes': 60,
+-        'MaxUsage': null,
+-        'UniqueHash': uniqueId,
++        'sessionId': sessionId,
++        'expirationMinutes': 60,
++        'maxUsage': null,
++        'uniqueHash': uniqueId,
+       });
+       return response as Map<String, dynamic>;
+     } catch (e) {
+@@ -864,8 +877,23 @@ class ApiService {
+ 
+   Future<Student> getStudentProfile() async {
+     try {
+-      final response = await get('/api/students/profile');
+-      return Student.fromJson(response as Map<String, dynamic>);
++      final me = await getMe();
++      
++      if (me.role.toLowerCase() != 'student' || me.studentProfile == null) {
++        throw ApiException(404, 'Your account is not linked to any Student record.');
++      }
++      
++      final sp = me.studentProfile!;
++      return Student(
++        id: sp.id,
++        firstname: sp.firstname ?? '',
++        lastname: sp.lastname ?? '',
++        isRegular: sp.isRegular,
++        userId: me.userId,
++        sectionId: sp.sectionId,
++        createdAt: sp.createdAt,
++        updatedAt: sp.updatedAt,
++      );
+     } catch (e) {
+       _logger.e('getStudentProfile Error: $e');
+       rethrow;
+@@ -889,7 +917,7 @@ class ApiService {
+   }
+ 
+   Future<Map<String, String>> _getHeaders() async {
+-    final token = StorageService.getString('accessToken');
++    final token = StorageService.getString(AppConstants.storageKeyToken);
+     return {
+       'Content-Type': 'application/json',
+       if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+diff --git a/lib/utils/constants.dart b/lib/utils/constants.dart
+index 716f71a..a77dfd1 100644
+--- a/lib/utils/constants.dart
++++ b/lib/utils/constants.dart
+@@ -1,12 +1,14 @@
+ class AppConstants {
+   // API
+   static const String apiBaseUrl =
+-      'https://stopped-location-switching-rrp.trycloudflare.com';
++  'https://liabilities-restricted-tion-tones.trycloudflare.com';
+   static const Duration apiTimeout = Duration(seconds: 30);
+ 
+   // Storage Keys
+   static const String storageKeyUser = 'user';
+-  static const String storageKeyToken = 'token';
++  static const String storageKeyToken = 'accessToken';
++  static const String storageKeyRefreshToken = 'refreshToken';
++  static const String storageKeyRole = 'userRole';
+   static const String storageKeyTheme = 'theme';
+ 
+   // Messages

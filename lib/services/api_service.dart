@@ -449,6 +449,19 @@ class ApiService {
     }
   }
 
+  Future<List<Student>> searchStudentsByEmail(String email) async {
+    try {
+      final response = await get('/api/students/search/email?email=$email');
+      if (response is List) {
+        return response.map((s) => Student.fromJson(s)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('searchStudentsByEmail Error: $e');
+      rethrow;
+    }
+  }
+
   Future<List<AppUser>> getUsers() async {
     try {
       final response = await get('/api/users');
@@ -636,10 +649,10 @@ class ApiService {
     try {
       final String uniqueId = const Uuid().v4();
       final response = await post('/api/QrCode/generate', {
-        'SessionId': sessionId,
-        'ExpirationMinutes': 60,
-        'MaxUsage': null,
-        'UniqueHash': uniqueId,
+        'sessionId': sessionId,
+        'expirationMinutes': 60,
+        'maxUsage': null,
+        'uniqueHash': uniqueId,
       });
       return response as Map<String, dynamic>;
     } catch (e) {
@@ -864,8 +877,23 @@ class ApiService {
 
   Future<Student> getStudentProfile() async {
     try {
-      final response = await get('/api/students/profile');
-      return Student.fromJson(response as Map<String, dynamic>);
+      final me = await getMe();
+      
+      if (me.role.toLowerCase() != 'student' || me.studentProfile == null) {
+        throw ApiException(404, 'Your account is not linked to any Student record.');
+      }
+      
+      final sp = me.studentProfile!;
+      return Student(
+        id: sp.id,
+        firstname: sp.firstname ?? '',
+        lastname: sp.lastname ?? '',
+        isRegular: sp.isRegular,
+        userId: me.userId,
+        sectionId: sp.sectionId,
+        createdAt: sp.createdAt,
+        updatedAt: sp.updatedAt,
+      );
     } catch (e) {
       _logger.e('getStudentProfile Error: $e');
       rethrow;
@@ -889,7 +917,7 @@ class ApiService {
   }
 
   Future<Map<String, String>> _getHeaders() async {
-    final token = StorageService.getString('accessToken');
+    final token = StorageService.getString(AppConstants.storageKeyToken);
     return {
       'Content-Type': 'application/json',
       if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
