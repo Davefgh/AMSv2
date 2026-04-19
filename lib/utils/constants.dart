@@ -1,12 +1,14 @@
 class AppConstants {
   // API
   static const String apiBaseUrl =
-      'https://stopped-location-switching-rrp.trycloudflare.com';
+  'https://liabilities-restricted-tion-tones.trycloudflare.com';
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Storage Keys
   static const String storageKeyUser = 'user';
-  static const String storageKeyToken = 'token';
+  static const String storageKeyToken = 'accessToken';
+  static const String storageKeyRefreshToken = 'refreshToken';
+  static const String storageKeyRole = 'userRole';
   static const String storageKeyTheme = 'theme';
 
   // Messages

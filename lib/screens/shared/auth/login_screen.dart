@@ -5,6 +5,7 @@ import '../../../config/routes/app_routes.dart';
 import '../../../services/api_service.dart';
 import '../../../services/storage_service.dart';
 import '../../../providers/app_provider.dart';
+import '../../../utils/constants.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -47,11 +48,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response['success'] == true) {
         // Save tokens and user info
         await StorageService.setString(
-            'accessToken', response['accessToken'] ?? '');
+            AppConstants.storageKeyToken, response['accessToken'] ?? '');
         await StorageService.setString(
-            'refreshToken', response['refreshToken'] ?? '');
-        await StorageService.setString('userEmail', response['user'] ?? '');
-        await StorageService.setString('userRole', response['role'] ?? 'user');
+            AppConstants.storageKeyRefreshToken, response['refreshToken'] ?? '');
+        await StorageService.setString(AppConstants.storageKeyUser, response['user'] ?? '');
+        await StorageService.setString(AppConstants.storageKeyRole, response['role'] ?? 'user');
 
         if (mounted) {
           final role = response['role']?.toString().toLowerCase() ?? 'user';
