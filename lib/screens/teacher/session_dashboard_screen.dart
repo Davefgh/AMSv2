@@ -4,10 +4,8 @@ import 'dart:async';
 import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/session_model.dart';
-import '../../models/instructor_model.dart';
 import 'session_details_screen.dart';
 import 'dart:ui';
-import '../../utils/responsive.dart';
 import '../../widgets/main_scaffold.dart';
 
 class SessionDashboardScreen extends StatefulWidget {
@@ -22,57 +20,29 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
-  List<Schedule> _instructorSchedules = [];
-  List<ClassSession> _upcomingSessions = [];
+  List<ClassSession> _allSessions = [];
   List<ClassSession> _filteredSessions = [];
-  Schedule? _selectedSchedule;
-  Map<int, Schedule> _scheduleMap = {};
-  final TextEditingController _searchController = TextEditingController();
-  Timer? _timer;
-  String _currentTime = '';
-  bool _isGridView = false;
+  List<Schedule> _instructorSchedules = [];
+  int _activeTabIndex = 0; // 0: All, 1: Not Started, 2: Active, 3: Completed, 4: Cancelled
 
   @override
   void initState() {
     super.initState();
-    _loadInitialData();
-    _startClock();
+    _loadData();
   }
 
-  void _startClock() {
-    _updateTime();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        _updateTime();
-      }
-    });
-  }
-
-  void _updateTime() {
-    setState(() {
-      _currentTime = DateFormat('hh:mm:ss a').format(DateTime.now());
-    });
-  }
-
-  Future<void> _loadInitialData() async {
+  Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
     try {
-      final schedules = await _apiService.getMySchedules();
       final mySessions = await _apiService.getMySessions();
-
+      final schedules = await _apiService.getMySchedules();
       setState(() {
+        _allSessions = mySessions;
         _instructorSchedules = schedules;
-        _upcomingSessions = mySessions;
-        _filteredSessions = mySessions;
-        
-        _scheduleMap = {for (var s in schedules) s.id: s};
-        
-        if (_instructorSchedules.isNotEmpty) {
-          _selectedSchedule = _findNearestSchedule(schedules);
-        }
+        _applyFilter();
         _isLoading = false;
       });
     } catch (e) {
@@ -83,175 +53,108 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     }
   }
 
-  Schedule? _findNearestSchedule(List<Schedule> schedules) {
-    if (schedules.isEmpty) return null;
-    
-    final now = DateTime.now();
-    final todayWeekday = now.weekday;
-    final currentTimeStr = DateFormat('HH:mm:ss').format(now);
-    
-    final todaySchedules = schedules.where((s) => s.dayOfWeek == todayWeekday).toList();
-    if (todaySchedules.isNotEmpty) {
-      todaySchedules.sort((a, b) => a.timeIn.compareTo(b.timeIn));
-      for (var s in todaySchedules) {
-        if (s.timeIn.compareTo(currentTimeStr) <= 0 && s.timeOut.compareTo(currentTimeStr) >= 0) {
-          return s;
-        }
-        if (s.timeIn.compareTo(currentTimeStr) > 0) {
-          return s;
-        }
+  void _applyFilter() {
+    setState(() {
+      switch (_activeTabIndex) {
+        case 1: // Not Started
+          _filteredSessions = _allSessions.where((s) => s.status.toLowerCase() == 'pending' || s.status.toLowerCase() == 'not_started').toList();
+          break;
+        case 2: // Active
+          _filteredSessions = _allSessions.where((s) => s.status.toLowerCase() == 'active' || s.status.toLowerCase() == 'started').toList();
+          break;
+        case 3: // Completed
+          _filteredSessions = _allSessions.where((s) => s.status.toLowerCase() == 'ended' || s.status.toLowerCase() == 'completed').toList();
+          break;
+        case 4: // Cancelled
+          _filteredSessions = _allSessions.where((s) => s.status.toLowerCase() == 'cancelled' || s.status.toLowerCase() == 'deleted').toList();
+          break;
+        default:
+          _filteredSessions = _allSessions;
       }
-      return todaySchedules.first;
+    });
+  }
+
+  int _getCount(int index) {
+    switch (index) {
+      case 1: return _allSessions.where((s) => s.status.toLowerCase() == 'pending' || s.status.toLowerCase() == 'not_started').length;
+      case 2: return _allSessions.where((s) => s.status.toLowerCase() == 'active' || s.status.toLowerCase() == 'started').length;
+      case 3: return _allSessions.where((s) => s.status.toLowerCase() == 'ended' || s.status.toLowerCase() == 'completed').length;
+      case 4: return _allSessions.where((s) => s.status.toLowerCase() == 'cancelled' || s.status.toLowerCase() == 'deleted').length;
+      default: return _allSessions.length;
+    }
+  }
+
+  void _onCreateSession() {
+    if (_instructorSchedules.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No schedules assigned to you.')));
+      return;
     }
     
-    return schedules.first;
-  }
-
-  void _filterSessions(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        _filteredSessions = _upcomingSessions;
-      } else {
-        _filteredSessions = _upcomingSessions.where((s) {
-          final title = (s.subjectName.isNotEmpty ? s.subjectName : 'Software Engineering 1').toLowerCase();
-          return title.contains(query.toLowerCase());
-        }).toList();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _handleCreateSession() {
-    if (_selectedSchedule == null) return;
-    
+    // Quick Pick: Nearest or just open first
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => SessionDetailsScreen(schedule: _selectedSchedule),
-      ),
-    ).then((_) {
-      _loadInitialData();
-    });
+      MaterialPageRoute(builder: (context) => SessionDetailsScreen(schedule: _instructorSchedules.first)),
+    ).then((_) => _loadData());
   }
 
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
       title: 'Sessions',
-      currentIndex: 2,
+      currentIndex: 2, // Sessions tab
       isAdmin: false,
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
-            )
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
           : RefreshIndicator(
+              onRefresh: _loadData,
               color: const Color(0xFF38BDF8),
-              backgroundColor: const Color(0xFF1E293B),
-              onRefresh: _loadInitialData,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(
-                    parent: BouncingScrollPhysics()),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Column(
                 children: [
-                  const SizedBox(height: 8),
-                  _buildCreateSessionCard(),
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Upcoming Schedules',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          _buildViewToggle(),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Color(0xFF38BDF8).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '${_filteredSessions.length}',
-                              style: const TextStyle(
-                                color: Color(0xFF38BDF8),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
+                  _buildHeader(),
+                  _buildTabs(),
+                  Expanded(
+                    child: _filteredSessions.isEmpty
+                        ? _buildEmptyState()
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                            itemCount: _filteredSessions.length,
+                            itemBuilder: (context, index) => _buildSessionCard(_filteredSessions[index]),
                           ),
-                        ],
-                      ),
-                    ],
                   ),
-                  const SizedBox(height: 16),
-                  _buildSearchBar(),
-                  const SizedBox(height: 24),
-                  if (_filteredSessions.isEmpty)
-                    _buildEmptyState()
-                  else if (_isGridView)
-                    _buildGridView()
-                  else
-                    ..._filteredSessions
-                        .map((s) => _buildUpcomingSessionCard(s)),
-                  const SizedBox(height: 100),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildClock() {
-    return _GlassCard(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-      onTap: () {}, // Make it clickable or just visual
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
+          const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                DateFormat('EEEE, MMM d').format(DateTime.now()),
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
+                'Session Management',
+                style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
               ),
-              const SizedBox(height: 4),
-              const Text(
-                'Current Time',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+              Text(
+                'Manage your class sessions and tracking',
+                style: TextStyle(color: Colors.white38, fontSize: 12),
               ),
             ],
           ),
-          Text(
-            _currentTime,
-            style: const TextStyle(
-              color: Color(0xFF38BDF8),
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              fontFamily: 'Courier',
-              letterSpacing: -0.5,
+          ElevatedButton.icon(
+            onPressed: _onCreateSession,
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Create Session', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF818CF8),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
         ],
@@ -259,452 +162,238 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     );
   }
 
-  Widget _buildViewToggle() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(10),
-      ),
+  Widget _buildTabs() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildToggleItem(Icons.list_rounded, !_isGridView),
-          _buildToggleItem(Icons.grid_view_rounded, _isGridView),
+          _buildTab('All', 0),
+          _buildTab('Not Started', 1),
+          _buildTab('Active', 2),
+          _buildTab('Completed', 3),
+          _buildTab('Cancelled', 4),
         ],
       ),
     );
   }
 
-  Widget _buildToggleItem(IconData icon, bool active) {
+  Widget _buildTab(String label, int index) {
+    bool active = _activeTabIndex == index;
+    int count = _getCount(index);
     return GestureDetector(
-      onTap: () => setState(() => _isGridView = icon == Icons.grid_view_rounded),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: active ? const Color(0xFF38BDF8) : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: active ? const Color(0xFF0F172A) : Colors.white38,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGridView() {
-    final isDesktop = Responsive.isDesktop(context);
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _filteredSessions.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: isDesktop ? 4 : 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        mainAxisExtent: 180,
-      ),
-      itemBuilder: (context, index) =>
-          _buildUpcomingSessionGridItem(_filteredSessions[index]),
-    );
-  }
-
-  Widget _buildUpcomingSessionGridItem(ClassSession s) {
-    return _GlassCard(
-      padding: const EdgeInsets.all(16),
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s)),
-        );
+        setState(() {
+          _activeTabIndex = index;
+          _applyFilter();
+        });
       },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: active ? const Color(0xFF38BDF8).withValues(alpha: 0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: active ? const Color(0xFF38BDF8).withValues(alpha: 0.3) : Colors.transparent),
+        ),
+        child: Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(color: active ? const Color(0xFF38BDF8) : Colors.white38, fontWeight: active ? FontWeight.bold : FontWeight.normal, fontSize: 13),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: active ? const Color(0xFF38BDF8) : Colors.white10,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(color: active ? Colors.black : Colors.white38, fontSize: 10, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSessionCard(ClassSession s) {
+    final status = s.status.toLowerCase();
+    final isActive = status == 'active' || status == 'started';
+    final isCancelled = status == 'cancelled' || status == 'deleted';
+    final isEnded = status == 'ended' || status == 'completed';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.class_rounded, color: Color(0xFF38BDF8), size: 18),
-          ),
-          const Spacer(),
-          Text(
-            s.subjectName.isNotEmpty ? s.subjectName : 'Software Engineering 1',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              fontSize: 14,
-              height: 1.2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _formatTime(_scheduleMap[s.scheduleId]?.timeIn ?? '10:00:00'),
-            style: const TextStyle(
-              color: Color(0xFF38BDF8),
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
           Row(
-            children: [
-              Icon(Icons.calendar_today, size: 10, color: Colors.white.withOpacity(0.3)),
-              const SizedBox(width: 4),
-              Text(
-                _sessionDateLabel(s.sessionDate),
-                style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 10),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCreateSessionCard() {
-    return _GlassCard(
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withOpacity(0.1),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.2)),
-            ),
-            child: const Icon(Icons.school_rounded, color: Color(0xFF38BDF8), size: 40),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'Create Session',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Select a schedule to begin.',
-            style: TextStyle(color: Colors.white38, fontSize: 13),
-          ),
-          const SizedBox(height: 32),
-          
-          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Assigned Schedule',
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
+              _buildDateBadge(s.sessionDate),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${s.subjectCode} - ${s.subjectName}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on_outlined, size: 12, color: Colors.white.withValues(alpha: 0.3)),
+                        const SizedBox(width: 4),
+                        Text(s.actualRoomName ?? s.scheduledRoomName, style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12)),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 10),
-              _buildScheduleDropdown(),
+              _buildStatusPill(status),
             ],
           ),
-          
-          const SizedBox(height: 24),
-          _buildClockSection(),
-          const SizedBox(height: 32),
-          
-          SizedBox(
-            width: double.infinity,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF38BDF8).withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
+          const SizedBox(height: 20),
+          const Divider(color: Colors.white10, height: 1),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.access_time_rounded, size: 14, color: Colors.white.withValues(alpha: 0.3)),
+                  const SizedBox(width: 6),
+                  Text(
+                    s.actualStartTime != null 
+                        ? '${DateFormat('h:mm a').format(s.actualStartTime!)} - ${s.actualEndTime != null ? DateFormat('h:mm a').format(s.actualEndTime!) : 'TBD'}'
+                        : 'Time TBD',
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
                   ),
                 ],
               ),
-              child: ElevatedButton(
-                onPressed: _handleCreateSession,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF38BDF8),
-                  foregroundColor: const Color(0xFF0F172A),
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  'Create Session',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ),
-            ),
+              isActive 
+                ? _buildActiveActions(s)
+                : TextButton(
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s))),
+                    child: const Text('View Only', style: TextStyle(color: Colors.white38, fontSize: 12, decoration: TextDecoration.underline)),
+                  ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildClockSection() {
-    return Column(
+  Widget _buildDateBadge(DateTime? date) {
+    if (date == null) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Text(DateFormat('MMM').format(date).toUpperCase(), style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 10, fontWeight: FontWeight.w900)),
+          Text(DateFormat('dd').format(date), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusPill(String status) {
+    Color color;
+    String label = status.toUpperCase();
+    
+    if (status == 'active' || status == 'started') {
+      color = const Color(0xFF34D399);
+      label = 'ACTIVE';
+    } else if (status == 'cancelled' || status == 'deleted') {
+      color = Colors.redAccent;
+      label = 'CANCELLED';
+    } else if (status == 'ended' || status == 'completed') {
+      color = Colors.white24;
+      label = 'ENDED';
+    } else {
+      color = const Color(0xFF38BDF8);
+      label = 'PENDING';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Text(label, style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w900)),
+    );
+  }
+
+  Widget _buildActiveActions(ClassSession s) {
+    return Row(
       children: [
-        Text(
-          _currentTime,
-          style: const TextStyle(
-            color: Color(0xFF38BDF8),
-            fontSize: 28,
-            fontWeight: FontWeight.w900,
-            fontFamily: 'Courier',
-            letterSpacing: -0.5,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          DateFormat('EEEE, MMM d, yyyy').format(DateTime.now()),
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.4),
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        _buildSmallAction(Icons.qr_code_rounded, 'QR', () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s)))),
+        const SizedBox(width: 8),
+        _buildSmallAction(Icons.visibility_outlined, 'View', () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s)))),
+        const SizedBox(width: 8),
+        _buildSmallAction(Icons.stop_circle_outlined, 'End', () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s))), color: Colors.redAccent.withValues(alpha: 0.2), iconColor: Colors.redAccent),
       ],
     );
   }
 
-  Widget _buildScheduleDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<Schedule>(
-          value: _selectedSchedule,
-          isExpanded: true,
-          dropdownColor: const Color(0xFF1E293B),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white30),
-          items: _instructorSchedules.map((Schedule s) {
-            return DropdownMenuItem<Schedule>(
-              value: s,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '${s.subjectName} (${s.sectionName})',
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (_selectedSchedule?.id == s.id)
-                    const Icon(Icons.check_circle_rounded, color: Color(0xFF38BDF8), size: 16),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (Schedule? newValue) {
-            setState(() => _selectedSchedule = newValue);
-          },
+  Widget _buildSmallAction(IconData icon, String label, VoidCallback onTap, {Color? color, Color? iconColor}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: color ?? Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
-      ),
-      child: TextField(
-        controller: _searchController,
-        onChanged: _filterSessions,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
-        decoration: const InputDecoration(
-          hintText: 'Search sessions...',
-          hintStyle: TextStyle(color: Colors.white24, fontSize: 14),
-          border: InputBorder.none,
-          icon: Icon(Icons.search_rounded, color: Colors.white24, size: 20),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUpcomingSessionCard(ClassSession s) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: _GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s)),
-          );
-        },
         child: Row(
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    s.subjectName.isNotEmpty ? s.subjectName : 'Software Engineering 1',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 16,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.access_time_filled_rounded, size: 12, color: Colors.white.withOpacity(0.3)),
-                      const SizedBox(width: 4),
-                      Text(
-                        _sessionDateLabel(s.sessionDate),
-                        style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  _formatTime(_scheduleMap[s.scheduleId]?.timeIn ?? '10:00:00'),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  _getDurationText(_scheduleMap[s.scheduleId]),
-                  style: TextStyle(
-                    color: const Color(0xFF38BDF8).withOpacity(0.6),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
+            Icon(icon, size: 14, color: iconColor ?? Colors.white70),
+            const SizedBox(width: 4),
+            Text(label, style: TextStyle(color: iconColor ?? Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
     );
-  }
-
-  String _sessionDateLabel(DateTime? date) {
-    if (date == null) return 'No Date';
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final sessionDate = DateTime(date.year, date.month, date.day);
-
-    if (sessionDate == today) {
-      return 'Today';
-    } else if (sessionDate == today.subtract(const Duration(days: 1))) {
-      return 'Yesterday';
-    } else if (sessionDate == today.add(const Duration(days: 1))) {
-      return 'Tomorrow';
-    } else {
-      return DateFormat('EEEE, MMM d').format(date);
-    }
-  }
-
-  String _formatTime(String raw) {
-    if (raw.isEmpty) return '--:--';
-    try {
-      final parts = raw.split(':');
-      int h = int.parse(parts[0]);
-      final m = parts[1].padLeft(2, '0');
-      final suffix = h >= 12 ? 'PM' : 'AM';
-      h = h == 0 ? 12 : (h > 12 ? h - 12 : h);
-      return '$h:$m $suffix';
-    } catch (_) {
-      return raw;
-    }
-  }
-
-  String _getDurationText(Schedule? s) {
-    if (s == null) return '45 min';
-    try {
-      final t1 = s.timeIn.split(':').map((e) => int.parse(e)).toList();
-      final t2 = s.timeOut.split(':').map((e) => int.parse(e)).toList();
-      final start = DateTime(2000, 1, 1, t1[0], t1[1]);
-      final end = DateTime(2000, 1, 1, t2[0], t2[1]);
-      final diff = end.difference(start).inMinutes;
-      return '$diff min';
-    } catch (_) {
-      return '45 min';
-    }
   }
 
   Widget _buildEmptyState() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40),
-        child: Column(
-          children: [
-            Icon(Icons.calendar_today_rounded, size: 48, color: Colors.white10),
-            const SizedBox(height: 16),
-            Text(
-              'No upcoming schedules for today.',
-              style: TextStyle(color: Colors.white24),
-            ),
-          ],
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.event_busy_rounded, size: 48, color: Colors.white.withValues(alpha: 0.1)),
+          const SizedBox(height: 16),
+          const Text('No sessions found in this category', style: TextStyle(color: Colors.white24)),
+        ],
       ),
     );
   }
-}
 
-class _GlassCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-  final VoidCallback? onTap;
-
-  const _GlassCard({
-    required this.child,
-    this.padding = const EdgeInsets.all(24),
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Padding(
-              padding: padding,
-              child: child,
-            ),
-          ),
-        ),
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+          const SizedBox(height: 16),
+          Text(_errorMessage!, style: const TextStyle(color: Colors.white70)),
+          TextButton(onPressed: _loadData, child: const Text('Retry')),
+        ],
       ),
     );
   }
