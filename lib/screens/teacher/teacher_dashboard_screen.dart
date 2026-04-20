@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/user_profile.dart';
+import '../../models/session_model.dart';
 import '../../models/instructor_model.dart';
 import 'attendance_screen.dart';
 import 'session_dashboard_screen.dart';
 import '../../widgets/main_scaffold.dart';
 import '../../utils/responsive.dart';
 import '../../config/routes/app_routes.dart';
+import 'package:intl/intl.dart';
+import 'dart:async';
 
 class TeacherDashboardScreen extends StatefulWidget {
   const TeacherDashboardScreen({super.key});
@@ -26,11 +29,32 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   UserProfile? _profile;
   Instructor? _instructor;
   List<Schedule> _schedules = [];
+  List<ClassSession> _sessions = [];
+  
+  Timer? _timer;
+  String _currentTime = '';
+  String _currentDate = '';
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _updateTime();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) => _updateTime());
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _updateTime() {
+    final now = DateTime.now();
+    setState(() {
+      _currentTime = DateFormat('h:mm a').format(now);
+      _currentDate = DateFormat('EEEE, MMM d').format(now);
+    });
   }
 
   Future<void> _loadData() async {
@@ -39,15 +63,14 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       _errorMessage = null;
     });
     try {
-      // 1. Get logged-in instructor profile via the direct endpoint
       final instructor = await _apiService.getInstructorProfile();
-
-      // 2. Fetch all schedules for this instructor
       final schedules = await _apiService.getSchedulesByInstructorAll(instructor.id);
+      final sessions = await _apiService.getMySessions();
 
       setState(() {
         _instructor = instructor;
         _schedules = schedules;
+        _sessions = sessions;
         _isLoading = false;
       });
     } catch (e) {
@@ -58,416 +81,390 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     }
   }
 
-  // --- Derived stats ---
-  int get _totalSections => _schedules
-      .map((s) => (s.section?['id'] as num?)?.toInt() ?? s.sectionId)
-      .whereType<int>()
-      .toSet()
-      .length;
-  int get _totalSubjects => _schedules
-      .map((s) => (s.subject?['id'] as num?)?.toInt() ?? s.subjectId)
-      .whereType<int>()
-      .toSet()
-      .length;
-  int get _totalClasses => _schedules.length;
+  // --- Stats Calculation ---
+  int get _totalSessions => _sessions.length;
+  double get _attendanceRate => 100.0; // Place holder or calculate if possible
+  int get _activeClassesCount => _sessions.where((s) => s.status.toLowerCase() == 'active' || s.status.toLowerCase() == 'started').length;
+  int get _subjectsTaughtCount => _schedules.map((s) => s.subjectId).toSet().length;
 
-  String get _todayDayName {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    return days[DateTime.now().weekday - 1];
-  }
+  List<ClassSession> get _activeSessions => _sessions
+      .where((s) => s.status.toLowerCase() == 'active' || s.status.toLowerCase() == 'started')
+      .toList();
 
-  int get _todayDayOfWeek => DateTime.now().weekday; // 1=Mon, 7=Sun
-
-  List<Schedule> get _todaySchedules => _schedules
-      .where((s) => s.dayOfWeek == _todayDayOfWeek || s.dayName == _todayDayName)
-      .toList()
-    ..sort((a, b) => a.timeIn.compareTo(b.timeIn));
-
-  String _formatTime(String raw) {
-    if (raw.isEmpty) return '--:--';
-    try {
-      final parts = raw.split(':');
-      int h = int.parse(parts[0]);
-      final m = parts[1].padLeft(2, '0');
-      final suffix = h >= 12 ? 'PM' : 'AM';
-      h = h == 0 ? 12 : (h > 12 ? h - 12 : h);
-      return '$h:$m $suffix';
-    } catch (_) {
-      return raw;
+  Map<String, List<Schedule>> get _groupedSchedules {
+    final Map<String, List<Schedule>> grouped = {
+      'Monday': [],
+      'Tuesday': [],
+      'Wednesday': [],
+      'Thursday': [],
+      'Friday': [],
+      'Saturday': [],
+    };
+    for (var s in _schedules) {
+      if (s.displayDay.isNotEmpty && grouped.containsKey(s.displayDay)) {
+        grouped[s.displayDay]!.add(s);
+      }
     }
+    // Sort each day by time
+    grouped.forEach((day, list) {
+      list.sort((a, b) => a.timeIn.compareTo(b.timeIn));
+    });
+    return grouped;
   }
 
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
-      title: 'Teacher Dashboard',
+      title: '', // Custom title in body
       currentIndex: 0,
       isAdmin: false,
-      actions: [
-        IconButton(
-          onPressed: () => Navigator.pushNamed(context, AppRoutes.teacherNotifications),
-          icon: const Icon(Icons.notifications_none_rounded, color: Colors.white70),
-          splashRadius: 20,
-        ),
-        const SizedBox(width: 4),
-        IconButton(
-          onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
-          icon: Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white24, width: 1),
-            ),
-            child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
-          ),
-          splashRadius: 20,
-        ),
-        const SizedBox(width: 12),
-      ],
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
-            )
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
           : _errorMessage != null
               ? _buildErrorState()
-              : _buildContent(),
+              : _buildDashboard(),
     );
   }
 
-  Widget _buildContent() {
-    final name = _instructor != null
-        ? '${_instructor!.firstname} ${_instructor!.lastname}'
-        : _profile?.username ?? 'Instructor';
-
+  Widget _buildDashboard() {
     return RefreshIndicator(
-      color: const Color(0xFF38BDF8),
-      backgroundColor: const Color(0xFF1E293B),
       onRefresh: _loadData,
-      child: ListView(
-        physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics()),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      color: const Color(0xFF38BDF8),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 24),
+            _buildStatsGrid(),
+            const SizedBox(height: 24),
+            _buildTabLayout(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabLayout() {
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Welcome back,',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.white54,
+          TabBar(
+            dividerColor: Colors.transparent,
+            indicatorColor: const Color(0xFF38BDF8),
+            labelColor: const Color(0xFF38BDF8),
+            unselectedLabelColor: Colors.white38,
+            indicatorWeight: 3,
+            indicatorSize: TabBarIndicatorSize.label,
+            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            tabs: const [
+              Tab(text: 'ACTIVE SESSIONS'),
+              Tab(text: 'WEEKLY SCHEDULE'),
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 400, // Fixed height to prevent infinite scroll issues in some layouts
+            child: TabBarView(
+              children: [
+                SingleChildScrollView(child: _buildActiveSessionsList()),
+                SingleChildScrollView(child: _buildWeeklySchedule()),
+              ],
             ),
           ),
-          Text(
-            name,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              letterSpacing: 0.3,
-            ),
-          ),
-          const SizedBox(height: 32),
-          _buildSectionTitle('Overview'),
-          const SizedBox(height: 16),
-          _buildStatsList(),
-          const SizedBox(height: 32),
-          _buildSectionTitle("Today's Schedule"),
-          const SizedBox(height: 4),
-          Text(
-            _todayDayName,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.white.withValues(alpha: 0.45),
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (_todaySchedules.isEmpty)
-            _buildEmptyState('No classes scheduled for today.')
-          else
-            ..._todaySchedules
-                .map((s) => _buildScheduleCard(s, highlight: true)),
-          const SizedBox(height: 32),
-          _buildSectionTitle('All Schedules'),
-          const SizedBox(height: 16),
-          if (_schedules.isEmpty)
-            _buildEmptyState('No schedules assigned yet.')
-          else
-            ..._schedules.map((s) => _buildScheduleCard(s, highlight: false)),
-          const SizedBox(height: 40),
         ],
       ),
+    );
+  }
+
+  Widget _buildHeader() {
+    final name = _instructor != null ? '${_instructor!.firstname} ${_instructor!.lastname}' : 'Instructor';
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: const Color(0xFF1E293B),
+                child: Text(name[0], style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 12)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hi, $name',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
+                    ),
+                    const SizedBox(height: 2),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text('INSTRUCTOR', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 9, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(_currentTime, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
+            Text(_currentDate, style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 10)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsGrid() {
+    return LayoutBuilder(builder: (context, constraints) {
+      final crossAxisCount = constraints.maxWidth > 1024 ? 4 : (constraints.maxWidth > 640 ? 2 : 2);
+      final aspectRatio = constraints.maxWidth > 640 ? 2.5 : 1.8;
+      return GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: crossAxisCount,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: aspectRatio,
+        children: [
+          _buildStatCard('Total Sessions', '$_totalSessions', Icons.calendar_today_rounded, Colors.indigoAccent),
+          _buildStatCard('Attendance Rate', '${_attendanceRate.toStringAsFixed(1)}%', Icons.check_circle_outline_rounded, const Color(0xFF34D399), subtitle: 'Excellent'),
+          _buildStatCard('Active Classes', '$_activeClassesCount', Icons.timer_outlined, const Color(0xFFFBBF24)),
+          _buildStatCard('Subjects Taught', '$_subjectsTaughtCount', Icons.book_outlined, const Color(0xFF38BDF8)),
+        ],
+      );
+    });
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon, Color color, {String? subtitle}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 11, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 2),
+                Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+                if (subtitle != null)
+                  Text(subtitle, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout() {
+    return Column(
+      children: [
+        _buildActiveSessionsList(),
+        const SizedBox(height: 32),
+        _buildWeeklySchedule(),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(flex: 3, child: _buildActiveSessionsList()),
+        const SizedBox(width: 32),
+        Expanded(flex: 2, child: _buildWeeklySchedule()),
+      ],
+    );
+  }
+
+  Widget _buildActiveSessionsList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Active Sessions'),
+        const SizedBox(height: 16),
+        if (_activeSessions.isEmpty)
+          _buildEmptyState('No sessions currently active.')
+        else
+          ..._activeSessions.map((s) => _buildActiveSessionCard(s)),
+      ],
+    );
+  }
+
+  Widget _buildActiveSessionCard(ClassSession session) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(session.subjectCode, style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                  Text(session.sectionName, style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 10)),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF34D399).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text('ACTIVE', style: TextStyle(color: Color(0xFF34D399), fontSize: 9, fontWeight: FontWeight.w900)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(session.subjectName, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(Icons.location_on_outlined, size: 14, color: Colors.white.withValues(alpha: 0.3)),
+              const SizedBox(width: 6),
+              Text(session.actualRoomName ?? session.scheduledRoomName, style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
+              const SizedBox(width: 16),
+              Icon(Icons.access_time, size: 14, color: Colors.white.withValues(alpha: 0.3)),
+              const SizedBox(width: 6),
+              Text('Started: ${DateFormat('h:mm a').format(session.actualStartTime ?? session.createdAt ?? DateTime.now())}', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeeklySchedule() {
+    final grouped = _groupedSchedules;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Weekly Schedule'),
+        const SizedBox(height: 16),
+        ...grouped.keys.map((day) {
+          final daySchedules = grouped[day]!;
+          if (daySchedules.isEmpty) return const SizedBox.shrink();
+          final isToday = day == DateFormat('EEEE').format(DateTime.now());
+          
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  isToday ? '$day (Today)' : day,
+                  style: TextStyle(color: isToday ? const Color(0xFF38BDF8) : Colors.white70, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+              const Divider(color: Colors.white10),
+              ...daySchedules.map((s) => _buildScheduleItem(s)),
+              const SizedBox(height: 16),
+            ],
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildScheduleItem(Schedule s) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12, bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 3,
+            height: 48,
+            decoration: BoxDecoration(color: const Color(0xFF38BDF8), borderRadius: BorderRadius.circular(2)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${s.timeIn} - ${s.timeOut}', style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 11)),
+                const SizedBox(height: 2),
+                Text('${s.subjectCode} - ${s.subjectName}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                Text('${s.classroomName} • ${s.sectionName}', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Row(
+      children: [
+        Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFF34D399), shape: BoxShape.circle)),
+        const SizedBox(width: 12),
+        Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+      ],
     );
   }
 
   Widget _buildErrorState() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _loadData,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: const Color(0xFF0F172A),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-        letterSpacing: 0.5,
-      ),
-    );
-  }
-
-
-  Widget _buildStatsList() {
-    return Column(
-      children: [
-        _buildStatCard(
-          '$_totalSections',
-          'Sections',
-          Icons.view_module_rounded,
-          const Color(0xFF38BDF8),
-        ),
-        const SizedBox(height: 12),
-        _buildStatCard(
-          '$_totalSubjects',
-          'Subjects',
-          Icons.menu_book_rounded,
-          const Color(0xFF34D399),
-        ),
-        const SizedBox(height: 12),
-        _buildStatCard(
-          '$_totalClasses',
-          'Schedules',
-          Icons.schedule_rounded,
-          const Color(0xFFFBBF24),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(String value, String label, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: color.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: color, size: 26),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
+          const SizedBox(height: 16),
+          Text(_errorMessage!, style: const TextStyle(color: Colors.white70)),
+          const SizedBox(height: 24),
+          ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
         ],
       ),
     );
   }
 
-  Widget _buildScheduleCard(Schedule s, {required bool highlight}) {
-    final color = highlight ? const Color(0xFF38BDF8) : const Color(0xFF60A5FA);
-    final subj = s.subjectName.isNotEmpty ? s.subjectName : 'Unknown Subject';
-    final room = s.classroomName.isNotEmpty ? s.classroomName : 'No Room';
-    final section = s.sectionName.isNotEmpty ? s.sectionName : 'No Section';
-    final day = s.displayDay;
-
+  Widget _buildEmptyState(String msg) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: highlight ? 0.12 : 0.07),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: color.withValues(alpha: highlight ? 0.35 : 0.2),
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(Icons.schedule_rounded, color: color, size: 26),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (day.isNotEmpty)
-                    Text(
-                      day,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subj,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.meeting_room_outlined,
-                          size: 13, color: Colors.white.withValues(alpha: 0.5)),
-                      const SizedBox(width: 4),
-                      Text(
-                        room,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Icon(Icons.layers_outlined,
-                          size: 13, color: Colors.white.withValues(alpha: 0.5)),
-                      const SizedBox(width: 4),
-                      Text(
-                        section,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  _formatTime(s.timeIn),
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatTime(s.timeOut),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withValues(alpha: 0.5),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 24),
-        child: Column(
-          children: [
-            Icon(Icons.event_busy_rounded,
-                size: 48, color: Colors.white.withValues(alpha: 0.2)),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-}
-
-class _GlassCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-
-  const _GlassCard({
-    required this.child,
-    this.padding = const EdgeInsets.all(20),
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
-            ),
-          ),
-          child: child,
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Text(msg, style: TextStyle(color: Colors.white.withValues(alpha: 0.2))),
       ),
     );
   }

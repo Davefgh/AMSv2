@@ -51,6 +51,7 @@ class Schedule {
   }
 
   String get subjectName => (subject?['name'] as String?)?.trim() ?? '';
+  String get subjectCode => (subject?['subjectCode'] as String?)?.trim() ?? (subject?['code'] as String?)?.trim() ?? '';
   String get sectionName => (section?['name'] as String?)?.trim() ?? '';
   String get classroomName => (classroom?['name'] as String?)?.trim() ?? '';
 
