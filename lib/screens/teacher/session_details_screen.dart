@@ -6,6 +6,7 @@ import '../../models/schedule_model.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui';
+import 'dart:async';
 
 class SessionDetailsScreen extends StatefulWidget {
   final ClassSession? session;
@@ -25,13 +26,47 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   Classroom? _tempSelectedClassroom;
   bool _isLoading = false;
   bool _isInitialLoading = true;
+  Timer? _countdownTimer;
+  String _timeRemainingText = '';
 
   @override
   void initState() {
     super.initState();
     _session = widget.session;
     _schedule = widget.schedule;
-    _loadAllData();
+    _loadAllData().then((_) => _startCountdownTimer());
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startCountdownTimer() {
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || _session?.attendanceCutOff == null) {
+        if (_timeRemainingText.isNotEmpty) setState(() => _timeRemainingText = '');
+        return;
+      }
+
+      final now = DateTime.now();
+      final difference = _session!.attendanceCutOff!.difference(now);
+
+      if (difference.isNegative) {
+        if (_timeRemainingText != 'EXPIRED') {
+          setState(() => _timeRemainingText = 'EXPIRED');
+        }
+      } else {
+        final m = difference.inMinutes;
+        final s = difference.inSeconds % 60;
+        final newText = '${m}m ${s}s left';
+        if (_timeRemainingText != newText) {
+          setState(() => _timeRemainingText = newText);
+        }
+      }
+    });
   }
 
   Future<void> _loadAllData() async {
@@ -589,10 +624,10 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                         Text(
                           titleText,
                           style: const TextStyle(
-                            fontSize: 32,
+                            fontSize: 24, // Reduced from 32
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
-                            letterSpacing: -1.2,
+                            letterSpacing: -0.5,
                             height: 1.1,
                           ),
                         ),
@@ -632,15 +667,21 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                                 iconColor: isActive ? const Color(0xFF34D399) : (isEnded ? Colors.redAccent : const Color(0xFFFBBF24)),
                               ),
                               _buildDivider(),
-                              _buildInfoRow(
+                               _buildInfoRow(
                                 icon: Icons.timer_rounded, 
                                 title: _session?.attendanceCutOff != null 
-                                    ? _formatTime('${_session!.attendanceCutOff!.hour}:${_session!.attendanceCutOff!.minute}')
+                                    ? DateFormat('h:mm a').format(_session!.attendanceCutOff!)
                                     : (_schedule?.attendanceCutoffMinutes != null 
-                                        ? '${_schedule!.attendanceCutoffMinutes} minutes (Default)' 
+                                        ? '${_schedule!.attendanceCutoffMinutes} minutes' 
                                         : 'Not Set'), 
-                                subtitle: 'Attendance Cutoff',
-                                iconColor: const Color(0xFF38BDF8),
+                                subtitle: _timeRemainingText.isNotEmpty ? _timeRemainingText : 'Attendance Cutoff',
+                                iconColor: _timeRemainingText == 'EXPIRED' ? Colors.redAccent : const Color(0xFF38BDF8),
+                                trailing: isActive ? IconButton(
+                                  onPressed: _showCutoffSelection,
+                                  icon: const Icon(Icons.edit_calendar_rounded, size: 18, color: Color(0xFF38BDF8)),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                ) : null,
                               ),
                               _buildDivider(),
                               _buildInfoRow(
@@ -774,6 +815,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     Color? iconColor, 
     String? badge,
     bool isInstructor = false,
+    Widget? trailing,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -840,16 +882,89 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                     child: Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.3), 
+                        color: _timeRemainingText.contains('m') ? const Color(0xFF38BDF8) : Colors.white.withValues(alpha: 0.3), 
                         fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: _timeRemainingText.contains('m') ? FontWeight.bold : FontWeight.w500,
                       ),
                     ),
                   ),
               ],
             ),
           ),
+          if (trailing != null) trailing,
         ],
+      ),
+    );
+  }
+
+  void _showCutoffSelection() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _GlassModal(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Set Attendance Cutoff',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'After the cutoff, new scans will be rejected.',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(child: _buildChoiceChip('15 Mins', 15)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildChoiceChip('30 Mins', 30)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildChoiceChip('None', 0)),
+              ],
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChoiceChip(String label, int minutes) {
+    return InkWell(
+      onTap: () async {
+        Navigator.pop(context);
+        if (_session == null || _session!.rowVersion == null) return;
+        
+        setState(() => _isLoading = true);
+        try {
+          await _apiService.startSession(
+            _session!.id, 
+            attendanceCutoffMinutes: minutes == 0 ? null : minutes,
+            rowVersion: _session!.rowVersion!
+          );
+          await _refreshSession();
+          _startCountdownTimer();
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating cutoff: $e')));
+        } finally {
+          setState(() => _isLoading = false);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
