@@ -437,7 +437,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               dropdownColor: const Color(0xFF1E293B),
               icon: const Icon(Icons.arrow_drop_down, color: Colors.white60),
               hint: Text(hint, style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
-              value: value,
+              value: items.contains(value) ? value : null,
               items: items.map((item) => DropdownMenuItem(value: item, child: Text(itemLabel(item), style: const TextStyle(color: Colors.white)))).toList(),
               onChanged: onChanged,
             ),
@@ -469,7 +469,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
             child: DropdownButton<String>(
               isExpanded: true,
               dropdownColor: const Color(0xFF1E293B),
-              value: value,
+              value: items.contains(value) ? value : items.first,
               items: items.map((item) => DropdownMenuItem(value: item, child: Text(item, style: const TextStyle(color: Colors.white, fontSize: 13)))).toList(),
               onChanged: onChanged,
             ),

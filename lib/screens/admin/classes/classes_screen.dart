@@ -657,7 +657,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<T>(
-          value: value,
+          value: items.any((item) => item.value == value) ? value : null,
           items: items,
           onChanged: onChanged,
           dropdownColor: const Color(0xFF1E293B),

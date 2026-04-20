@@ -935,7 +935,7 @@ class _UsersScreenState extends State<UsersScreen> {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: _selectedRole,
+              value: ['All', 'Student', 'Instructor', 'Admin'].contains(_selectedRole) ? _selectedRole : 'All',
               dropdownColor: const Color(0xFF1E293B),
               icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 16),
               style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
@@ -967,7 +967,7 @@ class _UsersScreenState extends State<UsersScreen> {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<int>(
-              value: _selectedLimit,
+              value: [5, 10, 15].contains(_selectedLimit) ? _selectedLimit : 10,
               dropdownColor: const Color(0xFF1E293B),
               icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 16),
               style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
