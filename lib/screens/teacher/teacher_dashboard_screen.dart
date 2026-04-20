@@ -115,7 +115,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
-      title: '', // Custom title in body
+      title: 'Dashboard',
       currentIndex: 0,
       isAdmin: false,
       body: _isLoading
@@ -234,17 +234,17 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   Widget _buildStatsGrid() {
     return LayoutBuilder(builder: (context, constraints) {
       final crossAxisCount = constraints.maxWidth > 1024 ? 4 : (constraints.maxWidth > 640 ? 2 : 2);
-      final aspectRatio = constraints.maxWidth > 640 ? 2.5 : 1.8;
+      final aspectRatio = constraints.maxWidth > 640 ? 2.5 : 1.45;
       return GridView.count(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         crossAxisCount: crossAxisCount,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
         childAspectRatio: aspectRatio,
         children: [
           _buildStatCard('Total Sessions', '$_totalSessions', Icons.calendar_today_rounded, Colors.indigoAccent),
-          _buildStatCard('Attendance Rate', '${_attendanceRate.toStringAsFixed(1)}%', Icons.check_circle_outline_rounded, const Color(0xFF34D399), subtitle: 'Excellent'),
+          _buildStatCard('Attendance Rate', '${_attendanceRate.toInt()}%', Icons.check_circle_outline_rounded, const Color(0xFF34D399)),
           _buildStatCard('Active Classes', '$_activeClassesCount', Icons.timer_outlined, const Color(0xFFFBBF24)),
           _buildStatCard('Subjects Taught', '$_subjectsTaughtCount', Icons.book_outlined, const Color(0xFF38BDF8)),
         ],
@@ -253,40 +253,49 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color, {String? subtitle}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+    return LayoutBuilder(builder: (context, constraints) {
+      final isSmall = constraints.maxWidth < 160;
+      return Container(
+        padding: EdgeInsets.all(isSmall ? 10 : 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(isSmall ? 6 : 8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: isSmall ? 18 : 22),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 11, fontWeight: FontWeight.w500)),
-                const SizedBox(height: 2),
-                Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
-                if (subtitle != null)
-                  Text(subtitle, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
-              ],
+            SizedBox(width: isSmall ? 8 : 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, 
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: isSmall ? 9 : 10, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 2),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(value, style: TextStyle(color: Colors.white, fontSize: isSmall ? 16 : 18, fontWeight: FontWeight.w900)),
+                  ),
+                  if (subtitle != null)
+                    Text(subtitle, style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildMobileLayout() {
