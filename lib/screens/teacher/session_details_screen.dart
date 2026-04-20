@@ -22,7 +22,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   Schedule? _schedule;
   List<Classroom> _classrooms = [];
   String _selectedCategory = 'All';
-  String? _tempSelectedRoom;
+  Classroom? _tempSelectedClassroom;
   bool _isLoading = false;
   bool _isInitialLoading = true;
 
@@ -81,31 +81,63 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     }
   }
 
-  Future<void> _handleStartSession(String? room, String? cutoff) async {
+  Future<void> _handleStartSession(Classroom? classroom, String? cutoff) async {
     if (_schedule == null) return;
     
     setState(() => _isLoading = true);
     try {
+      final int? initialCutoffMinutes = cutoff != null && cutoff.isNotEmpty 
+          ? int.tryParse(cutoff.replaceAll(RegExp(r'[^0-9]'), '')) 
+          : null;
+
       // 1. If session doesn't exist yet, create it now
       if (_session == null) {
         final date = _getValidSessionDate(_schedule!);
         final newSession = await _apiService.createSession({
           'scheduleId': _schedule!.id,
           'sessionDate': date.toIso8601String(),
-          if (room != null && room.isNotEmpty) 'actualRoom': room,
-          if (cutoff != null && cutoff.isNotEmpty) 'cutoff': cutoff,
+          if (classroom != null) 'actualRoom': classroom.name,
+          if (initialCutoffMinutes != null) 'attendanceCutoffMinutes': initialCutoffMinutes,
         });
         
         setState(() => _session = newSession);
       } else {
         // 2. If it already exists, update the room if changed
-        if (room != null && room.isNotEmpty && room != _session!.actualRoom) {
-          await _apiService.updateSessionRoom(_session!.id, room);
+        if (classroom != null && classroom.name != _session!.actualRoomName) {
+          if (_session!.rowVersion == null) {
+             throw Exception('Session rowVersion is missing. Please refresh.');
+          }
+          await _apiService.updateSessionRoom(
+            _session!.id, 
+            actualRoomId: classroom.id, 
+            rowVersion: _session!.rowVersion!
+          );
+          // Refresh to get new rowVersion
+          final intermediate = await _apiService.getSessionById(_session!.id);
+          setState(() => _session = intermediate);
         }
       }
 
       // 3. Proceed to start the session (PATCH status)
-      await _apiService.startSession(_session!.id);
+      // Parse cutoff to minutes if possible
+      int? cutoffMinutes;
+      if (cutoff != null) {
+        cutoffMinutes = int.tryParse(cutoff.replaceAll(RegExp(r'[^0-9]'), ''));
+      }
+      
+      // Fallback to schedule's cutoff if still null and not provided
+      cutoffMinutes ??= _schedule?.attendanceCutoffMinutes;
+
+      if (_session!.rowVersion == null) {
+        throw Exception('Session rowVersion is missing. Please refresh.');
+      }
+
+      await _apiService.startSession(
+        _session!.id, 
+        actualRoomId: classroom?.id,
+        attendanceCutoffMinutes: cutoffMinutes,
+        rowVersion: _session!.rowVersion!
+      );
       
       final updatedSession = await _apiService.getSessionById(_session!.id);
       setState(() {
@@ -150,9 +182,32 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
 
   Future<void> _handleEndSession() async {
     if (_session == null) return;
+    
+    final TextEditingController descriptionController = TextEditingController();
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => _buildInputDialog(
+        title: 'End Session',
+        label: 'Session Description',
+        hint: 'e.g., Covered chapters 1 to 3',
+        controller: descriptionController,
+        confirmLabel: 'End Session',
+        confirmColor: Colors.redAccent,
+      ),
+    );
+
+    if (confirm != true) return;
+
     setState(() => _isLoading = true);
     try {
-      await _apiService.endSession(_session!.id);
+      if (_session!.rowVersion == null) {
+        throw Exception('Session rowVersion is missing.');
+      }
+      await _apiService.endSession(
+        _session!.id, 
+        description: descriptionController.text,
+        rowVersion: _session!.rowVersion!
+      );
       await _refreshSession();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -161,6 +216,91 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _handleDeleteSession() async {
+    if (_session == null) return;
+    
+    final TextEditingController reasonController = TextEditingController();
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => _buildInputDialog(
+        title: 'Delete Session',
+        label: 'Reason for deletion',
+        hint: 'e.g., Instructor unavailable',
+        controller: reasonController,
+        confirmLabel: 'Delete',
+        confirmColor: Colors.redAccent,
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isLoading = true);
+    try {
+      if (_session!.rowVersion == null) {
+        throw Exception('Session rowVersion is missing.');
+      }
+      await _apiService.deleteSession(
+        _session!.id, 
+        reason: reasonController.text,
+        rowVersion: _session!.rowVersion!
+      );
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Session deleted successfully.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting session: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Widget _buildInputDialog({
+    required String title,
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    required String confirmLabel,
+    required Color confirmColor,
+  }) {
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      child: AlertDialog(
+        backgroundColor: const Color(0xFF1E293B).withOpacity(0.9),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: const BorderSide(color: Colors.white10)),
+        title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            const SizedBox(height: 12),
+            _buildModalTextField(controller: controller, hint: hint, icon: Icons.edit_note_rounded),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white38)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: confirmColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(confirmLabel),
+          ),
+        ],
+      ),
+    );
   }
 
   List<Classroom> get _filteredClassrooms {
@@ -183,8 +323,12 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   }
 
   void _showStartModal() {
-    _tempSelectedRoom = _session?.scheduledRoomName ?? _schedule?.classroomName;
-    final TextEditingController cutoffController = TextEditingController(text: _session?.cutoff);
+    final String initialRoomName = _session?.scheduledRoomName ?? _schedule?.classroomName ?? '';
+    _tempSelectedClassroom = _classrooms.firstWhere(
+      (c) => c.name == initialRoomName,
+    );
+    final String initialCutoff = (_schedule?.attendanceCutoffMinutes ?? '').toString();
+    final TextEditingController cutoffController = TextEditingController(text: initialCutoff);
 
     showModalBottomSheet(
       context: context,
@@ -277,10 +421,10 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                   itemCount: _filteredClassrooms.length,
                   itemBuilder: (context, index) {
                     final room = _filteredClassrooms[index];
-                    final isSelected = _tempSelectedRoom == room.name;
+                    final isSelected = _tempSelectedClassroom?.id == room.id;
                     return GestureDetector(
                       onTap: () {
-                        setModalState(() => _tempSelectedRoom = room.name);
+                        setModalState(() => _tempSelectedClassroom = room);
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
@@ -343,7 +487,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                     child: _buildModalButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        _handleStartSession(_tempSelectedRoom, cutoffController.text);
+                        _handleStartSession(_tempSelectedClassroom, cutoffController.text);
                       },
                       label: 'Start Session',
                       color: const Color(0xFF38BDF8),
@@ -411,7 +555,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     // Room name logic
     String roomName = 'Room';
     if (_session != null) {
-      roomName = _session!.actualRoom ?? _session!.scheduledRoomName;
+      roomName = _session!.actualRoomName ?? _session!.scheduledRoomName;
     } else if (_schedule != null) {
       roomName = _schedule!.classroomName;
     }
@@ -424,7 +568,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       titleText = '${_schedule!.sectionName} - ${_schedule!.subjectName}';
     }
 
-    bool _hasRoomChanged = _session?.actualRoom != null && _session?.actualRoom != _session?.scheduledRoomName;
+    bool _hasRoomChanged = _session?.actualRoomName != null && _session?.actualRoomName != _session?.scheduledRoomName;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -488,15 +632,17 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                                 iconColor: isActive ? const Color(0xFF34D399) : (isEnded ? Colors.redAccent : const Color(0xFFFBBF24)),
                               ),
                               _buildDivider(),
-                              if (_session?.cutoff != null && _session!.cutoff!.isNotEmpty) ...[
-                                _buildInfoRow(
-                                  icon: Icons.timer_rounded, 
-                                  title: _session!.cutoff!, 
-                                  subtitle: 'Attendance Cutoff',
-                                  iconColor: const Color(0xFF38BDF8),
-                                ),
-                                _buildDivider(),
-                              ],
+                              _buildInfoRow(
+                                icon: Icons.timer_rounded, 
+                                title: _session?.attendanceCutOff != null 
+                                    ? _formatTime('${_session!.attendanceCutOff!.hour}:${_session!.attendanceCutOff!.minute}')
+                                    : (_schedule?.attendanceCutoffMinutes != null 
+                                        ? '${_schedule!.attendanceCutoffMinutes} minutes (Default)' 
+                                        : 'Not Set'), 
+                                subtitle: 'Attendance Cutoff',
+                                iconColor: const Color(0xFF38BDF8),
+                              ),
+                              _buildDivider(),
                               _buildInfoRow(
                                 icon: Icons.person_rounded, 
                                 title: 'Jovelyn Comaingking', 
@@ -751,7 +897,19 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               isOutlined: true,
             ),
           ],
-          if (isEnded)
+          if (isEnded || !isActive) ...[
+            if (!isActive && _session != null) ...[
+              const SizedBox(height: 12),
+              _buildActionButton(
+                onPressed: _handleDeleteSession,
+                icon: Icons.delete_forever_rounded,
+                label: 'Delete Session',
+                color: Colors.redAccent.withValues(alpha: 0.1),
+                textColor: Colors.redAccent,
+                isOutlined: true,
+              ),
+            ],
+            const SizedBox(height: 12),
             _buildActionButton(
               onPressed: () => Navigator.pop(context),
               icon: Icons.check_rounded,
@@ -759,6 +917,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               color: Colors.white.withValues(alpha: 0.05),
               textColor: Colors.white,
             ),
+          ],
         ],
       ),
     );
@@ -803,8 +962,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   }
 
   bool get _hasRoomChanged {
-    if (_session?.actualRoom == null || _schedule == null) return false;
-    return _session!.actualRoom != _schedule!.classroomName;
+    if (_session?.actualRoomName == null || _schedule == null) return false;
+    return _session!.actualRoomName != _schedule!.classroomName;
   }
 
   String _formatTime(String raw) {
