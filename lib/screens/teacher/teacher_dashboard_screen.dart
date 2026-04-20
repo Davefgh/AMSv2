@@ -233,14 +233,14 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
   Widget _buildStatsGrid() {
     return LayoutBuilder(builder: (context, constraints) {
-      final crossAxisCount = constraints.maxWidth > 1024 ? 4 : (constraints.maxWidth > 640 ? 2 : 2);
-      final aspectRatio = constraints.maxWidth > 640 ? 2.5 : 1.45;
+      final crossAxisCount = constraints.maxWidth > 1024 ? 4 : (constraints.maxWidth > 640 ? 4 : 2);
+      final aspectRatio = constraints.maxWidth > 1024 ? 1.0 : (constraints.maxWidth > 640 ? 1.1 : 1.0);
       return GridView.count(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         crossAxisCount: crossAxisCount,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
         childAspectRatio: aspectRatio,
         children: [
           _buildStatCard('Total Sessions', '$_totalSessions', Icons.calendar_today_rounded, Colors.indigoAccent),
@@ -253,49 +253,62 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color, {String? subtitle}) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final isSmall = constraints.maxWidth < 160;
-      return Container(
-        padding: EdgeInsets.all(isSmall ? 10 : 14),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(isSmall ? 6 : 8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: color, size: isSmall ? 18 : 22),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            SizedBox(width: isSmall ? 8 : 12),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, 
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: isSmall ? 9 : 10, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 2),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(value, style: TextStyle(color: Colors.white, fontSize: isSmall ? 16 : 18, fontWeight: FontWeight.w900)),
-                  ),
-                  if (subtitle != null)
-                    Text(subtitle, style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.bold)),
-                ],
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 16),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
-        ),
-      );
-    });
+        ],
+      ),
+    );
   }
 
   Widget _buildMobileLayout() {
