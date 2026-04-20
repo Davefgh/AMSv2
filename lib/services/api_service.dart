@@ -1028,7 +1028,6 @@ class ApiService {
     }
   }
 
-
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       final body = response.body.trim();
