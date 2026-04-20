@@ -9,6 +9,7 @@ import 'attendance_screen.dart';
 import 'session_dashboard_screen.dart';
 import '../../widgets/main_scaffold.dart';
 import '../../utils/responsive.dart';
+import '../../utils/sizing_utils.dart';
 import '../../config/routes/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -131,14 +132,14 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       onRefresh: _loadData,
       color: const Color(0xFF38BDF8),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(Sizing.w(24)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
-            const SizedBox(height: 24),
+            SizedBox(height: Sizing.h(24)),
             _buildStatsGrid(),
-            const SizedBox(height: 24),
+            SizedBox(height: Sizing.h(24)),
             _buildTabLayout(),
           ],
         ),
@@ -159,15 +160,15 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             unselectedLabelColor: Colors.white38,
             indicatorWeight: 3,
             indicatorSize: TabBarIndicatorSize.label,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: Sizing.sp(13)),
             tabs: const [
               Tab(text: 'ACTIVE SESSIONS'),
               Tab(text: 'WEEKLY SCHEDULE'),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: Sizing.h(20)),
           SizedBox(
-            height: 400, // Fixed height to prevent infinite scroll issues in some layouts
+            height: Sizing.h(400), // Scaled height to prevent infinite scroll issues in some layouts
             child: TabBarView(
               children: [
                 SingleChildScrollView(child: _buildActiveSessionsList()),
@@ -189,11 +190,11 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           child: Row(
             children: [
               CircleAvatar(
-                radius: 18,
+                radius: Sizing.r(18),
                 backgroundColor: const Color(0xFF1E293B),
-                child: Text(name[0], style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 12)),
+                child: Text(name[0], style: TextStyle(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: Sizing.sp(12))),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: Sizing.w(10)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,16 +203,16 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                       'Hi, $name',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
+                      style: TextStyle(fontSize: Sizing.sp(16), fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: Sizing.h(2)),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: EdgeInsets.symmetric(horizontal: Sizing.w(8), vertical: Sizing.h(2)),
                       decoration: BoxDecoration(
                         color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Text('INSTRUCTOR', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 9, fontWeight: FontWeight.bold)),
+                      child: Text('INSTRUCTOR', style: TextStyle(color: const Color(0xFF38BDF8), fontSize: Sizing.sp(9), fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -219,12 +220,12 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             ],
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: Sizing.w(12)),
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(_currentTime, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
-            Text(_currentDate, style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 10)),
+            Text(_currentTime, style: TextStyle(color: Colors.white, fontSize: Sizing.sp(16), fontWeight: FontWeight.w900)),
+            Text(_currentDate, style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: Sizing.sp(10))),
           ],
         ),
       ],
@@ -239,8 +240,8 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         crossAxisCount: crossAxisCount,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
+        mainAxisSpacing: Sizing.w(16),
+        crossAxisSpacing: Sizing.w(16),
         childAspectRatio: aspectRatio,
         children: [
           _buildStatCard('Total Sessions', '$_totalSessions', Icons.calendar_today_rounded, Colors.indigoAccent),
@@ -254,10 +255,10 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color, {String? subtitle}) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(Sizing.w(20)),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(Sizing.r(24)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
@@ -265,43 +266,43 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(Sizing.w(10)),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: Sizing.sp(20)),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: Sizing.h(16)),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 24,
+                fontSize: Sizing.sp(24),
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: Sizing.h(4)),
           Text(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 13,
+              fontSize: Sizing.sp(13),
               fontWeight: FontWeight.w500,
             ),
           ),
           if (subtitle != null) ...[
-            const SizedBox(height: 4),
+            SizedBox(height: Sizing.h(4)),
             Text(
               subtitle,
               style: TextStyle(
                 color: color,
-                fontSize: 11,
+                fontSize: Sizing.sp(11),
                 fontWeight: FontWeight.bold,
               ),
             ),

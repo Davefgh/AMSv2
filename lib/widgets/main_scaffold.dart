@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../utils/responsive.dart';
+import '../utils/sizing_utils.dart';
 import '../config/routes/app_routes.dart';
 
 class MainScaffold extends StatelessWidget {
@@ -27,12 +28,13 @@ class MainScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Sizing.init(context);
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: Responsive(
         mobile: _buildMobileLayout(context),
         tablet: _buildTabletLayout(context),
-        desktop: _buildDesktopLayout(context),
+        desktop: _buildTabletLayout(context), // Treat desktop as large tablet
       ),
       bottomNavigationBar: (currentIndex >= 0 && Responsive.isMobile(context))
           ? _buildBottomNavBar(context)
@@ -109,30 +111,7 @@ class MainScaffold extends StatelessWidget {
   Widget _buildTabletLayout(BuildContext context) {
     return Row(
       children: [
-        _buildNavigationRail(context, extended: false),
-        Expanded(
-          child: Stack(
-            children: [
-              _buildBackground(),
-              SafeArea(
-                child: Column(
-                  children: [
-                    _buildHeader(context, showLogo: false),
-                    Expanded(child: body),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDesktopLayout(BuildContext context) {
-    return Row(
-      children: [
-        _buildNavigationRail(context, extended: true),
+        _buildNavigationRail(context, extended: MediaQuery.of(context).size.width > 900),
         Expanded(
           child: Stack(
             children: [
@@ -144,7 +123,7 @@ class MainScaffold extends StatelessWidget {
                     Expanded(
                       child: Center(
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 1400),
+                          constraints: const BoxConstraints(maxWidth: 800), // Mobile-first constraint
                           child: body,
                         ),
                       ),
@@ -161,7 +140,10 @@ class MainScaffold extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context, {bool showLogo = true}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: Sizing.w(24),
+        vertical: Sizing.h(16),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -171,30 +153,30 @@ class MainScaffold extends StatelessWidget {
                 if (showBackButton) ...[
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                        color: Colors.white, size: 20),
+                    icon: Icon(Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white, size: Sizing.sp(20)),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     splashRadius: 20,
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: Sizing.w(16)),
                 ] else if (showLogo) ...[
                   Image.asset(
                     'assets/aclc_logo.png',
-                    height: 40,
-                    width: 40,
+                    height: Sizing.h(40),
+                    width: Sizing.w(40),
                     errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.shield, color: Colors.white, size: 32),
+                        Icon(Icons.shield, color: Colors.white, size: Sizing.sp(32)),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: Sizing.w(12)),
                 ],
                 Expanded(
                   child: Text(
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 22,
+                    style: TextStyle(
+                      fontSize: Sizing.sp(22),
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
                       letterSpacing: 0.5,

@@ -4,6 +4,7 @@ import '../../widgets/main_scaffold.dart';
 import '../../providers/app_provider.dart';
 import '../../config/routes/app_routes.dart';
 import '../../services/api_service.dart';
+import '../../utils/sizing_utils.dart';
 import '../../models/student_subject_detail.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
@@ -83,20 +84,20 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               : RefreshIndicator(
                   onRefresh: _loadData,
                   color: const Color(0xFF38BDF8),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildWelcomeHeader(),
-                        const SizedBox(height: 32),
-                        _buildAttendanceStats(),
-                        const SizedBox(height: 32),
-                        _buildUpcomingSessions(),
-                      ],
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                      padding: EdgeInsets.symmetric(horizontal: Sizing.w(24), vertical: Sizing.h(20)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildWelcomeHeader(),
+                          SizedBox(height: Sizing.h(32)),
+                          _buildAttendanceStats(),
+                          SizedBox(height: Sizing.h(32)),
+                          _buildUpcomingSessions(),
+                        ],
+                      ),
                     ),
-                  ),
                 ),
     );
   }
@@ -140,14 +141,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           'Welcome back,',
           style: TextStyle(
             color: Colors.white.withValues(alpha: 0.6),
-            fontSize: 16,
+            fontSize: Sizing.sp(16),
           ),
         ),
-        const Text(
+        Text(
           'Ready to Learn?',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 28,
+            fontSize: Sizing.sp(28),
             fontWeight: FontWeight.bold,
             letterSpacing: -0.5,
           ),
@@ -163,11 +164,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'My Schedule',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: Sizing.sp(18),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -175,7 +176,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               '${_subjects.length} Subjects',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.4),
-                fontSize: 13,
+                fontSize: Sizing.sp(13),
               ),
             ),
           ],
@@ -191,12 +192,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
   Widget _buildSubjectCard(StudentSubjectDetail detail) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: Sizing.h(16)),
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(Sizing.w(20)),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(Sizing.r(24)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
@@ -205,23 +206,23 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(Sizing.w(10)),
                 decoration: BoxDecoration(
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(Sizing.r(12)),
                 ),
-                child: const Icon(Icons.book_rounded, color: Color(0xFF38BDF8), size: 20),
+                child: Icon(Icons.book_rounded, color: const Color(0xFF38BDF8), size: Sizing.sp(20)),
               ),
-              const SizedBox(width: 14),
+              SizedBox(width: Sizing.w(14)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       detail.subject.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: Sizing.sp(16),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -229,23 +230,23 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                       detail.subject.code,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 12,
+                        fontSize: Sizing.sp(12),
                       ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: Sizing.w(10), vertical: Sizing.h(4)),
                 decoration: BoxDecoration(
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(Sizing.r(8)),
                 ),
                 child: Text(
                   detail.schedule.displayDay,
-                  style: const TextStyle(
-                    color: Color(0xFF38BDF8),
-                    fontSize: 11,
+                  style: TextStyle(
+                    color: const Color(0xFF38BDF8),
+                    fontSize: Sizing.sp(11),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -298,16 +299,16 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
   Widget _buildInfoChip(IconData icon, String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: Sizing.w(10), vertical: Sizing.h(6)),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(Sizing.r(10)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.white.withValues(alpha: 0.4)),
-          const SizedBox(width: 6),
+          Icon(icon, size: Sizing.sp(14), color: Colors.white.withValues(alpha: 0.4)),
+          SizedBox(width: Sizing.w(6)),
           Flexible(
             child: Text(
               text,
@@ -315,7 +316,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 12,
+                fontSize: Sizing.sp(12),
               ),
             ),
           ),
@@ -366,15 +367,15 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Attendance Overview',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: Sizing.sp(18),
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: Sizing.h(16)),
         Row(
           children: [
             Expanded(
@@ -385,7 +386,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 Icons.check_circle_outline_rounded,
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: Sizing.w(16)),
             Expanded(
               child: _buildStatCard(
                 'Absent',
@@ -402,29 +403,29 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
   Widget _buildStatCard(String label, String value, Color color, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(Sizing.w(20)),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(Sizing.r(24)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(Sizing.w(8)),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: Sizing.sp(20)),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: Sizing.h(16)),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 24,
+              fontSize: Sizing.sp(24),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -432,7 +433,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             label,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 13,
+              fontSize: Sizing.sp(13),
             ),
           ),
         ],

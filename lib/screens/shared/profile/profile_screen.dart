@@ -7,6 +7,7 @@ import '../../../models/user_profile.dart';
 import '../../../models/instructor_model.dart';
 import '../../../widgets/main_scaffold.dart';
 import '../../../providers/app_provider.dart';
+import '../../../utils/sizing_utils.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -70,30 +71,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildErrorState(String error) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(Sizing.w(24.0)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 64),
-            const SizedBox(height: 16),
+            Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: Sizing.sp(64)),
+            SizedBox(height: Sizing.h(16)),
             Text(
               'Failed to load profile',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: Sizing.sp(18), fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: Sizing.h(8)),
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 14),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: Sizing.sp(14)),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: Sizing.h(24)),
             ElevatedButton(
               onPressed: _reloadProfile,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: EdgeInsets.symmetric(horizontal: Sizing.w(32), vertical: Sizing.h(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Sizing.r(12))),
               ),
               child: const Text('Try Again'),
             ),
@@ -106,12 +107,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileContent(dynamic profile) {
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: Sizing.w(24), vertical: Sizing.h(12)),
       children: [
         _buildUserCard(profile),
-        const SizedBox(height: 24),
+        SizedBox(height: Sizing.h(24)),
         _buildDetailSection(profile),
-        const SizedBox(height: 8),
+        SizedBox(height: Sizing.h(8)),
       ],
     );
   }
@@ -135,13 +136,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(4),
+            padding: EdgeInsets.all(Sizing.w(4)),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFF38BDF8), width: 2),
             ),
             child: CircleAvatar(
-              radius: 50,
+              radius: Sizing.r(50),
               backgroundColor: const Color(0xFF1E293B),
               backgroundImage: NetworkImage(
                 profile is Instructor 
@@ -150,28 +151,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: Sizing.h(16)),
           Text(
             username,
-            style: const TextStyle(
-              fontSize: 24,
+            style: TextStyle(
+              fontSize: Sizing.sp(24),
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: Sizing.h(4)),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: Sizing.w(12), vertical: Sizing.h(4)),
             decoration: BoxDecoration(
               color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(Sizing.r(20)),
               border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
             ),
             child: Text(
               roleName,
-              style: const TextStyle(
-                color: Color(0xFF38BDF8),
-                fontSize: 12,
+              style: TextStyle(
+                color: const Color(0xFF38BDF8),
+                fontSize: Sizing.sp(12),
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,
               ),
@@ -215,30 +216,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildDetailTile(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: Sizing.w(20), vertical: Sizing.h(16)),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(Sizing.w(10)),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(Sizing.r(12)),
             ),
-            child: Icon(icon, color: Colors.white.withValues(alpha: 0.7), size: 20),
+            child: Icon(icon, color: Colors.white.withValues(alpha: 0.7), size: Sizing.sp(20)),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: Sizing.w(16)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 13),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: Sizing.sp(13)),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: Sizing.h(2)),
                 Text(
                   value,
-                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+                  style: TextStyle(color: Colors.white, fontSize: Sizing.sp(15), fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -266,14 +267,14 @@ class _GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(Sizing.r(24)),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(Sizing.r(24)),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.1),
               width: 1.0,
