@@ -105,6 +105,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
     Schedule? selectedSchedule = _instructorSchedules.first;
     DateTime selectedDate = DateTime.now();
+    final TextEditingController reasonController = TextEditingController();
     final TextEditingController notesController = TextEditingController();
     final TextEditingController dateController = TextEditingController(text: DateFormat('MM/dd/yyyy').format(selectedDate));
 
@@ -114,6 +115,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
+          // Off-schedule detection
+          final isOffSchedule = selectedSchedule != null && selectedDate.weekday != selectedSchedule!.dayOfWeek;
+          final isReasonValid = !isOffSchedule || reasonController.text.trim().length >= 5;
+
           return _GlassModal(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -173,7 +178,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     final DateTime? picked = await showDatePicker(
                       context: context,
                       initialDate: selectedDate,
-                      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                      firstDate: DateTime.now().subtract(const Duration(minutes: 1)), // Allow today
                       lastDate: DateTime.now().add(const Duration(days: 365)),
                       builder: (context, child) {
                         return Theme(
@@ -213,12 +218,47 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                 ),
                 const SizedBox(height: 20),
 
+                // Off-Schedule Reason Input
+                if (isOffSchedule) ...[
+                  const Text('Reason for Off-Schedule Session *', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: reasonController,
+                    maxLines: 3,
+                    onChanged: (val) => setModalState(() {}),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.05),
+                      hintText: 'Explain why this class is being held on a different day',
+                      hintStyle: const TextStyle(color: Colors.white24),
+                      errorText: (reasonController.text.isEmpty) ? null : (reasonController.text.length < 5 ? 'Minimum 5 characters required' : null),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded, size: 12, color: Colors.white38),
+                      SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'This session date does not match the schedule day. A reason is required.',
+                          style: TextStyle(color: Colors.white38, fontSize: 11),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
                 // Notes Input
                 const Text('Description (Optional)', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: notesController,
-                  maxLines: 4,
+                  maxLines: 2,
                   maxLength: 500,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                   decoration: InputDecoration(
@@ -238,7 +278,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () async {
+                        onPressed: !isReasonValid ? null : () async {
                           if (selectedSchedule == null) return;
                           try {
                             Navigator.pop(context); // Close modal
@@ -247,6 +287,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                               'scheduleId': selectedSchedule!.id,
                               'sessionDate': selectedDate.toIso8601String(),
                               'description': notesController.text,
+                              if (isOffSchedule) 'offScheduleReason': reasonController.text,
                             });
                             _loadData();
                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Session created successfully!'), backgroundColor: Color(0xFF34D399)));

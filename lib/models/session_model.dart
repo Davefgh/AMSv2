@@ -21,6 +21,7 @@ class ClassSession {
   final String? endedByName;
   final String? rowVersion;
   final String? description;
+  final String? offScheduleReason;
 
   ClassSession({
     this.id = 0,
@@ -45,6 +46,7 @@ class ClassSession {
     this.endedByName,
     this.rowVersion,
     this.description,
+    this.offScheduleReason,
   });
 
   factory ClassSession.fromJson(Map<String, dynamic> json) {
@@ -86,6 +88,7 @@ class ClassSession {
       endedByName: json['endedByName'],
       rowVersion: json['rowVersion'],
       description: json['description'] ?? json['notes'],
+      offScheduleReason: json['offScheduleReason'] ?? json['reason'],
     );
   }
 
