@@ -282,22 +282,46 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: !isReasonValid ? null : () async {
+                        onPressed: (!isReasonValid || _isLoading) ? null : () async {
                           if (selectedSchedule == null) return;
+                          
+                          setModalState(() => _isLoading = true);
+                          
                           try {
-                            Navigator.pop(context); // Close modal
-                            setState(() => _isLoading = true);
                             await _apiService.createSession({
                               'scheduleId': selectedSchedule!.id,
                               'sessionDate': selectedDate.toIso8601String(),
                               'description': notesController.text,
                               if (isOffSchedule) 'offScheduleReason': reasonController.text,
                             });
+                            
+                            if (!context.mounted) return;
+                            Navigator.pop(context); // Close modal only on success
+                            
                             _loadData();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Session created successfully!'), backgroundColor: Color(0xFF34D399)));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Session created successfully!'), 
+                                backgroundColor: Color(0xFF34D399)
+                              )
+                            );
                           } catch (e) {
-                            setState(() => _isLoading = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent));
+                            setModalState(() => _isLoading = false);
+                            
+                            String errorMsg = e.toString();
+                            if (e is ApiException) {
+                              errorMsg = e.message;
+                            }
+                            
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(errorMsg), 
+                                  backgroundColor: Colors.redAccent,
+                                  behavior: SnackBarBehavior.floating,
+                                )
+                              );
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -305,13 +329,20 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                           foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          disabledBackgroundColor: const Color(0xFF38BDF8).withValues(alpha: 0.3),
                         ),
-                        child: const Text('Create Session', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: _isLoading 
+                          ? const SizedBox(
+                              height: 20, 
+                              width: 20, 
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black)
+                            )
+                          : const Text('Create Session', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                     const SizedBox(width: 12),
                     TextButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: _isLoading ? null : () => Navigator.pop(context),
                       child: const Text('Cancel', style: TextStyle(color: Colors.white38)),
                     ),
                   ],
