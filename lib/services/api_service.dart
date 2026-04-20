@@ -839,41 +839,52 @@ class ApiService {
     }
   }
 
-  Future<void> deleteSession(int id) async {
+  Future<void> deleteSession(int id, {required String reason, required String rowVersion}) async {
     try {
-      await delete('/api/sessions/$id');
+      await delete('/api/sessions/$id', body: {'reason': reason, 'rowVersion': rowVersion});
     } catch (e) {
       _logger.e('deleteSession Error: $e');
       rethrow;
     }
   }
 
-  Future<void> updateSessionRoom(int id, String roomName) async {
+  Future<void> updateSessionRoom(int id, {required int actualRoomId, required String rowVersion}) async {
     try {
-      await patch('/api/sessions/$id/room', {'room': roomName});
+      await patch('/api/sessions/$id/room', {
+        'actualRoomId': actualRoomId,
+        'rowVersion': rowVersion,
+      });
     } catch (e) {
       _logger.e('updateSessionRoom Error: $e');
       rethrow;
     }
   }
 
-  Future<void> startSession(int id) async {
+  Future<void> startSession(int id, {int? actualRoomId, int? attendanceCutoffMinutes, required String rowVersion}) async {
     try {
-      await patch('/api/sessions/$id/start', {});
+      await patch('/api/sessions/$id/start', {
+        if (actualRoomId != null) 'actualRoomId': actualRoomId,
+        if (attendanceCutoffMinutes != null) 'attendanceCutoffMinutes': attendanceCutoffMinutes,
+        'rowVersion': rowVersion,
+      });
     } catch (e) {
       _logger.e('startSession Error: $e');
       rethrow;
     }
   }
 
-  Future<void> endSession(int id) async {
+  Future<void> endSession(int id, {String? description, required String rowVersion}) async {
     try {
-      await patch('/api/sessions/$id/end', {});
+      await patch('/api/sessions/$id/end', {
+        if (description != null) 'description': description,
+        'rowVersion': rowVersion,
+      });
     } catch (e) {
       _logger.e('endSession Error: $e');
       rethrow;
     }
   }
+
 
   Future<Student> getStudentProfile() async {
     try {
@@ -1002,12 +1013,13 @@ class ApiService {
     }
   }
 
-  Future<dynamic> delete(String endpoint) async {
+  Future<dynamic> delete(String endpoint, {Map<String, dynamic>? body}) async {
     try {
       final headers = await _getHeaders();
       final response = await http.delete(
         Uri.parse('$baseUrl$endpoint'),
         headers: headers,
+        body: body != null ? jsonEncode(body) : null,
       );
       return _handleResponse(response);
     } catch (e) {
@@ -1015,6 +1027,7 @@ class ApiService {
       rethrow;
     }
   }
+
 
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {

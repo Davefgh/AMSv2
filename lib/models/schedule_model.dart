@@ -22,6 +22,7 @@ class Schedule {
 
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final int? attendanceCutoffMinutes;
 
   const Schedule({
     required this.id,
@@ -39,6 +40,7 @@ class Schedule {
     this.instructor,
     this.createdAt,
     this.updatedAt,
+    this.attendanceCutoffMinutes,
   });
 
   String get displayDay {
@@ -101,6 +103,7 @@ class Schedule {
       instructor: readMap('instructor'),
       createdAt: readDate('createdAt'),
       updatedAt: readDate('updatedAt'),
+      attendanceCutoffMinutes: readInt('attendanceCutoffMinutes'),
     );
   }
 
@@ -120,6 +123,7 @@ class Schedule {
       if (classroom != null) 'classroom': classroom,
       if (section != null) 'section': section,
       if (instructor != null) 'instructor': instructor,
+      if (attendanceCutoffMinutes != null) 'attendanceCutoffMinutes': attendanceCutoffMinutes,
     };
   }
 }

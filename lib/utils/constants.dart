@@ -1,7 +1,7 @@
 class AppConstants {
   // API
   static const String apiBaseUrl =
-  'https://liabilities-restricted-tion-tones.trycloudflare.com';
+  'https://tolerance-demands-namespace-polar.trycloudflare.com';
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Storage Keys
