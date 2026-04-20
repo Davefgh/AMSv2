@@ -6,6 +6,7 @@ class AttendanceRecord {
   final String? remarks;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final DateTime? timeOut;
 
   AttendanceRecord({
     required this.id,
@@ -15,6 +16,7 @@ class AttendanceRecord {
     this.remarks,
     this.createdAt,
     this.updatedAt,
+    this.timeOut,
   });
 
   factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class AttendanceRecord {
       remarks: json['remarks'],
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      timeOut: json['timeOut'] != null ? DateTime.parse(json['timeOut']) : null,
     );
   }
 
@@ -36,6 +39,7 @@ class AttendanceRecord {
       'studentId': studentId,
       'status': status,
       'remarks': remarks,
+      if (timeOut != null) 'timeOut': timeOut!.toIso8601String(),
     };
   }
 }

@@ -84,17 +84,199 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     }
   }
 
+  String _formatTime(String timeStr) {
+    if (timeStr.isEmpty) return 'TBD';
+    try {
+      final parts = timeStr.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      final dt = DateTime(2000, 1, 1, hour, minute);
+      return DateFormat('h:mm a').format(dt);
+    } catch (_) {
+      return timeStr;
+    }
+  }
+
   void _onCreateSession() {
     if (_instructorSchedules.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No schedules assigned to you.')));
       return;
     }
-    
-    // Quick Pick: Nearest or just open first
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => SessionDetailsScreen(schedule: _instructorSchedules.first)),
-    ).then((_) => _loadData());
+
+    Schedule? selectedSchedule = _instructorSchedules.first;
+    DateTime selectedDate = DateTime.now();
+    final TextEditingController notesController = TextEditingController();
+    final TextEditingController dateController = TextEditingController(text: DateFormat('MM/dd/yyyy').format(selectedDate));
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return _GlassModal(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Create New Session',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.white38),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                
+                // Schedule Input
+                const Text('Schedule *', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<Schedule>(
+                      value: selectedSchedule,
+                      isExpanded: true,
+                      dropdownColor: const Color(0xFF1E293B),
+                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white38),
+                      items: _instructorSchedules.map((Schedule s) {
+                        return DropdownMenuItem<Schedule>(
+                          value: s,
+                          child: Text(
+                            'Section ${s.sectionName} - ${s.classroomName} - ${s.dayName} ${_formatTime(s.timeIn)} - ${_formatTime(s.timeOut)}',
+                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) => setModalState(() => selectedSchedule = val),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Date Input
+                const Text('Session Date *', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: () async {
+                    final DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate,
+                      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.dark(
+                              primary: Color(0xFF38BDF8),
+                              onPrimary: Colors.black,
+                              surface: Color(0xFF1E293B),
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (picked != null) {
+                      setModalState(() {
+                        selectedDate = picked;
+                        dateController.text = DateFormat('MM/dd/yyyy').format(picked);
+                      });
+                    }
+                  },
+                  child: AbsorbPointer(
+                    child: TextField(
+                      controller: dateController,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.05),
+                        hintText: 'mm/dd/yyyy',
+                        hintStyle: const TextStyle(color: Colors.white24),
+                        suffixIcon: const Icon(Icons.calendar_today_rounded, size: 18, color: Colors.white38),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Notes Input
+                const Text('Description (Optional)', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: notesController,
+                  maxLines: 4,
+                  maxLength: 500,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white.withValues(alpha: 0.05),
+                    hintText: 'Enter session description or notes...',
+                    hintStyle: const TextStyle(color: Colors.white24),
+                    counterStyle: const TextStyle(color: Colors.white24, fontSize: 10),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Actions
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (selectedSchedule == null) return;
+                          try {
+                            Navigator.pop(context); // Close modal
+                            setState(() => _isLoading = true);
+                            await _apiService.createSession({
+                              'scheduleId': selectedSchedule!.id,
+                              'sessionDate': selectedDate.toIso8601String(),
+                              'description': notesController.text,
+                            });
+                            _loadData();
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Session created successfully!'), backgroundColor: Color(0xFF34D399)));
+                          } catch (e) {
+                            setState(() => _isLoading = false);
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent));
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF38BDF8),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Create Session', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel', style: TextStyle(color: Colors.white38)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -229,8 +411,6 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   Widget _buildSessionCard(ClassSession s) {
     final status = s.status.toLowerCase();
     final isActive = status == 'active' || status == 'started';
-    final isCancelled = status == 'cancelled' || status == 'deleted';
-    final isEnded = status == 'ended' || status == 'completed';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -279,8 +459,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                   const SizedBox(width: 6),
                   Text(
                     s.actualStartTime != null 
-                        ? '${DateFormat('h:mm a').format(s.actualStartTime!)} - ${s.actualEndTime != null ? DateFormat('h:mm a').format(s.actualEndTime!) : 'TBD'}'
-                        : 'Time TBD',
+                        ? '${DateFormat('h:mm a').format(s.actualStartTime!)} - ${s.actualEndTime != null ? DateFormat('h:mm a').format(s.actualEndTime!) : 'Progress'}'
+                        : '${_formatTime(s.scheduledTimeIn)} - ${_formatTime(s.scheduledTimeOut)}',
                     style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
                   ),
                 ],
@@ -401,6 +581,29 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
           TextButton(onPressed: _loadData, child: const Text('Retry')),
         ],
       ),
+    );
+  }
+}
+
+class _GlassModal extends StatelessWidget {
+  final Widget child;
+  const _GlassModal({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        top: 24,
+        left: 24,
+        right: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E293B),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border(top: BorderSide(color: Colors.white10)),
+      ),
+      child: child,
     );
   }
 }
