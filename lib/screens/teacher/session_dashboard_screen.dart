@@ -7,6 +7,9 @@ import '../../models/session_model.dart';
 import 'session_details_screen.dart';
 import 'dart:ui';
 import '../../widgets/main_scaffold.dart';
+import '../../models/instructor_model.dart';
+import '../../services/storage_service.dart';
+import '../shared/auth/login_screen.dart';
 
 class SessionDashboardScreen extends StatefulWidget {
   const SessionDashboardScreen({super.key});
@@ -24,6 +27,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   List<ClassSession> _filteredSessions = [];
   List<Schedule> _instructorSchedules = [];
   int _activeTabIndex = 0; // 0: All, 1: Not Started, 2: Active, 3: Completed, 4: Cancelled
+  Instructor? _profile;
 
   @override
   void initState() {
@@ -39,9 +43,11 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     try {
       final mySessions = await _apiService.getMySessions();
       final schedules = await _apiService.getMySchedules();
+      final profile = await _apiService.getInstructorProfile();
       setState(() {
         _allSessions = mySessions;
         _instructorSchedules = schedules;
+        _profile = profile;
         _applyFilter();
         _isLoading = false;
       });
@@ -361,6 +367,9 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       title: 'Sessions',
       currentIndex: 2, // Sessions tab
       isAdmin: false,
+      actions: [
+        _buildProfileAvatar(),
+      ],
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
           : RefreshIndicator(
@@ -670,18 +679,132 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     );
   }
 
-  Widget _buildErrorState() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildProfileAvatar() {
+    return GestureDetector(
+      onTap: _showProfileModal,
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
+        ),
+        child: CircleAvatar(
+          radius: 16,
+          backgroundColor: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+          backgroundImage: const NetworkImage('https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
+        ),
+      ),
+    );
+  }
+
+  void _showProfileModal() {
+    if (_profile == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _GlassModal(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFF38BDF8), width: 2),
+                boxShadow: [
+                  BoxShadow(color: const Color(0xFF38BDF8).withValues(alpha: 0.2), blurRadius: 20)
+                ],
+              ),
+              child: const CircleAvatar(
+                backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              _profile!.fullName,
+              style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900),
+            ),
+            Text(
+              'Subject Instructor',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 32),
+            _buildProfileInfoRow(Icons.badge_outlined, 'Instructor ID', _profile!.id.toString()),
+            _buildProfileInfoRow(Icons.calendar_today_outlined, 'Joined', DateFormat('MMMM dd, yyyy').format(_profile!.createdAt)),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _handleLogout,
+                icon: const Icon(Icons.logout_rounded, size: 18),
+                label: const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent.withValues(alpha: 0.1),
+                  foregroundColor: Colors.redAccent,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Colors.redAccent, width: 0.5),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
         children: [
-          const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
-          const SizedBox(height: 16),
-          Text(_errorMessage!, style: const TextStyle(color: Colors.white70)),
-          TextButton(onPressed: _loadData, child: const Text('Retry')),
+          Icon(icon, size: 18, color: Colors.white24),
+          const SizedBox(width: 16),
+          Text(label, style: const TextStyle(color: Colors.white38, fontSize: 14)),
+          const Spacer(),
+          Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
         ],
       ),
     );
+  }
+
+  Future<void> _handleLogout() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        title: const Text('Logout', style: TextStyle(color: Colors.white)),
+        content: const Text('Are you sure you want to log out?', style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white38)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await StorageService.clear();
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false,
+      );
+    }
   }
 }
 
