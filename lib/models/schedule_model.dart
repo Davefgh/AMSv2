@@ -57,8 +57,13 @@ class Schedule {
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
     final dynamic day = json['dayOfWeek'];
-    final int? dayInt = day is int ? day : int.tryParse('$day');
+    int? dayInt = day is int ? day : int.tryParse('$day');
     final String? dayStr = day is String ? day : null;
+
+    // If dayInt is still null, try to derive it from dayName
+    if (dayInt == null && dayStr != null) {
+      dayInt = _dayIntFromName(dayStr);
+    }
 
     String readTime(String primary, String fallback) {
       final v = (json[primary] ?? json[fallback])?.toString();
@@ -127,6 +132,18 @@ class Schedule {
       if (attendanceCutoffMinutes != null) 'attendanceCutoffMinutes': attendanceCutoffMinutes,
     };
   }
+}
+
+int? _dayIntFromName(String name) {
+  final n = name.trim().toLowerCase();
+  if (n.contains('mon')) return 1;
+  if (n.contains('tue')) return 2;
+  if (n.contains('wed')) return 3;
+  if (n.contains('thu')) return 4;
+  if (n.contains('fri')) return 5;
+  if (n.contains('sat')) return 6;
+  if (n.contains('sun')) return 7;
+  return null;
 }
 
 String _dayNameFromInt(int day) {

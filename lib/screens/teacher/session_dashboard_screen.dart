@@ -115,8 +115,12 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
-          // Off-schedule detection
-          final isOffSchedule = selectedSchedule != null && selectedDate.weekday != selectedSchedule!.dayOfWeek;
+          // Off-schedule detection: only true if we HAVE a schedule, it HAS a dayOfWeek, and they DON'T match.
+          bool isOffSchedule = false;
+          if (selectedSchedule != null && selectedSchedule!.dayOfWeek != null) {
+            isOffSchedule = selectedDate.weekday != selectedSchedule!.dayOfWeek;
+          }
+          
           final isReasonValid = !isOffSchedule || reasonController.text.trim().length >= 5;
 
           return _GlassModal(
@@ -455,10 +459,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(10), // More square-ish as requested
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
@@ -468,50 +472,72 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildDateBadge(s.sessionDate),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${s.subjectCode} - ${s.subjectName}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                    Text(
+                      '${s.subjectCode} - ${s.subjectName}', 
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.location_on_outlined, size: 12, color: Colors.white.withValues(alpha: 0.3)),
+                        Icon(Icons.location_on_outlined, size: 10, color: Colors.white.withValues(alpha: 0.3)),
                         const SizedBox(width: 4),
-                        Text(s.actualRoomName ?? s.scheduledRoomName, style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12)),
+                        Expanded(
+                          child: Text(
+                            s.actualRoomName ?? s.scheduledRoomName, 
+                            style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               _buildStatusPill(status),
             ],
           ),
-          const SizedBox(height: 20),
-          const Divider(color: Colors.white10, height: 1),
           const SizedBox(height: 16),
+          const Divider(color: Colors.white10, height: 1),
+          const SizedBox(height: 12),
+          // Bottom Row with Overflow Protection
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.access_time_rounded, size: 14, color: Colors.white.withValues(alpha: 0.3)),
-                  const SizedBox(width: 6),
-                  Text(
-                    s.actualStartTime != null 
-                        ? '${DateFormat('h:mm a').format(s.actualStartTime!)} - ${s.actualEndTime != null ? DateFormat('h:mm a').format(s.actualEndTime!) : 'Progress'}'
-                        : '${_formatTime(s.scheduledTimeIn)} - ${_formatTime(s.scheduledTimeOut)}',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
-                  ),
-                ],
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(Icons.access_time_rounded, size: 12, color: Colors.white.withValues(alpha: 0.3)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        s.actualStartTime != null 
+                            ? '${DateFormat('h:mm a').format(s.actualStartTime!)} - ${s.actualEndTime != null ? DateFormat('h:mm a').format(s.actualEndTime!) : 'Progress'}'
+                            : '${_formatTime(s.scheduledTimeIn)} - ${_formatTime(s.scheduledTimeOut)}',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              isActive 
-                ? _buildActiveActions(s)
-                : TextButton(
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s))),
-                    child: const Text('View Only', style: TextStyle(color: Colors.white38, fontSize: 12, decoration: TextDecoration.underline)),
-                  ),
+              const SizedBox(width: 8),
+              if (isActive) 
+                _buildActiveActions(s)
+              else 
+                TextButton(
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s))),
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                  child: const Text('View Only', style: TextStyle(color: Colors.white38, fontSize: 10, decoration: TextDecoration.underline)),
+                ),
             ],
           ),
         ],
@@ -522,15 +548,15 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   Widget _buildDateBadge(DateTime? date) {
     if (date == null) return const SizedBox.shrink();
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8), // Aligned with square-ish theme
       ),
       child: Column(
         children: [
-          Text(DateFormat('MMM').format(date).toUpperCase(), style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 10, fontWeight: FontWeight.w900)),
-          Text(DateFormat('dd').format(date), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(DateFormat('MMM').format(date).toUpperCase(), style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 9, fontWeight: FontWeight.w900)),
+          Text(DateFormat('dd').format(date), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -555,23 +581,24 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
-      child: Text(label, style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w900)),
+      child: Text(label, style: TextStyle(color: color, fontSize: 8, fontWeight: FontWeight.w900)),
     );
   }
 
   Widget _buildActiveActions(ClassSession s) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         _buildSmallAction(Icons.qr_code_rounded, 'QR', () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s)))),
-        const SizedBox(width: 8),
+        const SizedBox(width: 4),
         _buildSmallAction(Icons.visibility_outlined, 'View', () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s)))),
-        const SizedBox(width: 8),
+        const SizedBox(width: 4),
         _buildSmallAction(Icons.stop_circle_outlined, 'End', () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s))), color: Colors.redAccent.withValues(alpha: 0.2), iconColor: Colors.redAccent),
       ],
     );
@@ -581,17 +608,18 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
         decoration: BoxDecoration(
           color: color ?? Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: iconColor ?? Colors.white70),
+            Icon(icon, size: 12, color: iconColor ?? Colors.white70),
             const SizedBox(width: 4),
-            Text(label, style: TextStyle(color: iconColor ?? Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
+            Text(label, style: TextStyle(color: iconColor ?? Colors.white70, fontSize: 9, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
