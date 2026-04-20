@@ -133,28 +133,34 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Session Management',
-                style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
-              ),
-              Text(
-                'Manage your class sessions and tracking',
-                style: TextStyle(color: Colors.white38, fontSize: 12),
-              ),
-            ],
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Session Management',
+                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                ),
+                Text(
+                  'Manage your class sessions...',
+                  style: TextStyle(color: Colors.white38, fontSize: 11),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 12),
           ElevatedButton.icon(
             onPressed: _onCreateSession,
-            icon: const Icon(Icons.add, size: 18),
-            label: const Text('Create Session', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('Create', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF818CF8),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              backgroundColor: const Color(0xFF38BDF8),
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
             ),
           ),
         ],
