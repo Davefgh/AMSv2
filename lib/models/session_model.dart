@@ -13,11 +13,15 @@ class ClassSession {
   final String sectionName;
   final String scheduledRoomName;
   final String? actualRoomName;
+  final String scheduledTimeIn;
+  final String scheduledTimeOut;
   final int? startedBy;
   final String? startedByName;
   final int? endedBy;
   final String? endedByName;
   final String? rowVersion;
+  final String? description;
+  final String? offScheduleReason;
 
   ClassSession({
     this.id = 0,
@@ -34,11 +38,15 @@ class ClassSession {
     this.sectionName = '',
     this.scheduledRoomName = '',
     this.actualRoomName,
+    this.scheduledTimeIn = '',
+    this.scheduledTimeOut = '',
     this.startedBy,
     this.startedByName,
     this.endedBy,
     this.endedByName,
     this.rowVersion,
+    this.description,
+    this.offScheduleReason,
   });
 
   factory ClassSession.fromJson(Map<String, dynamic> json) {
@@ -72,11 +80,15 @@ class ClassSession {
       sectionName: json['sectionName'] ?? '',
       scheduledRoomName: json['scheduledRoomName'] ?? '',
       actualRoomName: json['actualRoomName'] ?? json['actualRoom'] ?? json['room'],
+      scheduledTimeIn: json['scheduledTimeIn'] ?? json['timeIn'] ?? '',
+      scheduledTimeOut: json['scheduledTimeOut'] ?? json['timeOut'] ?? '',
       startedBy: parseInt(json['startedBy']),
       startedByName: json['startedByName'],
       endedBy: parseInt(json['endedBy']),
       endedByName: json['endedByName'],
       rowVersion: json['rowVersion'],
+      description: json['description'] ?? json['notes'],
+      offScheduleReason: json['offScheduleReason'] ?? json['reason'],
     );
   }
 
@@ -88,6 +100,7 @@ class ClassSession {
       if (sessionDate != null) 'sessionDate': sessionDate!.toIso8601String(),
       if (actualRoomName != null) 'actualRoomName': actualRoomName,
       if (rowVersion != null) 'rowVersion': rowVersion,
+      if (description != null) 'description': description,
     };
   }
 }

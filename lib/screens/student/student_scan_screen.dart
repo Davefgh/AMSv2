@@ -428,10 +428,19 @@ class _StudentScanScreenState extends State<StudentScanScreen>
   // ── Success / Error result card ──────────────────────────────────────────────
   Widget _buildResultOverlay() {
     final isSuccess = _scanState == _ScanState.success;
+    final msg = _statusMessage.toLowerCase();
+    
+    // Determine if it's a Check-Out based on common keywords
+    final isCheckOut = msg.contains('out') || msg.contains('bye') || msg.contains('depart');
+    
     final color = isSuccess ? const Color(0xFF22C55E) : const Color(0xFFEF4444);
-    final icon =
-        isSuccess ? Icons.check_circle_rounded : Icons.cancel_rounded;
-    final title = isSuccess ? 'Attendance Recorded!' : 'Check-in Failed';
+    final icon = isSuccess 
+        ? (isCheckOut ? Icons.exit_to_app_rounded : Icons.check_circle_rounded)
+        : Icons.cancel_rounded;
+    
+    final title = isSuccess 
+        ? (isCheckOut ? 'Check-Out Recorded!' : 'Attendance Recorded!') 
+        : 'Scan Failed';
 
     return Center(
       child: ScaleTransition(
@@ -468,11 +477,22 @@ class _StudentScanScreenState extends State<StudentScanScreen>
               const SizedBox(height: 20),
               Text(
                 title,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: color,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _statusMessage,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               if (_errorDetail != null) ...[
