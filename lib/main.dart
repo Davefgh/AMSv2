@@ -6,28 +6,60 @@ import 'providers/app_provider.dart';
 import 'screens/shared/auth/login_screen.dart';
 import 'services/storage_service.dart';
 
+import 'utils/constants.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await StorageService.init();
-  runApp(const MyApp());
+
+  final token = StorageService.getString(AppConstants.storageKeyToken);
+  final role =
+      StorageService.getString(AppConstants.storageKeyRole)?.toLowerCase() ??
+          'user';
+
+  String initialRoute = '/';
+  if (token != null && token.isNotEmpty) {
+    if (role == 'instructor' || role == 'teacher') {
+      initialRoute = AppRoutes.teacherDashboard;
+    } else if (role == 'student') {
+      initialRoute = AppRoutes.studentDashboard;
+    } else if (role == 'admin' || role == 'administrator') {
+      initialRoute = AppRoutes.dashboard;
+    }
+  }
+
+  runApp(MyApp(initialRoute: initialRoute, initialRole: role));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+  final String initialRole;
+
+  const MyApp({super.key, required this.initialRoute, required this.initialRole});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AppProvider()),
+        ChangeNotifierProvider(create: (_) {
+          final provider = AppProvider();
+          provider.setUserRole(initialRole);
+          return provider;
+        }),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'AMSv2',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: const LoginScreen(),
-        routes: AppRoutes.routes,
+        initialRoute: initialRoute,
+        routes: {
+          '/': (context) => const LoginScreen(),
+          ...AppRoutes.routes,
+        },
         debugShowCheckedModeBanner: false,
       ),
     );

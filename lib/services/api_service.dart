@@ -18,6 +18,7 @@ import '../models/classroom_model.dart';
 import '../models/health_status.dart';
 import '../models/attendance_model.dart';
 import '../models/session_model.dart';
+import '../main.dart' show navigatorKey;
 
 class ApiException implements Exception {
   final int statusCode;
@@ -1029,6 +1030,10 @@ class ApiService {
   }
 
   dynamic _handleResponse(http.Response response) {
+    if (response.statusCode == 401) {
+      _handleLogout();
+    }
+
     if (response.statusCode >= 200 && response.statusCode < 300) {
       final body = response.body.trim();
       if (body.isEmpty) return null;
@@ -1068,5 +1073,13 @@ class ApiService {
         fieldErrors: fieldErrors,
       );
     }
+  }
+
+  void _handleLogout() async {
+    await StorageService.remove(AppConstants.storageKeyToken);
+    await StorageService.remove(AppConstants.storageKeyRefreshToken);
+    await StorageService.remove(AppConstants.storageKeyUser);
+    await StorageService.remove(AppConstants.storageKeyRole);
+    navigatorKey.currentState?.pushNamedAndRemoveUntil('/', (route) => false);
   }
 }
