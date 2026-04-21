@@ -1032,6 +1032,7 @@ class ApiService {
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode == 401) {
       _handleLogout();
+      throw ApiException(401, 'Session expired. Please log in again.');
     }
 
     if (response.statusCode >= 200 && response.statusCode < 300) {

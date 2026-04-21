@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../services/api_service.dart';
+import '../../../services/storage_service.dart';
 import '../../../models/user_profile.dart';
 import '../../../models/instructor_model.dart';
 import '../../../widgets/main_scaffold.dart';
 import '../../../providers/app_provider.dart';
 import '../../../utils/sizing_utils.dart';
+import '../../../utils/constants.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -67,6 +69,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  Future<void> _logout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Log Out',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to log out of your account?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Log Out', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    await StorageService.remove(AppConstants.storageKeyToken);
+    await StorageService.remove(AppConstants.storageKeyRole);
+
+    if (mounted) {
+      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+    }
+  }
+
 
   Widget _buildErrorState(String error) {
     return Center(
@@ -112,8 +160,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _buildUserCard(profile),
         SizedBox(height: Sizing.h(24)),
         _buildDetailSection(profile),
-        SizedBox(height: Sizing.h(8)),
+        SizedBox(height: Sizing.h(24)),
+        _buildLogoutButton(),
+        SizedBox(height: Sizing.h(16)),
       ],
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    return _GlassCard(
+      padding: EdgeInsets.zero,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _logout,
+          borderRadius: BorderRadius.circular(Sizing.r(24)),
+          splashColor: Colors.redAccent.withValues(alpha: 0.1),
+          highlightColor: Colors.redAccent.withValues(alpha: 0.05),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: Sizing.w(20),
+              vertical: Sizing.h(18),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(Sizing.w(10)),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(Sizing.r(12)),
+                  ),
+                  child: Icon(
+                    Icons.logout_rounded,
+                    color: Colors.redAccent,
+                    size: Sizing.sp(20),
+                  ),
+                ),
+                SizedBox(width: Sizing.w(16)),
+                Text(
+                  'Log Out',
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                    fontSize: Sizing.sp(15),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: Colors.redAccent.withValues(alpha: 0.5),
+                  size: Sizing.sp(20),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
