@@ -3,8 +3,7 @@ import 'package:provider/provider.dart';
 import '../../widgets/main_scaffold.dart';
 import '../../providers/app_provider.dart';
 import '../../config/routes/app_routes.dart';
-import '../../services/api_service.dart';
-import '../../utils/sizing_utils.dart';
+import '../../services/api_service.dart';import '../../utils/sizing_utils.dart';
 import '../../models/student_subject_detail.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
@@ -92,6 +91,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         children: [
                           _buildWelcomeHeader(),
                           SizedBox(height: Sizing.h(32)),
+                          _buildFingerprintBanner(),
+                          SizedBox(height: Sizing.h(20)),
                           _buildAttendanceStats(),
                           SizedBox(height: Sizing.h(32)),
                           _buildUpcomingSessions(),
@@ -127,6 +128,59 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFingerprintBanner() {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, AppRoutes.studentFingerprint),
+      child: Container(
+        padding: EdgeInsets.all(Sizing.w(16)),
+        decoration: BoxDecoration(
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(Sizing.r(16)),
+          border: Border.all(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(Sizing.w(10)),
+              decoration: BoxDecoration(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(Sizing.r(12)),
+              ),
+              child: Icon(Icons.fingerprint_rounded,
+                  color: const Color(0xFF38BDF8), size: Sizing.sp(24)),
+            ),
+            SizedBox(width: Sizing.w(14)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'My Fingerprints',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: Sizing.sp(14),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'View your enrolled fingerprint records',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: Sizing.sp(12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios_rounded,
+                color: Colors.white.withValues(alpha: 0.3), size: 14),
           ],
         ),
       ),

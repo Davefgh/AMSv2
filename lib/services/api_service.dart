@@ -18,6 +18,7 @@ import '../models/classroom_model.dart';
 import '../models/health_status.dart';
 import '../models/attendance_model.dart';
 import '../models/session_model.dart';
+import '../models/fingerprint_model.dart';
 import '../main.dart' show navigatorKey;
 
 class ApiException implements Exception {
@@ -924,6 +925,125 @@ class ApiService {
       return response as Map<String, dynamic>? ?? {};
     } catch (e) {
       _logger.e('scanQrCode Error: $e');
+      rethrow;
+    }
+  }
+
+  // --- Fingerprint APIs ---
+
+  /// POST /api/Fingerprint/enrollment-sessions
+  /// Creates an enrollment session for a student on a device.
+  Future<EnrollmentSession> createFingerprintEnrollmentSession({
+    required int studentId,
+    required String deviceId,
+  }) async {
+    try {
+      final response = await post('/api/Fingerprint/enrollment-sessions', {
+        'studentId': studentId,
+        'deviceId': deviceId,
+      });
+      return EnrollmentSession.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('createFingerprintEnrollmentSession Error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/Fingerprint/devices/{deviceId}/enrollment-session
+  /// Gets the active enrollment session for a device.
+  Future<EnrollmentSession?> getDeviceEnrollmentSession(String deviceId) async {
+    try {
+      final response = await get('/api/Fingerprint/devices/$deviceId/enrollment-session');
+      if (response == null) return null;
+      return EnrollmentSession.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('getDeviceEnrollmentSession Error: $e');
+      rethrow;
+    }
+  }
+
+  /// DELETE /api/Fingerprint/{fingerprintId}
+  Future<void> deleteFingerprint(int fingerprintId) async {
+    try {
+      await delete('/api/Fingerprint/$fingerprintId');
+    } catch (e) {
+      _logger.e('deleteFingerprint Error: $e');
+      rethrow;
+    }
+  }
+
+  /// POST /api/Fingerprint/devices/enrollment-result
+  Future<Map<String, dynamic>> submitFingerprintEnrollmentResult(
+      Map<String, dynamic> data) async {
+    try {
+      final response = await post('/api/Fingerprint/devices/enrollment-result', data);
+      return response as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('submitFingerprintEnrollmentResult Error: $e');
+      rethrow;
+    }
+  }
+
+  /// POST /api/Fingerprint/devices/scan
+  Future<Map<String, dynamic>> scanFingerprint(Map<String, dynamic> data) async {
+    try {
+      final response = await post('/api/Fingerprint/devices/scan', data);
+      return response as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('scanFingerprint Error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/Fingerprint/student/{studentId}
+  Future<List<FingerprintInfo>> getFingerprintsByStudent(int studentId) async {
+    try {
+      final response = await get('/api/Fingerprint/student/$studentId');
+      if (response is List) {
+        return response.map((f) => FingerprintInfo.fromJson(f)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getFingerprintsByStudent Error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/Fingerprint/device/{deviceId}
+  Future<List<FingerprintInfo>> getFingerprintsByDevice(String deviceId) async {
+    try {
+      final response = await get('/api/Fingerprint/device/$deviceId');
+      if (response is List) {
+        return response.map((f) => FingerprintInfo.fromJson(f)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getFingerprintsByDevice Error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/Fingerprint
+  Future<List<FingerprintInfo>> getAllFingerprints() async {
+    try {
+      final response = await get('/api/Fingerprint');
+      if (response is List) {
+        return response.map((f) => FingerprintInfo.fromJson(f)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getAllFingerprints Error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/Fingerprint/check/{studentId}
+  Future<Map<String, dynamic>> checkStudentFingerprint(int studentId) async {
+    try {
+      final response = await get('/api/Fingerprint/check/$studentId');
+      return response as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('checkStudentFingerprint Error: $e');
       rethrow;
     }
   }

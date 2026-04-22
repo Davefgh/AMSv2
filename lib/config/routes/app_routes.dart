@@ -17,6 +17,8 @@ import '../../screens/teacher/teacher_sections_screen.dart';
 import '../../screens/teacher/teacher_notification_screen.dart';
 import '../../screens/student/student_dashboard_screen.dart';
 import '../../screens/student/student_scan_screen.dart';
+import '../../screens/admin/fingerprint/fingerprint_enrollment_screen.dart';
+import '../../screens/student/student_fingerprint_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -38,6 +40,8 @@ class AppRoutes {
   static const String studentDashboard = '/student-dashboard';
   static const String studentScan = '/student-scan';
   static const String teacherNotifications = '/teacher-notifications';
+  static const String fingerprintEnrollment = '/fingerprint-enrollment';
+  static const String studentFingerprint = '/student-fingerprint';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -59,6 +63,8 @@ class AppRoutes {
       studentDashboard: (context) => const StudentDashboardScreen(),
       studentScan: (context) => const StudentScanScreen(),
       teacherNotifications: (context) => const TeacherNotificationScreen(),
+      fingerprintEnrollment: (context) => const FingerprintEnrollmentScreen(),
+      studentFingerprint: (context) => const StudentFingerprintScreen(),
     };
   }
 }

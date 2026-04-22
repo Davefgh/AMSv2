@@ -1,7 +1,7 @@
 class AppConstants {
   // API
   static const String apiBaseUrl =
-  'https://tolerance-demands-namespace-polar.trycloudflare.com';
+  'https://oiadyyapw59d.shares.zrok.io';
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Storage Keys

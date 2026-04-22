@@ -86,6 +86,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _buildStatsGrid(),
       const SizedBox(height: 32),
       const Text(
+        'Quick Actions',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          letterSpacing: 0.5,
+        ),
+      ),
+      const SizedBox(height: 16),
+      _buildQuickActions(),
+      const SizedBox(height: 32),
+      const Text(
         'Attendance Overview',
         style: TextStyle(
           fontSize: 18,
@@ -254,6 +266,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildQuickActionCard(
+            icon: Icons.fingerprint_rounded,
+            label: 'Fingerprint\nEnrollment',
+            color: const Color(0xFF38BDF8),
+            onTap: () => Navigator.pushNamed(
+                context, AppRoutes.fingerprintEnrollment),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildQuickActionCard(
+            icon: Icons.health_and_safety_rounded,
+            label: 'System\nHealth',
+            color: const Color(0xFF34D399),
+            onTap: () => Navigator.pushNamed(context, AppRoutes.health),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return _GlassCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+          ),
+          Icon(Icons.arrow_forward_ios_rounded,
+              color: Colors.white.withValues(alpha: 0.3), size: 14),
         ],
       ),
     );
