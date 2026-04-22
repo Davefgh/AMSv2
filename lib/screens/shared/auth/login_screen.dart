@@ -46,36 +46,41 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       if (response['success'] == true) {
-        // Save tokens and user info
+        final role = response['role']?.toString().toLowerCase() ?? 'user';
+
+        // Block admin accounts from logging in
+        if (role == 'admin' || role == 'administrator') {
+          setState(() {
+            _errorMessage = 'Incorrect Username or Password.';
+          });
+          return;
+        }
+
         await StorageService.setString(
             AppConstants.storageKeyToken, response['accessToken'] ?? '');
         await StorageService.setString(
             AppConstants.storageKeyRefreshToken, response['refreshToken'] ?? '');
         await StorageService.setString(AppConstants.storageKeyUser, response['user'] ?? '');
-        await StorageService.setString(AppConstants.storageKeyRole, response['role'] ?? 'user');
+        await StorageService.setString(AppConstants.storageKeyRole, role);
 
         if (mounted) {
-          final role = response['role']?.toString().toLowerCase() ?? 'user';
           context.read<AppProvider>().setUserRole(role);
 
           if (role == 'instructor' || role == 'teacher') {
             Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);
-          } else if (role == 'student') {
-            Navigator.pushReplacementNamed(context, AppRoutes.studentDashboard);
           } else {
-            Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+            Navigator.pushReplacementNamed(context, AppRoutes.studentDashboard);
           }
         }
       } else {
         setState(() {
-          _errorMessage = response['message'] ?? 'Login failed';
+          _errorMessage = 'Incorrect Username or Password.';
         });
       }
     } catch (e) {
+      debugPrint('Login Error: $e');
       setState(() {
-        _errorMessage =
-            'An error occurred. Please make sure the backend is running and you are using the correct login flags.';
-        debugPrint('Login Error: $e');
+        _errorMessage = 'Incorrect Username or Password.';
       });
     } finally {
       if (mounted) {
