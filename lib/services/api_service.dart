@@ -1075,22 +1075,140 @@ class ApiService {
     }
   }
 
-  Future<dynamic> get(String endpoint) async {
+  // Prevents concurrent refresh attempts
+  bool _isRefreshing = false;
+
+  /// Tries to refresh the access token using the stored refresh token.
+  /// Returns true if successful, false otherwise.
+  Future<bool> tryRefreshToken() async {
+    if (_isRefreshing) return false;
+    _isRefreshing = true;
     try {
+      final refreshToken = StorageService.getString(AppConstants.storageKeyRefreshToken);
+      if (refreshToken == null || refreshToken.isEmpty) return false;
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/account/refresh'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'refreshToken': refreshToken}),
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+        final newToken = data['accessToken'] ?? data['token'];
+        final newRefresh = data['refreshToken'];
+        if (newToken != null) {
+          await StorageService.setString(AppConstants.storageKeyToken, newToken);
+          if (newRefresh != null) {
+            await StorageService.setString(AppConstants.storageKeyRefreshToken, newRefresh);
+          }
+          return true;
+        }
+      }
+      return false;
+    } catch (_) {
+      return false;
+    } finally {
+      _isRefreshing = false;
+    }
+  }
+
+  /// Checks if the current token is still valid via /api/account/check.
+  /// Returns true if valid, false if expired/invalid.
+  Future<bool> checkToken() async {
+    try {
+      final token = StorageService.getString(AppConstants.storageKeyToken);
+      if (token == null || token.isEmpty) return false;
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/account/check'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  dynamic _handleResponse(http.Response response) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      final body = response.body.trim();
+      if (body.isEmpty) return null;
+      return jsonDecode(response.body);
+    }
+
+    if (response.statusCode == 401) {
+      // Try refresh in background then logout — callers that need retry
+      // should use the retryWithRefresh wrapper.
+      _handleLogout();
+      throw ApiException(401, 'Session expired. Please log in again.');
+    }
+
+    String errorMessage = 'Unknown error';
+    Map<String, List<String>> fieldErrors = {};
+
+    try {
+      final body = response.body.trim();
+      if (body.isNotEmpty) {
+        final decoded = jsonDecode(body);
+        if (decoded is Map<String, dynamic>) {
+          errorMessage = decoded['title'] ?? decoded['message'] ?? response.body;
+          if (decoded['errors'] != null) {
+            final errorsObj = decoded['errors'] as Map<String, dynamic>;
+            errorsObj.forEach((key, value) {
+              if (value is List) {
+                fieldErrors[key] = value.map((e) => e.toString()).toList();
+              } else if (value is String) {
+                fieldErrors[key] = [value];
+              }
+            });
+          }
+        } else {
+          errorMessage = body;
+        }
+      }
+    } catch (_) {
+      errorMessage = response.body.isNotEmpty
+          ? response.body
+          : response.reasonPhrase ?? 'Unknown error';
+    }
+
+    throw ApiException(response.statusCode, errorMessage, fieldErrors: fieldErrors);
+  }
+
+  /// Wraps a request so that on a 401 it attempts a token refresh and retries once.
+  Future<dynamic> _withRefresh(Future<dynamic> Function() request) async {
+    try {
+      return await request();
+    } on ApiException catch (e) {
+      if (e.statusCode == 401) {
+        final refreshed = await tryRefreshToken();
+        if (refreshed) {
+          return await request();
+        }
+        _handleLogout();
+        rethrow;
+      }
+      rethrow;
+    }
+  }
+
+  Future<dynamic> get(String endpoint) async {
+    return _withRefresh(() async {
       final headers = await _getHeaders();
       final response = await http.get(
         Uri.parse('$baseUrl$endpoint'),
         headers: headers,
       );
       return _handleResponse(response);
-    } catch (e) {
-      _logger.e('GET Error: $e');
-      rethrow;
-    }
+    });
   }
 
   Future<dynamic> post(String endpoint, Map<String, dynamic> body) async {
-    try {
+    return _withRefresh(() async {
       final headers = await _getHeaders();
       final response = await http.post(
         Uri.parse('$baseUrl$endpoint'),
@@ -1098,14 +1216,11 @@ class ApiService {
         body: jsonEncode(body),
       );
       return _handleResponse(response);
-    } catch (e) {
-      _logger.e('POST Error: $e');
-      rethrow;
-    }
+    });
   }
 
   Future<dynamic> patch(String endpoint, Map<String, dynamic> body) async {
-    try {
+    return _withRefresh(() async {
       final headers = await _getHeaders();
       final response = await http.patch(
         Uri.parse('$baseUrl$endpoint'),
@@ -1113,14 +1228,11 @@ class ApiService {
         body: jsonEncode(body),
       );
       return _handleResponse(response);
-    } catch (e) {
-      _logger.e('PATCH Error: $e');
-      rethrow;
-    }
+    });
   }
 
   Future<dynamic> put(String endpoint, Map<String, dynamic> body) async {
-    try {
+    return _withRefresh(() async {
       final headers = await _getHeaders();
       final response = await http.put(
         Uri.parse('$baseUrl$endpoint'),
@@ -1128,14 +1240,11 @@ class ApiService {
         body: jsonEncode(body),
       );
       return _handleResponse(response);
-    } catch (e) {
-      _logger.e('PUT Error: $e');
-      rethrow;
-    }
+    });
   }
 
   Future<dynamic> delete(String endpoint, {Map<String, dynamic>? body}) async {
-    try {
+    return _withRefresh(() async {
       final headers = await _getHeaders();
       final response = await http.delete(
         Uri.parse('$baseUrl$endpoint'),
@@ -1143,57 +1252,7 @@ class ApiService {
         body: body != null ? jsonEncode(body) : null,
       );
       return _handleResponse(response);
-    } catch (e) {
-      _logger.e('DELETE Error: $e');
-      rethrow;
-    }
-  }
-
-  dynamic _handleResponse(http.Response response) {
-    if (response.statusCode == 401) {
-      _handleLogout();
-      throw ApiException(401, 'Session expired. Please log in again.');
-    }
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      final body = response.body.trim();
-      if (body.isEmpty) return null;
-      return jsonDecode(response.body);
-    } else {
-      String errorMessage = 'Unknown error';
-      Map<String, List<String>> fieldErrors = {};
-
-      try {
-        final body = response.body.trim();
-        if (body.isNotEmpty) {
-          final decoded = jsonDecode(body);
-          if (decoded is Map<String, dynamic>) {
-            errorMessage = decoded['title'] ?? decoded['message'] ?? response.body;
-
-            if (decoded['errors'] != null) {
-              final errorsObj = decoded['errors'] as Map<String, dynamic>;
-              errorsObj.forEach((key, value) {
-                if (value is List) {
-                  fieldErrors[key] = value.map((e) => e.toString()).toList();
-                } else if (value is String) {
-                  fieldErrors[key] = [value];
-                }
-              });
-            }
-          } else {
-            errorMessage = body;
-          }
-        }
-      } catch (_) {
-        errorMessage = response.body.isNotEmpty ? response.body : response.reasonPhrase ?? 'Unknown error';
-      }
-
-      throw ApiException(
-        response.statusCode,
-        errorMessage,
-        fieldErrors: fieldErrors,
-      );
-    }
+    });
   }
 
   void _handleLogout() async {

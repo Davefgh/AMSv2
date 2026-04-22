@@ -5,7 +5,7 @@ import 'config/routes/app_routes.dart';
 import 'providers/app_provider.dart';
 import 'screens/shared/auth/login_screen.dart';
 import 'services/storage_service.dart';
-
+import 'services/api_service.dart';
 import 'utils/constants.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -16,17 +16,35 @@ void main() async {
 
   final token = StorageService.getString(AppConstants.storageKeyToken);
   final role =
-      StorageService.getString(AppConstants.storageKeyRole)?.toLowerCase() ??
-          'user';
+      StorageService.getString(AppConstants.storageKeyRole)?.toLowerCase() ?? 'user';
 
   String initialRoute = '/';
+
   if (token != null && token.isNotEmpty) {
-    if (role == 'instructor' || role == 'teacher') {
-      initialRoute = AppRoutes.teacherDashboard;
-    } else if (role == 'student') {
-      initialRoute = AppRoutes.studentDashboard;
-    } else if (role == 'admin' || role == 'administrator') {
-      initialRoute = AppRoutes.dashboard;
+    final api = ApiService();
+
+    // Check if token is still valid
+    bool isValid = await api.checkToken();
+
+    if (!isValid) {
+      // Try to silently refresh
+      isValid = await api.tryRefreshToken();
+    }
+
+    if (isValid) {
+      // Block admin from staying logged in
+      if (role == 'instructor' || role == 'teacher') {
+        initialRoute = AppRoutes.teacherDashboard;
+      } else if (role == 'student') {
+        initialRoute = AppRoutes.studentDashboard;
+      }
+      // admin falls through to login
+    } else {
+      // Clear stale tokens
+      await StorageService.remove(AppConstants.storageKeyToken);
+      await StorageService.remove(AppConstants.storageKeyRefreshToken);
+      await StorageService.remove(AppConstants.storageKeyUser);
+      await StorageService.remove(AppConstants.storageKeyRole);
     }
   }
 
