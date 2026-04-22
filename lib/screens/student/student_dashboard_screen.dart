@@ -5,6 +5,7 @@ import '../../providers/app_provider.dart';
 import '../../config/routes/app_routes.dart';
 import '../../services/api_service.dart';import '../../utils/sizing_utils.dart';
 import '../../models/student_subject_detail.dart';
+import '../../widgets/skeleton_loader.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -77,7 +78,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         const SizedBox(width: 12),
       ],
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+          ? const SkeletonDashboard()
           : _errorMessage != null
               ? _buildErrorState()
               : RefreshIndicator(

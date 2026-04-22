@@ -4,6 +4,7 @@ import '../../../services/api_service.dart';
 import '../../../models/student_model.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:async';
+import '../../../widgets/skeleton_loader.dart';
 
 class StudentsScreen extends StatefulWidget {
   const StudentsScreen({super.key});
@@ -213,7 +214,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                 _buildSearchBar(),
                 Expanded(
                   child: _isLoading
-                      ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+                      ? const SkeletonListView()
                       : _filteredStudents.isEmpty
                           ? _buildEmptyState()
                           : _buildStudentList(),

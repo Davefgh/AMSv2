@@ -6,6 +6,7 @@ import '../../models/user_profile.dart';
 import '../../models/instructor_model.dart';
 import '../../widgets/main_scaffold.dart';
 import 'section_students_screen.dart';
+import '../../widgets/skeleton_loader.dart';
 
 class TeacherSectionsScreen extends StatefulWidget {
   const TeacherSectionsScreen({super.key});
@@ -87,7 +88,7 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
         children: [
           _buildBackground(),
           _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+              ? const SkeletonListView()
               : _errorMessage != null
                   ? _buildErrorState()
                   : _buildContent(),

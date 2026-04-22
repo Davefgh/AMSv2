@@ -7,6 +7,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui';
 import 'dart:async';
+import '../../widgets/skeleton_loader.dart';
 
 class SessionDetailsScreen extends StatefulWidget {
   final ClassSession? session;
@@ -578,9 +579,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isInitialLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0F172A),
-        body: Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8))),
+      return Scaffold(
+        backgroundColor: const Color(0xFF0F172A),
+        body: const SkeletonSessionList(),
       );
     }
 

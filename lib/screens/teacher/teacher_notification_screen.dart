@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../widgets/main_scaffold.dart';
+import '../../widgets/skeleton_loader.dart';
 
 class TeacherNotificationScreen extends StatefulWidget {
   const TeacherNotificationScreen({super.key});
@@ -60,7 +61,7 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
         children: [
           _buildBackground(),
           _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+              ? const SkeletonListView(itemCount: 3)
               : _errorMessage != null
                   ? _buildErrorState()
                   : _buildContent(),

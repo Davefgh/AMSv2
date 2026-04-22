@@ -5,6 +5,7 @@ import 'dart:ui';
 import '../../widgets/main_scaffold.dart';
 import 'package:intl/intl.dart';
 import 'record_attendance_screen.dart';
+import '../../widgets/skeleton_loader.dart';
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -127,7 +128,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           _buildHeader(),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+                ? const SkeletonSessionList()
                 : _errorMessage != null
                     ? _buildErrorState()
                     : RefreshIndicator(

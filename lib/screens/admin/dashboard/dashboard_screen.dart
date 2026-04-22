@@ -5,6 +5,7 @@ import '../../../services/api_service.dart';
 import '../../../models/app_user.dart';
 import '../../../widgets/main_scaffold.dart';
 import '../../../utils/responsive.dart';
+import '../../../widgets/skeleton_loader.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -60,13 +61,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ],
-      body: ListView(
-        physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics()),
-        padding: const EdgeInsets.symmetric(
-            horizontal: 24, vertical: 12),
-        children: _buildDashboardMainSections(),
-      ),
+      body: _isLoading
+          ? const SkeletonDashboard()
+          : ListView(
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              children: _buildDashboardMainSections(),
+            ),
     );
   }
 

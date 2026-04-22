@@ -8,6 +8,7 @@ import '../../../models/subject_model.dart';
 import '../../../widgets/main_scaffold.dart';
 import '../../../utils/responsive.dart';
 import '../../../config/routes/app_routes.dart';
+import '../../../widgets/skeleton_loader.dart';
 
 class EnrollmentScreen extends StatefulWidget {
   const EnrollmentScreen({super.key});
@@ -101,7 +102,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
           _buildSearchBar(),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+                ? const SkeletonListView()
                 : _enrollments.isEmpty
                     ? _buildEmptyState()
                     : _buildEnrollmentList(),

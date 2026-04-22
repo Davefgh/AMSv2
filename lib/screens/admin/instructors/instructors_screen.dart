@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../../services/api_service.dart';
 import '../../../models/instructor_model.dart';
+import '../../../widgets/skeleton_loader.dart';
 
 class InstructorsScreen extends StatefulWidget {
   const InstructorsScreen({super.key});
@@ -211,7 +212,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                 _buildSearchBar(),
                 Expanded(
                   child: _isLoading
-                      ? const Center(child: CircularProgressIndicator(color: Color(0xFF60A5FA)))
+                      ? const SkeletonListView()
                       : _filteredInstructors.isEmpty
                           ? _buildEmptyState()
                           : _buildInstructorList(),

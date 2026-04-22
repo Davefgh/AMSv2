@@ -10,6 +10,7 @@ import '../../../widgets/main_scaffold.dart';
 import '../../../providers/app_provider.dart';
 import '../../../utils/sizing_utils.dart';
 import '../../../utils/constants.dart';
+import '../../../widgets/skeleton_loader.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -46,9 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
-            );
+            return const SkeletonProfile();
           } else if (snapshot.hasError) {
             return _buildErrorState(snapshot.error.toString());
           } else if (!snapshot.hasData) {

@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/custom_text_field.dart';
+import '../../../widgets/skeleton_loader.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -137,7 +138,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 _buildHeader(),
                 Expanded(
                   child: _isFetching
-                      ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+                      ? const SkeletonProfile()
                       : SingleChildScrollView(
                           physics: const BouncingScrollPhysics(),
                           padding: const EdgeInsets.all(24),

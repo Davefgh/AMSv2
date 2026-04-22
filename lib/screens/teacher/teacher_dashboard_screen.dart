@@ -13,6 +13,7 @@ import '../../utils/sizing_utils.dart';
 import '../../config/routes/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
+import '../../widgets/skeleton_loader.dart';
 
 class TeacherDashboardScreen extends StatefulWidget {
   const TeacherDashboardScreen({super.key});
@@ -120,7 +121,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       currentIndex: 0,
       isAdmin: false,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+          ? const SkeletonDashboard()
           : _errorMessage != null
               ? _buildErrorState()
               : _buildDashboard(),

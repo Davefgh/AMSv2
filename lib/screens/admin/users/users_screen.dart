@@ -8,6 +8,7 @@ import '../../../models/app_user.dart';
 import '../../../widgets/main_scaffold.dart';
 import '../../../utils/responsive.dart';
 import '../../../config/routes/app_routes.dart';
+import '../../../widgets/skeleton_loader.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -994,7 +995,7 @@ class _UsersScreenState extends State<UsersScreen> {
 
   Widget _buildRecentUsersList() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)));
+      return const SkeletonListView(itemCount: 5, padding: EdgeInsets.zero);
     }
 
     List<AppUser> filteredUsers = _users;

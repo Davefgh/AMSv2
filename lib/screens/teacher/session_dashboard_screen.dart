@@ -10,6 +10,7 @@ import '../../widgets/main_scaffold.dart';
 import '../../models/instructor_model.dart';
 import '../../services/storage_service.dart';
 import '../shared/auth/login_screen.dart';
+import '../../widgets/skeleton_loader.dart';
 
 class SessionDashboardScreen extends StatefulWidget {
   const SessionDashboardScreen({super.key});
@@ -371,7 +372,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         _buildProfileAvatar(),
       ],
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+          ? const SkeletonSessionList()
           : RefreshIndicator(
               onRefresh: _loadData,
               color: const Color(0xFF38BDF8),

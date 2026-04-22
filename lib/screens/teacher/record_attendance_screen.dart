@@ -5,6 +5,7 @@ import '../../models/student_model.dart';
 import '../../models/attendance_model.dart';
 import 'dart:ui';
 import 'package:intl/intl.dart';
+import '../../widgets/skeleton_loader.dart';
 
 class RecordAttendanceScreen extends StatefulWidget {
   final ClassSession session;
@@ -166,7 +167,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                 _buildControls(),
                 Expanded(
                   child: _isLoading
-                      ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+                      ? const SkeletonListView()
                       : _errorMessage != null
                           ? _buildErrorState()
                           : _buildStudentList(),

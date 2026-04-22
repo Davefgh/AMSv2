@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../models/student_model.dart';
 import '../../widgets/main_scaffold.dart';
+import '../../widgets/skeleton_loader.dart';
 
 class SectionStudentsScreen extends StatefulWidget {
   final int sectionId;
@@ -66,7 +67,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
         children: [
           _buildBackground(),
           _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+              ? const SkeletonListView()
               : _errorMessage != null
                   ? _buildErrorState()
                   : _buildContent(),

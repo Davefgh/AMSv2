@@ -10,6 +10,7 @@ import '../../../models/instructor_model.dart';
 import '../../../widgets/main_scaffold.dart';
 import '../../../utils/responsive.dart';
 import '../../../config/routes/app_routes.dart';
+import '../../../widgets/skeleton_loader.dart';
 
 class ClassesScreen extends StatefulWidget {
   const ClassesScreen({super.key});
@@ -2246,12 +2247,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
   Widget _buildClassroomsList() {
     if (_isLoadingClassrooms) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32.0),
-          child: CircularProgressIndicator(color: Color(0xFF60A5FA)),
-        ),
-      );
+      return const SkeletonListView(itemCount: 4, padding: EdgeInsets.all(16));
     }
 
     if (_classroomsList.isEmpty) {
@@ -2387,12 +2383,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
   Widget _buildCoursesList() {
     if (_isLoadingCourses) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32.0),
-          child: CircularProgressIndicator(color: Color(0xFFA78BFA)),
-        ),
-      );
+      return const SkeletonListView(itemCount: 4, padding: EdgeInsets.all(16));
     }
 
     if (_coursesList.isEmpty) {
@@ -2528,12 +2519,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
   Widget _buildSectionsList() {
     if (_isLoadingSections) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32.0),
-          child: CircularProgressIndicator(color: Color(0xFFFBBF24)),
-        ),
-      );
+      return const SkeletonListView(itemCount: 4, padding: EdgeInsets.all(16));
     }
 
     if (_sectionsList.isEmpty) {
@@ -2671,12 +2657,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
   Widget _buildSubjectsList() {
     if (_isLoadingSubjects) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32.0),
-          child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
-        ),
-      );
+      return const SkeletonListView(itemCount: 4, padding: EdgeInsets.all(16));
     }
 
     if (_subjectsList.isEmpty) {
@@ -2812,12 +2793,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
   Widget _buildScheduleList() {
     if (_isLoadingSchedules) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32.0),
-          child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
-        ),
-      );
+      return const SkeletonListView(itemCount: 4, padding: EdgeInsets.all(16));
     }
 
     if (_schedulesList.isEmpty) {
@@ -3003,3 +2979,4 @@ class _GlassCard extends StatelessWidget {
     );
   }
 }
+

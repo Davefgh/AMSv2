@@ -3,6 +3,7 @@ import '../../widgets/main_scaffold.dart';
 import '../../services/api_service.dart';
 import '../../models/fingerprint_model.dart';
 import '../../utils/sizing_utils.dart';
+import '../../widgets/skeleton_loader.dart';
 
 class StudentFingerprintScreen extends StatefulWidget {
   const StudentFingerprintScreen({super.key});
@@ -57,8 +58,7 @@ class _StudentFingerprintScreenState extends State<StudentFingerprintScreen> {
       isStudent: true,
       showBackButton: true,
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+          ? const SkeletonListView()
           : _error != null
               ? _buildErrorState()
               : RefreshIndicator(
