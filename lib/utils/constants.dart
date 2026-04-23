@@ -1,7 +1,7 @@
 class AppConstants {
   // API
   static const String apiBaseUrl =
-  'https://oiadyyapw59d.shares.zrok.io';
+  'https://thursday-elite-approx-veterans.trycloudflare.com';
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Storage Keys
