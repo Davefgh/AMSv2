@@ -332,8 +332,9 @@ class MainScaffold extends StatelessWidget {
       destinations = _teacherDestinations;
     }
 
-    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
-    final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+    // Always use dark blue for bottom navbar regardless of theme
+    const bgColor = Color(0xFF0F172A);
+    const borderColor = Color(0xFF1E293B);
 
     return Container(
       decoration: BoxDecoration(
@@ -351,7 +352,7 @@ class MainScaffold extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.4),
+        unselectedItemColor: Colors.white.withOpacity(0.4),
         showUnselectedLabels: true,
         selectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
