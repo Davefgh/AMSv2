@@ -121,7 +121,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             return IconButton(
               icon: Icon(
                 appProvider.isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                color: Colors.white,
+                color: appProvider.isDarkMode ? Colors.white : Colors.black,
               ),
               onPressed: () => appProvider.toggleDarkMode(),
               tooltip: appProvider.isDarkMode ? 'Light Mode' : 'Dark Mode',
