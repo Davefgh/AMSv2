@@ -21,6 +21,9 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   List<Schedule> _schedules = [];
+  String _selectedDay = 'Today';
+
+  final List<String> _days = ['Today', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   @override
   void initState() {
@@ -67,6 +70,17 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
       list.sort((a, b) => a.timeIn.compareTo(b.timeIn));
     });
     return grouped;
+  }
+
+  String get _todayName {
+    return DateFormat('EEEE').format(DateTime.now());
+  }
+
+  List<Schedule> get _filteredSchedules {
+    if (_selectedDay == 'Today') {
+      return _groupedSchedules[_todayName] ?? [];
+    }
+    return _groupedSchedules[_selectedDay] ?? [];
   }
 
   @override
@@ -118,7 +132,9 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
               children: [
                 _buildSummary(isDark, textColor, secondaryTextColor),
                 SizedBox(height: Sizing.h(24)),
-                _buildSchedulesByDay(isDark, cardColor, textColor, secondaryTextColor),
+                _buildDayFilter(isDark, textColor, secondaryTextColor),
+                SizedBox(height: Sizing.h(24)),
+                _buildFilteredSchedules(isDark, cardColor, textColor, secondaryTextColor),
               ],
             ),
           ),
@@ -209,6 +225,96 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
             fontSize: Sizing.sp(12),
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildDayFilter(bool isDark, Color textColor, Color secondaryTextColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Filter by Day',
+          style: TextStyle(
+            color: textColor,
+            fontSize: Sizing.sp(14),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: Sizing.h(12)),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: _days.map((day) {
+              final isSelected = _selectedDay == day;
+              return Padding(
+                padding: EdgeInsets.only(right: Sizing.w(8)),
+                child: FilterChip(
+                  label: Text(day),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() {
+                      _selectedDay = day;
+                    });
+                  },
+                  backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+                  selectedColor: const Color(0xFF38BDF8),
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.white : textColor,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                  side: BorderSide(
+                    color: isSelected ? const Color(0xFF38BDF8) : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilteredSchedules(bool isDark, Color cardColor, Color textColor, Color secondaryTextColor) {
+    final filteredSchedules = _filteredSchedules;
+
+    if (filteredSchedules.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: Sizing.h(40)),
+          child: Column(
+            children: [
+              Icon(Icons.event_busy_rounded, size: 48, color: secondaryTextColor),
+              SizedBox(height: Sizing.h(12)),
+              Text(
+                'No schedules for $_selectedDay',
+                style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(14)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Schedules for $_selectedDay',
+          style: TextStyle(
+            color: textColor,
+            fontSize: Sizing.sp(16),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: Sizing.h(12)),
+        ...filteredSchedules.map((schedule) => _buildScheduleCard(
+          schedule,
+          isDark,
+          cardColor,
+          textColor,
+          secondaryTextColor,
+        )),
       ],
     );
   }

@@ -1,0 +1,146 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                         FILTER FEATURE - COMMIT GUIDE                        ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+FILE TO COMMIT:
+
+lib/screens/teacher/teacher_schedules_screen.dart
+
+═══════════════════════════════════════════════════════════════════════════════
+
+CHANGES SUMMARY:
+
+Added:
+  - _selectedDay state variable
+  - _days list (7 day options)
+  - _todayName getter
+  - _filteredSchedules getter
+  - _buildDayFilter() widget
+  - _buildFilteredSchedules() widget
+
+Modified:
+  - _buildSchedulesList() method
+
+═══════════════════════════════════════════════════════════════════════════════
+
+COMMIT STEPS:
+
+Step 1: Check Status
+  $ git status
+
+Expected:
+  modified:   lib/screens/teacher/teacher_schedules_screen.dart
+
+Step 2: Stage File
+  $ git add lib/screens/teacher/teacher_schedules_screen.dart
+
+Step 3: Verify Staging
+  $ git status
+
+Expected:
+  Changes to be committed:
+    modified:   lib/screens/teacher/teacher_schedules_screen.dart
+
+Step 4: Commit
+  $ git commit -m "feat: add day filter to teacher schedules"
+
+Or with details:
+  $ git commit -m "feat: add day filter to teacher schedules
+
+- Add filter chips for Today, Monday-Saturday
+- Implement instant filtering by day
+- Show empty state when no schedules for day
+- Auto-detect today's day
+- Update header with selected day
+- Support light and dark themes
+- Horizontal scrollable filter bar"
+
+Step 5: Verify Commit
+  $ git log --oneline -1
+
+Expected:
+  [commit-hash] feat: add day filter to teacher schedules
+
+Step 6: Push
+  $ git push origin ams-1-lightmode
+
+═══════════════════════════════════════════════════════════════════════════════
+
+VERIFICATION BEFORE COMMIT:
+
+Check for errors:
+  $ dart analyze lib/screens/teacher/teacher_schedules_screen.dart
+
+Expected: No errors
+
+View changes:
+  $ git diff lib/screens/teacher/teacher_schedules_screen.dart
+
+Expected: Shows added filter code
+
+═══════════════════════════════════════════════════════════════════════════════
+
+QUICK COMMAND:
+
+All in one:
+  git add lib/screens/teacher/teacher_schedules_screen.dart && \
+  git commit -m "feat: add day filter to teacher schedules" && \
+  git push origin ams-1-lightmode
+
+═══════════════════════════════════════════════════════════════════════════════
+
+AFTER COMMIT:
+
+View commit:
+  $ git show HEAD
+
+Create PR:
+  $ gh pr create --title "feat: add day filter to teacher schedules" \
+    --body "Adds day-based filtering to schedules screen"
+
+═══════════════════════════════════════════════════════════════════════════════
+
+COMMIT MESSAGE FORMAT:
+
+Type: feat (new feature)
+Scope: teacher-schedules
+Subject: add day filter to teacher schedules
+
+Body:
+- Add filter chips for Today, Monday-Saturday
+- Implement instant filtering by day
+- Show empty state when no schedules for day
+- Auto-detect today's day
+- Update header with selected day
+- Support light and dark themes
+- Horizontal scrollable filter bar
+
+═══════════════════════════════════════════════════════════════════════════════
+
+ROLLBACK (if needed):
+
+Undo last commit (keep changes):
+  $ git reset --soft HEAD~1
+
+Undo last commit (discard changes):
+  $ git reset --hard HEAD~1
+
+═══════════════════════════════════════════════════════════════════════════════
+
+COMMIT CHECKLIST:
+
+□ File modified correctly
+□ No compilation errors
+□ No syntax errors
+□ Filter chips display
+□ Filtering works
+□ Empty state works
+□ Theme support works
+□ Code quality verified
+□ Ready to commit
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STATUS: ✅ READY TO COMMIT
+
+═══════════════════════════════════════════════════════════════════════════════
