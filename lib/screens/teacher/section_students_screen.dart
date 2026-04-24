@@ -24,6 +24,9 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   List<Student> _students = [];
+  String _selectedStatus = 'All'; // Filter state
+
+  final List<String> _statusOptions = ['All', 'Regular', 'Irregular'];
 
   @override
   void initState() {
@@ -53,6 +56,16 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  List<Student> get _filteredStudents {
+    if (_selectedStatus == 'All') {
+      return _students;
+    } else if (_selectedStatus == 'Regular') {
+      return _students.where((s) => s.isRegular).toList();
+    } else {
+      return _students.where((s) => !s.isRegular).toList();
     }
   }
 
@@ -98,18 +111,80 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
       );
     }
 
+    final filteredStudents = _filteredStudents;
+
     return RefreshIndicator(
       onRefresh: _loadData,
       color: const Color(0xFF38BDF8),
       backgroundColor: const Color(0xFF1E293B),
-      child: ListView.builder(
+      child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        itemCount: _students.length,
-        itemBuilder: (context, index) {
-          final student = _students[index];
-          return _buildStudentItem(student);
-        },
+        child: Column(
+          children: [
+            // Filter chips
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _statusOptions.map((status) {
+                    final isSelected = _selectedStatus == status;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(status),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          setState(() {
+                            _selectedStatus = status;
+                          });
+                        },
+                        backgroundColor: Colors.white.withValues(alpha: 0.05),
+                        selectedColor: const Color(0xFF38BDF8),
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : Colors.white70,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                        side: BorderSide(
+                          color: isSelected 
+                              ? const Color(0xFF38BDF8)
+                              : Colors.white.withValues(alpha: 0.1),
+                        ),
+                        showCheckmark: false,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            // Student list
+            if (filteredStudents.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                child: Column(
+                  children: [
+                    Icon(Icons.person_search_rounded, size: 48, color: Colors.white.withValues(alpha: 0.2)),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No $_selectedStatus students',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                itemCount: filteredStudents.length,
+                itemBuilder: (context, index) {
+                  final student = filteredStudents[index];
+                  return _buildStudentItem(student);
+                },
+              ),
+          ],
+        ),
       ),
     );
   }

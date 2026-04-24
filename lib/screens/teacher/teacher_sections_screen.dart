@@ -1,10 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/user_profile.dart';
 import '../../models/instructor_model.dart';
 import '../../widgets/main_scaffold.dart';
+import '../../providers/app_provider.dart';
+import '../../utils/sizing_utils.dart';
 import 'section_students_screen.dart';
 import '../../widgets/skeleton_loader.dart';
 
@@ -20,6 +23,7 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   List<Map<String, dynamic>> _sections = [];
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -78,125 +82,304 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
     }
   }
 
+  List<Map<String, dynamic>> get _filteredSections {
+    if (_searchQuery.isEmpty) {
+      return _sections;
+    }
+    return _sections
+        .where((section) =>
+            (section['name'] as String?)?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false)
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
       title: 'Sections',
       currentIndex: 4,
       isAdmin: false,
-      body: Stack(
+      body: _isLoading
+          ? const SkeletonListView()
+          : _errorMessage != null
+              ? _buildErrorState()
+              : _buildContent(),
+    );
+  }
+
+  Widget _buildContent() {
+    return Consumer<AppProvider>(
+      builder: (context, appProvider, _) {
+        final isDark = appProvider.isDarkMode;
+        final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+        final cardColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
+        final textColor = isDark ? Colors.white : Colors.black;
+        final secondaryTextColor = isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.6);
+
+        if (_sections.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.layers_clear_rounded, size: 64, color: secondaryTextColor),
+                SizedBox(height: Sizing.h(16)),
+                Text(
+                  'No sections found',
+                  style: TextStyle(color: textColor, fontSize: Sizing.sp(18), fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: Sizing.h(8)),
+                Text(
+                  'You have no assigned class sections.',
+                  style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(14)),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: _loadData,
+          color: const Color(0xFF38BDF8),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            padding: EdgeInsets.all(Sizing.w(24)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Summary Stats
+                _buildSummary(isDark, textColor, secondaryTextColor),
+                SizedBox(height: Sizing.h(24)),
+                
+                // Search Bar
+                _buildSearchBar(isDark, textColor, secondaryTextColor),
+                SizedBox(height: Sizing.h(24)),
+                
+                // Sections List
+                if (_filteredSections.isEmpty)
+                  Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: Sizing.h(40)),
+                      child: Column(
+                        children: [
+                          Icon(Icons.search_off_rounded, size: 48, color: secondaryTextColor),
+                          SizedBox(height: Sizing.h(12)),
+                          Text(
+                            'No sections found',
+                            style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(14)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Column(
+                    children: _filteredSections.map((section) {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: Sizing.h(16)),
+                        child: _buildSectionItem(section, isDark, cardColor, textColor, secondaryTextColor),
+                      );
+                    }).toList(),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSummary(bool isDark, Color textColor, Color secondaryTextColor) {
+    return Container(
+      padding: EdgeInsets.all(Sizing.w(16)),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+        borderRadius: BorderRadius.circular(Sizing.r(16)),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildBackground(),
-          _isLoading
-              ? const SkeletonListView()
-              : _errorMessage != null
-                  ? _buildErrorState()
-                  : _buildContent(),
+          _buildSummaryItem(
+            icon: Icons.layers_rounded,
+            label: 'Total Sections',
+            value: '${_sections.length}',
+            color: const Color(0xFF38BDF8),
+            isDark: isDark,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildContent() {
-    if (_sections.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.layers_clear_rounded, size: 64, color: Colors.white.withValues(alpha: 0.1)),
-            const SizedBox(height: 16),
-            const Text(
-              'No sections found',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'You have no assigned class sections.',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
-            ),
-          ],
+  Widget _buildSummaryItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+    required bool isDark,
+    required Color textColor,
+    required Color secondaryTextColor,
+  }) {
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(Sizing.w(12)),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: Sizing.sp(24)),
         ),
-      );
-    }
+        SizedBox(height: Sizing.h(8)),
+        Text(
+          value,
+          style: TextStyle(
+            color: textColor,
+            fontSize: Sizing.sp(20),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: Sizing.h(4)),
+        Text(
+          label,
+          style: TextStyle(
+            color: secondaryTextColor,
+            fontSize: Sizing.sp(12),
+          ),
+        ),
+      ],
+    );
+  }
 
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      color: const Color(0xFF38BDF8),
-      backgroundColor: const Color(0xFF1E293B),
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        itemCount: _sections.length,
-        itemBuilder: (context, index) {
-          final section = _sections[index];
-          return _buildSectionItem(section);
+  Widget _buildSearchBar(bool isDark, Color textColor, Color secondaryTextColor) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+        borderRadius: BorderRadius.circular(Sizing.r(12)),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
+        ),
+      ),
+      child: TextField(
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value;
+          });
         },
+        style: TextStyle(color: textColor, fontSize: Sizing.sp(14)),
+        decoration: InputDecoration(
+          hintText: 'Search sections...',
+          hintStyle: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(14)),
+          prefixIcon: Icon(Icons.search_rounded, color: secondaryTextColor, size: Sizing.sp(20)),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _searchQuery = '';
+                    });
+                  },
+                  child: Icon(Icons.close_rounded, color: secondaryTextColor, size: Sizing.sp(20)),
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: Sizing.w(16), vertical: Sizing.h(12)),
+        ),
       ),
     );
   }
 
-  Widget _buildSectionItem(Map<String, dynamic> section) {
+  Widget _buildSectionItem(
+    Map<String, dynamic> section,
+    bool isDark,
+    Color cardColor,
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
     final name = (section['name'] as String?)?.trim() ?? 'Unknown Section';
     
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: GestureDetector(
-        onTap: () {
-          final id = (section['id'] as num?)?.toInt() ?? 0;
-          if (id > 0) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => SectionStudentsScreen(
-                  sectionId: id,
-                  sectionName: name,
-                ),
+    return GestureDetector(
+      onTap: () {
+        final id = (section['id'] as num?)?.toInt() ?? 0;
+        if (id > 0) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SectionStudentsScreen(
+                sectionId: id,
+                sectionName: name,
               ),
-            );
-          }
-        },
-        child: _GlassCard(
-          child: Row(
+            ),
+          );
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.all(Sizing.w(16)),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(Sizing.r(16)),
+          border: Border.all(
+            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(Sizing.w(12)),
               decoration: BoxDecoration(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(16),
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(Sizing.r(12)),
                 border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.2)),
               ),
-              child: const Icon(Icons.people_alt_rounded, color: Color(0xFF38BDF8), size: 28),
+              child: Icon(Icons.people_alt_rounded, color: const Color(0xFF38BDF8), size: Sizing.sp(24)),
             ),
-            const SizedBox(width: 20),
+            SizedBox(width: Sizing.w(16)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: Sizing.sp(16),
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.2,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: Sizing.h(4)),
                   Text(
-                    'Assigned Class Section',
+                    'Tap to view students',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      fontSize: 13,
+                      color: secondaryTextColor,
+                      fontSize: Sizing.sp(12),
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white24, size: 16),
+            Icon(Icons.arrow_forward_ios_rounded, color: secondaryTextColor, size: Sizing.sp(16)),
           ],
         ),
       ),
-    ),
     );
   }
 
@@ -226,18 +409,18 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
   Widget _buildErrorState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(Sizing.w(32)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
-            const SizedBox(height: 16),
+            SizedBox(height: Sizing.h(16)),
             Text(
               _errorMessage!,
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white70),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: Sizing.h(24)),
             ElevatedButton.icon(
               onPressed: _loadData,
               icon: const Icon(Icons.refresh),
@@ -249,32 +432,6 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _GlassCard extends StatelessWidget {
-  final Widget child;
-  const _GlassCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
-          child: child,
         ),
       ),
     );
