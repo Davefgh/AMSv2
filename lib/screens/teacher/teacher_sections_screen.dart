@@ -82,7 +82,7 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
   Widget build(BuildContext context) {
     return MainScaffold(
       title: 'Sections',
-      currentIndex: 3,
+      currentIndex: 4,
       isAdmin: false,
       body: Stack(
         children: [

@@ -1,7 +1,8 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class AppConstants {
   // API
-  static const String apiBaseUrl =
-  'https://thursday-elite-approx-veterans.trycloudflare.com';
+  static String get apiBaseUrl => dotenv.env['API_BASE_URL'] ?? 'https://went-occurrence-relationships-forestry.trycloudflare.com';
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Storage Keys

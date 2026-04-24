@@ -311,6 +311,7 @@ class MainScaffold extends StatelessWidget {
         _NavDestination(
             Icons.library_books_rounded, 'Attendance', AppRoutes.attendance),
         _NavDestination(Icons.qr_code_scanner_rounded, 'Sessions', AppRoutes.sessionDashboard),
+        _NavDestination(Icons.calendar_today_rounded, 'Schedules', AppRoutes.teacherSchedules),
         _NavDestination(Icons.people_alt_rounded, 'Sections', AppRoutes.teacherSections),
       ];
 

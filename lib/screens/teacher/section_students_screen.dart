@@ -60,7 +60,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
   Widget build(BuildContext context) {
     return MainScaffold(
       title: '${widget.sectionName} Students',
-      currentIndex: 3,
+      currentIndex: -1,
       isAdmin: false,
       showBackButton: true,
       body: Stack(

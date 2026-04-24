@@ -38,7 +38,7 @@ class ApiException implements Exception {
 }
 
 class ApiService {
-  static const String baseUrl = AppConstants.apiBaseUrl;
+  static String get baseUrl => AppConstants.apiBaseUrl;
   final Logger _logger = Logger();
 
   Future<List<Section>> getSections() async {

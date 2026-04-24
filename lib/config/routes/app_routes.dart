@@ -15,6 +15,7 @@ import '../../screens/teacher/attendance_screen.dart';
 import '../../screens/teacher/session_dashboard_screen.dart';
 import '../../screens/teacher/teacher_sections_screen.dart';
 import '../../screens/teacher/teacher_notification_screen.dart';
+import '../../screens/teacher/teacher_schedules_screen.dart';
 import '../../screens/student/student_dashboard_screen.dart';
 import '../../screens/student/student_scan_screen.dart';
 import '../../screens/admin/fingerprint/fingerprint_enrollment_screen.dart';
@@ -37,6 +38,7 @@ class AppRoutes {
   static const String attendance = '/attendance';
   static const String sessionDashboard = '/session-dashboard';
   static const String teacherSections = '/teacher-sections';
+  static const String teacherSchedules = '/teacher-schedules';
   static const String studentDashboard = '/student-dashboard';
   static const String studentScan = '/student-scan';
   static const String teacherNotifications = '/teacher-notifications';
@@ -60,6 +62,7 @@ class AppRoutes {
       attendance: (context) => const AttendanceScreen(),
       sessionDashboard: (context) => const SessionDashboardScreen(),
       teacherSections: (context) => const TeacherSectionsScreen(),
+      teacherSchedules: (context) => const TeacherSchedulesScreen(),
       studentDashboard: (context) => const StudentDashboardScreen(),
       studentScan: (context) => const StudentScanScreen(),
       teacherNotifications: (context) => const TeacherNotificationScreen(),
