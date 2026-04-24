@@ -134,7 +134,7 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                 SizedBox(height: Sizing.h(24)),
                 _buildDayFilter(isDark, textColor, secondaryTextColor),
                 SizedBox(height: Sizing.h(24)),
-                _buildAllSchedulesByDay(isDark, cardColor, textColor, secondaryTextColor),
+                _buildFilteredSchedules(isDark, cardColor, textColor, secondaryTextColor),
               ],
             ),
           ),
@@ -266,6 +266,7 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                   side: BorderSide(
                     color: isSelected ? const Color(0xFF38BDF8) : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
                   ),
+                  showCheckmark: false,
                 ),
               );
             }).toList(),
