@@ -87,7 +87,7 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
   Widget build(BuildContext context) {
     return MainScaffold(
       title: 'My Schedules',
-      currentIndex: 4,
+      currentIndex: 3,
       isAdmin: false,
       body: _isLoading
           ? const SkeletonDashboard()
@@ -134,7 +134,7 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                 SizedBox(height: Sizing.h(24)),
                 _buildDayFilter(isDark, textColor, secondaryTextColor),
                 SizedBox(height: Sizing.h(24)),
-                _buildFilteredSchedules(isDark, cardColor, textColor, secondaryTextColor),
+                _buildAllSchedulesByDay(isDark, cardColor, textColor, secondaryTextColor),
               ],
             ),
           ),
@@ -315,6 +315,60 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
           textColor,
           secondaryTextColor,
         )),
+      ],
+    );
+  }
+
+  Widget _buildAllSchedulesByDay(bool isDark, Color cardColor, Color textColor, Color secondaryTextColor) {
+    final grouped = _groupedSchedules;
+    final daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Weekly Schedule',
+          style: TextStyle(
+            color: textColor,
+            fontSize: Sizing.sp(18),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: Sizing.h(16)),
+        ...daysOrder.map((day) {
+          final daySchedules = grouped[day]!;
+          if (daySchedules.isEmpty) return const SizedBox.shrink();
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: Sizing.h(12)),
+                child: Text(
+                  day,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: Sizing.sp(16),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Divider(
+                color: isDark ? Colors.white10 : Colors.black12,
+                height: 1,
+              ),
+              SizedBox(height: Sizing.h(12)),
+              ...daySchedules.map((schedule) => _buildScheduleCard(
+                schedule,
+                isDark,
+                cardColor,
+                textColor,
+                secondaryTextColor,
+              )),
+              SizedBox(height: Sizing.h(16)),
+            ],
+          );
+        }),
       ],
     );
   }
