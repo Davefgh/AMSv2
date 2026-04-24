@@ -21,9 +21,9 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   List<Schedule> _schedules = [];
-  String _selectedDay = 'Today';
+  String _selectedDay = 'All';
 
-  final List<String> _days = ['Today', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  final List<String> _days = ['All', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   @override
   void initState() {
@@ -77,8 +77,8 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
   }
 
   List<Schedule> get _filteredSchedules {
-    if (_selectedDay == 'Today') {
-      return _groupedSchedules[_todayName] ?? [];
+    if (_selectedDay == 'All') {
+      return _schedules;
     }
     return _groupedSchedules[_selectedDay] ?? [];
   }
@@ -134,7 +134,7 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                 SizedBox(height: Sizing.h(24)),
                 _buildDayFilter(isDark, textColor, secondaryTextColor),
                 SizedBox(height: Sizing.h(24)),
-                _buildAllSchedulesByDay(isDark, cardColor, textColor, secondaryTextColor),
+                _buildFilteredSchedules(isDark, cardColor, textColor, secondaryTextColor),
               ],
             ),
           ),
@@ -266,6 +266,7 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                   side: BorderSide(
                     color: isSelected ? const Color(0xFF38BDF8) : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
                   ),
+                  showCheckmark: false,
                 ),
               );
             }).toList(),
