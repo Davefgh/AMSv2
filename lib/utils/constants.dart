@@ -1,7 +1,7 @@
 class AppConstants {
   // API
   static const String apiBaseUrl =
-  'https://thursday-elite-approx-veterans.trycloudflare.com';
+  'https://went-occurrence-relationships-forestry.trycloudflare.com';
   static const Duration apiTimeout = Duration(seconds: 30);
 
   // Storage Keys
