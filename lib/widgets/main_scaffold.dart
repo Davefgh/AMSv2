@@ -1,8 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../utils/responsive.dart';
 import '../utils/sizing_utils.dart';
 import '../config/routes/app_routes.dart';
+import '../providers/app_provider.dart';
 
 class MainScaffold extends StatelessWidget {
   final Widget body;
@@ -29,21 +31,32 @@ class MainScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Sizing.init(context);
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
-      body: Responsive(
-        mobile: _buildMobileLayout(context),
-        tablet: _buildTabletLayout(context),
-        desktop: _buildTabletLayout(context), // Treat desktop as large tablet
-      ),
-      bottomNavigationBar: (currentIndex >= 0 && Responsive.isMobile(context))
-          ? _buildBottomNavBar(context)
-          : null,
-      floatingActionButton: floatingActionButton,
+    return Consumer<AppProvider>(
+      builder: (context, appProvider, _) {
+        final isDark = appProvider.isDarkMode;
+        final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+        
+        return Scaffold(
+          backgroundColor: bgColor,
+          body: Responsive(
+            mobile: _buildMobileLayout(context, isDark),
+            tablet: _buildTabletLayout(context, isDark),
+            desktop: _buildTabletLayout(context, isDark),
+          ),
+          bottomNavigationBar: (currentIndex >= 0 && Responsive.isMobile(context))
+              ? _buildBottomNavBar(context, isDark)
+              : null,
+          floatingActionButton: floatingActionButton,
+        );
+      },
     );
   }
 
-  Widget _buildBackground() {
+  Widget _buildBackground(bool isDark) {
+    if (!isDark) {
+      return Container(color: Colors.white);
+    }
+    
     return Stack(
       children: [
         Positioned(
@@ -92,14 +105,14 @@ class MainScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileLayout(BuildContext context) {
+  Widget _buildMobileLayout(BuildContext context, bool isDark) {
     return Stack(
       children: [
-        _buildBackground(),
+        _buildBackground(isDark),
         SafeArea(
           child: Column(
             children: [
-              _buildHeader(context),
+              _buildHeader(context, isDark, showLogo: true),
               Expanded(child: body),
             ],
           ),
@@ -108,22 +121,22 @@ class MainScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildTabletLayout(BuildContext context) {
+  Widget _buildTabletLayout(BuildContext context, bool isDark) {
     return Row(
       children: [
-        _buildNavigationRail(context, extended: MediaQuery.of(context).size.width > 900),
+        _buildNavigationRail(context, isDark, extended: MediaQuery.of(context).size.width > 900),
         Expanded(
           child: Stack(
             children: [
-              _buildBackground(),
+              _buildBackground(isDark),
               SafeArea(
                 child: Column(
                   children: [
-                    _buildHeader(context, showLogo: false),
+                    _buildHeader(context, isDark, showLogo: false),
                     Expanded(
                       child: Center(
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 800), // Mobile-first constraint
+                          constraints: const BoxConstraints(maxWidth: 800),
                           child: body,
                         ),
                       ),
@@ -138,7 +151,9 @@ class MainScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, {bool showLogo = true}) {
+  Widget _buildHeader(BuildContext context, bool isDark, {bool showLogo = true}) {
+    final textColor = isDark ? Colors.white : Colors.black;
+    
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: Sizing.w(24),
@@ -154,7 +169,7 @@ class MainScaffold extends StatelessWidget {
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: Icon(Icons.arrow_back_ios_new_rounded,
-                        color: Colors.white, size: Sizing.sp(20)),
+                        color: textColor, size: Sizing.sp(20)),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     splashRadius: 20,
@@ -166,7 +181,7 @@ class MainScaffold extends StatelessWidget {
                     height: Sizing.h(40),
                     width: Sizing.w(40),
                     errorBuilder: (context, error, stackTrace) =>
-                        Icon(Icons.shield, color: Colors.white, size: Sizing.sp(32)),
+                        Icon(Icons.shield, color: textColor, size: Sizing.sp(32)),
                   ),
                   SizedBox(width: Sizing.w(12)),
                 ],
@@ -178,7 +193,7 @@ class MainScaffold extends StatelessWidget {
                     style: TextStyle(
                       fontSize: Sizing.sp(22),
                       fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                      color: textColor,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -196,7 +211,7 @@ class MainScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildNavigationRail(BuildContext context, {required bool extended}) {
+  Widget _buildNavigationRail(BuildContext context, bool isDark, {required bool extended}) {
     List<_NavDestination> destinations;
     if (isAdmin) {
       destinations = _adminDestinations;
@@ -206,12 +221,15 @@ class MainScaffold extends StatelessWidget {
       destinations = _teacherDestinations;
     }
 
+    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+    final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
+        color: bgColor,
         border: Border(
           right: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+            color: borderColor,
             width: 1,
           ),
         ),
@@ -224,13 +242,13 @@ class MainScaffold extends StatelessWidget {
         indicatorColor: const Color(0xFF38BDF8).withOpacity(0.2),
         selectedIconTheme: const IconThemeData(color: Color(0xFF38BDF8)),
         unselectedIconTheme:
-            IconThemeData(color: Colors.white.withOpacity(0.4)),
+            IconThemeData(color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.4)),
         selectedLabelTextStyle: const TextStyle(
           color: Color(0xFF38BDF8),
           fontWeight: FontWeight.bold,
         ),
         unselectedLabelTextStyle: TextStyle(
-          color: Colors.white.withOpacity(0.4),
+          color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.4),
         ),
         leading: extended
             ? Padding(
@@ -243,13 +261,13 @@ class MainScaffold extends StatelessWidget {
                       height: 32,
                       width: 32,
                       errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.shield, color: Colors.white),
+                          Icon(Icons.shield, color: isDark ? Colors.white : Colors.black),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'AMSv2',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: isDark ? Colors.white : Colors.black,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -264,7 +282,7 @@ class MainScaffold extends StatelessWidget {
                   height: 32,
                   width: 32,
                   errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.shield, color: Colors.white),
+                      Icon(Icons.shield, color: isDark ? Colors.white : Colors.black),
                 ),
               ),
         destinations: destinations
@@ -304,7 +322,7 @@ class MainScaffold extends StatelessWidget {
         _NavDestination(Icons.person_rounded, 'Profile', AppRoutes.profile),
       ];
 
-  Widget _buildBottomNavBar(BuildContext context) {
+  Widget _buildBottomNavBar(BuildContext context, bool isDark) {
     List<_NavDestination> destinations;
     if (isAdmin) {
       destinations = _adminDestinations;
@@ -314,12 +332,16 @@ class MainScaffold extends StatelessWidget {
       destinations = _teacherDestinations;
     }
 
+    // Always use dark blue for bottom navbar regardless of theme
+    const bgColor = Color(0xFF0F172A);
+    const borderColor = Color(0xFF1E293B);
+
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
+        color: bgColor,
         border: Border(
           top: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+            color: borderColor,
             width: 1,
           ),
         ),
