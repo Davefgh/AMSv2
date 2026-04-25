@@ -234,11 +234,13 @@ class _ClassesScreenState extends State<ClassesScreen> {
                           fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 16),
-                    _buildDialogDropdownField<int>(
+                    _buildDialogDropdownField<String>(
                       label: 'Course',
                       hint: 'Select a course',
                       icon: Icons.book_outlined,
-                      value: int.tryParse(courseIdController.text),
+                      value: courseIdController.text.isNotEmpty
+                          ? courseIdController.text
+                          : null,
                       items: _coursesList
                           .map((c) => DropdownMenuItem(
                                 value: c.id,
@@ -248,7 +250,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                           .toList(),
                       onChanged: (val) {
                         if (val != null) {
-                          courseIdController.text = val.toString();
+                          courseIdController.text = val;
                         }
                       },
                       errorText: fieldErrors['courseId']?.first ??
@@ -263,24 +265,12 @@ class _ClassesScreenState extends State<ClassesScreen> {
                             ? null
                             : () async {
                                 final name = nameController.text.trim();
-                                final courseIdText =
-                                    courseIdController.text.trim();
-                                final courseId = int.tryParse(courseIdText);
-                                if (name.isEmpty || courseIdText.isEmpty) {
+                                final courseId = courseIdController.text.trim();
+                                if (name.isEmpty || courseId.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content:
                                           Text('Please fill in all fields.'),
-                                      backgroundColor: Colors.orange,
-                                    ),
-                                  );
-                                  return;
-                                }
-                                if (courseId == null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                          'Course ID must be a valid number.'),
                                       backgroundColor: Colors.orange,
                                     ),
                                   );
@@ -343,7 +333,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     );
   }
 
-  Future<void> _createSection(String name, int courseId) async {
+  Future<void> _createSection(String name, String courseId) async {
     try {
       await _apiService.createSection({'name': name, 'courseId': courseId});
       await _fetchSections();
@@ -368,7 +358,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     }
   }
 
-  Future<void> _updateSection(int id, String name, int courseId) async {
+  Future<void> _updateSection(String id, String name, String courseId) async {
     try {
       await _apiService.updateSection(id, {'name': name, 'courseId': courseId});
       await _fetchSections();
@@ -393,7 +383,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     }
   }
 
-  Future<void> _deleteSection(int id) async {
+  Future<void> _deleteSection(String id) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -943,7 +933,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     }
   }
 
-  Future<void> _updateSubject(int id, String name, String code) async {
+  Future<void> _updateSubject(String id, String name, String code) async {
     try {
       await _apiService.updateSubject(id, {'name': name, 'code': code});
       await _fetchSubjects();
@@ -968,7 +958,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     }
   }
 
-  Future<void> _deleteSubject(int id) async {
+  Future<void> _deleteSubject(String id) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1187,7 +1177,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     }
   }
 
-  Future<void> _updateCourse(int id, String name) async {
+  Future<void> _updateCourse(String id, String name) async {
     try {
       await _apiService.updateCourse(id, {'name': name});
       await _fetchCourses();
@@ -1212,7 +1202,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     }
   }
 
-  Future<void> _deleteCourse(int id) async {
+  Future<void> _deleteCourse(String id) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1440,7 +1430,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     }
   }
 
-  Future<void> _updateClassroom(int id, String name) async {
+  Future<void> _updateClassroom(String id, String name) async {
     try {
       await _apiService.updateClassroom(id, {'name': name});
       await _fetchClassrooms();
@@ -1465,7 +1455,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     }
   }
 
-  Future<void> _deleteClassroom(int id) async {
+  Future<void> _deleteClassroom(String id) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1649,11 +1639,13 @@ class _ClassesScreenState extends State<ClassesScreen> {
                             fieldErrors['DayOfWeek']?.first,
                       ),
                       const SizedBox(height: 16),
-                      _buildDialogDropdownField<int>(
+                      _buildDialogDropdownField<String>(
                         label: 'Subject',
                         hint: 'Select a subject',
                         icon: Icons.subject,
-                        value: int.tryParse(subjectIdController.text),
+                        value: subjectIdController.text.isNotEmpty
+                            ? subjectIdController.text
+                            : null,
                         items: _subjectsList
                             .map((s) => DropdownMenuItem(
                                   value: s.id,
@@ -1663,18 +1655,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
                             .toList(),
                         onChanged: (val) {
                           if (val != null) {
-                            subjectIdController.text = val.toString();
+                            subjectIdController.text = val;
                           }
                         },
                         errorText: fieldErrors['subjectId']?.first ??
                             fieldErrors['SubjectId']?.first,
                       ),
                       const SizedBox(height: 16),
-                      _buildDialogDropdownField<int>(
+                      _buildDialogDropdownField<String>(
                         label: 'Classroom',
                         hint: 'Select a classroom',
                         icon: Icons.meeting_room,
-                        value: int.tryParse(classroomIdController.text),
+                        value: classroomIdController.text.isNotEmpty
+                            ? classroomIdController.text
+                            : null,
                         items: _classroomsList
                             .map((c) => DropdownMenuItem(
                                   value: c.id,
@@ -1684,18 +1678,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
                             .toList(),
                         onChanged: (val) {
                           if (val != null) {
-                            classroomIdController.text = val.toString();
+                            classroomIdController.text = val;
                           }
                         },
                         errorText: fieldErrors['classroomId']?.first ??
                             fieldErrors['ClassroomId']?.first,
                       ),
                       const SizedBox(height: 16),
-                      _buildDialogDropdownField<int>(
+                      _buildDialogDropdownField<String>(
                         label: 'Section',
                         hint: 'Select a section',
                         icon: Icons.layers,
-                        value: int.tryParse(sectionIdController.text),
+                        value: sectionIdController.text.isNotEmpty
+                            ? sectionIdController.text
+                            : null,
                         items: _sectionsList
                             .map((s) => DropdownMenuItem(
                                   value: s.id,
@@ -1705,18 +1701,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
                             .toList(),
                         onChanged: (val) {
                           if (val != null) {
-                            sectionIdController.text = val.toString();
+                            sectionIdController.text = val;
                           }
                         },
                         errorText: fieldErrors['sectionId']?.first ??
                             fieldErrors['SectionId']?.first,
                       ),
                       const SizedBox(height: 16),
-                      _buildDialogDropdownField<int>(
+                      _buildDialogDropdownField<String>(
                         label: 'Instructor',
                         hint: 'Select an instructor',
                         icon: Icons.person,
-                        value: int.tryParse(instructorIdController.text),
+                        value: instructorIdController.text.isNotEmpty
+                            ? instructorIdController.text
+                            : null,
                         items: _instructorsList
                             .map((i) => DropdownMenuItem(
                                   value: i.id,
@@ -1726,7 +1724,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                             .toList(),
                         onChanged: (val) {
                           if (val != null) {
-                            instructorIdController.text = val.toString();
+                            instructorIdController.text = val;
                           }
                         },
                         errorText: fieldErrors['instructorId']?.first ??
@@ -1855,7 +1853,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     );
   }
 
-  Future<void> _deleteSchedule(int id) async {
+  Future<void> _deleteSchedule(String id) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(

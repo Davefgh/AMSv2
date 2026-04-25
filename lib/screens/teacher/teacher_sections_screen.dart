@@ -51,12 +51,14 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
           await _apiService.getSchedulesByInstructorAll(instructor.id);
 
       // 4. Extract unique sections
-      final Map<int, Map<String, dynamic>> sectionMap = {};
+      final Map<String, Map<String, dynamic>> sectionMap = {};
       for (var s in schedules) {
         final section = s.section;
-        final sectionId = (section?['id'] as num?)?.toInt() ?? s.sectionId;
+        final sectionId = section?['id']?.toString() ?? s.sectionId;
 
-        if (sectionId != null && !sectionMap.containsKey(sectionId)) {
+        if (sectionId != null &&
+            sectionId.isNotEmpty &&
+            !sectionMap.containsKey(sectionId)) {
           sectionMap[sectionId] = section ??
               {
                 'id': sectionId,
@@ -337,8 +339,8 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
 
     return GestureDetector(
       onTap: () {
-        final id = (section['id'] as num?)?.toInt() ?? 0;
-        if (id > 0) {
+        final id = section['id']?.toString() ?? '';
+        if (id.isNotEmpty) {
           Navigator.push(
             context,
             MaterialPageRoute(

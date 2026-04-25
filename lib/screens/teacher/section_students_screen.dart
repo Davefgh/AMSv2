@@ -6,7 +6,7 @@ import '../../widgets/main_scaffold.dart';
 import '../../widgets/skeleton_loader.dart';
 
 class SectionStudentsScreen extends StatefulWidget {
-  final int sectionId;
+  final String sectionId;
   final String sectionName;
 
   const SectionStudentsScreen({
@@ -95,11 +95,15 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.person_off_rounded, size: 64, color: Colors.white.withValues(alpha: 0.1)),
+            Icon(Icons.person_off_rounded,
+                size: 64, color: Colors.white.withValues(alpha: 0.1)),
             const SizedBox(height: 16),
             const Text(
               'No students enrolled',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -118,7 +122,8 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
       color: const Color(0xFF38BDF8),
       backgroundColor: const Color(0xFF1E293B),
       child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics()),
         child: Column(
           children: [
             // Filter chips
@@ -143,10 +148,11 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                         selectedColor: const Color(0xFF38BDF8),
                         labelStyle: TextStyle(
                           color: isSelected ? Colors.white : Colors.white70,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                         side: BorderSide(
-                          color: isSelected 
+                          color: isSelected
                               ? const Color(0xFF38BDF8)
                               : Colors.white.withValues(alpha: 0.1),
                         ),
@@ -163,11 +169,13 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 40),
                 child: Column(
                   children: [
-                    Icon(Icons.person_search_rounded, size: 48, color: Colors.white.withValues(alpha: 0.2)),
+                    Icon(Icons.person_search_rounded,
+                        size: 48, color: Colors.white.withValues(alpha: 0.2)),
                     const SizedBox(height: 12),
                     Text(
                       'No $_selectedStatus students',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                      style:
+                          TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                     ),
                   ],
                 ),
@@ -176,7 +184,8 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 itemCount: filteredStudents.length,
                 itemBuilder: (context, index) {
                   final student = filteredStudents[index];
@@ -201,7 +210,8 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.2)),
+                border: Border.all(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.2)),
               ),
               child: Center(
                 child: Text(
@@ -231,14 +241,15 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: student.isRegular 
+                          color: student.isRegular
                               ? Colors.green.withValues(alpha: 0.1)
                               : Colors.orange.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                            color: student.isRegular 
+                            color: student.isRegular
                                 ? Colors.green.withValues(alpha: 0.2)
                                 : Colors.orange.withValues(alpha: 0.2),
                           ),
@@ -246,7 +257,9 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                         child: Text(
                           student.isRegular ? 'Regular' : 'Irregular',
                           style: TextStyle(
-                            color: student.isRegular ? Colors.greenAccent : Colors.orangeAccent,
+                            color: student.isRegular
+                                ? Colors.greenAccent
+                                : Colors.orangeAccent,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -265,7 +278,8 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.info_outline_rounded, color: Colors.white12, size: 20),
+            const Icon(Icons.info_outline_rounded,
+                color: Colors.white12, size: 20),
           ],
         ),
       ),
@@ -317,7 +331,8 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
                 foregroundColor: const Color(0xFF0F172A),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],

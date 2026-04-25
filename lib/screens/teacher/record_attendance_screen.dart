@@ -23,8 +23,8 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
 
   List<Student> _students = [];
   List<Student> _filteredStudents = [];
-  Map<int, AttendanceRecord?> _existingRecords = {};
-  Map<int, String> _modifiedStatuses = {}; // studentId -> status
+  Map<String, AttendanceRecord?> _existingRecords = {};
+  Map<String, String> _modifiedStatuses = {}; // studentId -> status
 
   final TextEditingController _searchController = TextEditingController();
 
@@ -57,20 +57,20 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
 
       // 2. Fetch Students for the section
       final students = await _apiService.getStudentsBySection(sectionId);
-      
+
       // 3. Fetch Attendance Records for the session
-      final records = await _apiService.getAttendanceBySession(widget.session.id);
-      
+      final records =
+          await _apiService.getAttendanceBySession(widget.session.id);
+
       final recordsMap = {for (var r in records) r.studentId: r};
-      
+
       setState(() {
         _students = students;
         _filteredStudents = students;
         _existingRecords = recordsMap;
         // Initialize modified statuses with existing or default
         _modifiedStatuses = {
-          for (var s in students) 
-            s.id: recordsMap[s.id]?.status ?? 'absent'
+          for (var s in students) s.id: recordsMap[s.id]?.status ?? 'absent'
         };
         _isLoading = false;
       });
@@ -85,14 +85,15 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
   void _filterStudents() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredStudents = _students.where((s) => 
-        s.fullName.toLowerCase().contains(query) || 
-        s.id.toString().contains(query)
-      ).toList();
+      _filteredStudents = _students
+          .where((s) =>
+              s.fullName.toLowerCase().contains(query) ||
+              s.id.toString().contains(query))
+          .toList();
     });
   }
 
-  void _updateStatus(int studentId, String status) {
+  void _updateStatus(String studentId, String status) {
     setState(() {
       _modifiedStatuses[studentId] = status;
     });
@@ -112,7 +113,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
       for (var studentId in _modifiedStatuses.keys) {
         final newStatus = _modifiedStatuses[studentId]!;
         final existing = _existingRecords[studentId];
-        
+
         if (existing == null) {
           // Create new record
           await _apiService.createAttendance({
@@ -127,17 +128,21 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
           });
         }
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Attendance saved successfully!'), backgroundColor: Color(0xFF34D399)),
+          const SnackBar(
+              content: Text('Attendance saved successfully!'),
+              backgroundColor: Color(0xFF34D399)),
         );
       }
       await _loadData(); // Refresh
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving attendance: $e'), backgroundColor: Colors.redAccent),
+          SnackBar(
+              content: Text('Error saving attendance: $e'),
+              backgroundColor: Colors.redAccent),
         );
       }
     } finally {
@@ -151,7 +156,8 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
     int absent = _modifiedStatuses.values.where((v) => v == 'absent').length;
     int late = _modifiedStatuses.values.where((v) => v == 'late').length;
     int excused = _modifiedStatuses.values.where((v) => v == 'excused').length;
-    double rate = _students.isEmpty ? 0 : (present + late) / _students.length * 100;
+    double rate =
+        _students.isEmpty ? 0 : (present + late) / _students.length * 100;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -178,7 +184,8 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
           if (_isSaving)
             Container(
               color: Colors.black45,
-              child: const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8))),
+              child: const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF38BDF8))),
             ),
         ],
       ),
@@ -205,18 +212,23 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.white, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           const Expanded(
             child: Text(
               'Record Attendance',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Back to Sessions', style: TextStyle(color: Color(0xFF38BDF8))),
+            child: const Text('Back to Sessions',
+                style: TextStyle(color: Color(0xFF38BDF8))),
           ),
         ],
       ),
@@ -234,14 +246,18 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     widget.session.subjectCode,
-                    style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Color(0xFF38BDF8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -254,23 +270,32 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
             const SizedBox(height: 8),
             Text(
               widget.session.subjectName,
-              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5),
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.calendar_today_rounded, size: 14, color: Colors.white.withValues(alpha: 0.3)),
+                Icon(Icons.calendar_today_rounded,
+                    size: 14, color: Colors.white.withValues(alpha: 0.3)),
                 const SizedBox(width: 6),
                 Text(
-                  DateFormat('EEEE, MMMM d, yyyy').format(widget.session.sessionDate ?? DateTime.now()),
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
+                  DateFormat('EEEE, MMMM d, yyyy')
+                      .format(widget.session.sessionDate ?? DateTime.now()),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
                 ),
                 const SizedBox(width: 16),
-                Icon(Icons.people_rounded, size: 14, color: Colors.white.withValues(alpha: 0.3)),
+                Icon(Icons.people_rounded,
+                    size: 14, color: Colors.white.withValues(alpha: 0.3)),
                 const SizedBox(width: 6),
                 Text(
                   '${_students.length} Students',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
                 ),
               ],
             ),
@@ -291,7 +316,8 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
             _buildStatCard(a.toString(), 'Absent', Colors.redAccent),
             _buildStatCard(l.toString(), 'Late', const Color(0xFFFBBF24)),
             _buildStatCard(e.toString(), 'Excused', const Color(0xFF38BDF8)),
-            _buildStatCard('${rate.toStringAsFixed(0)}%', 'Rate', Colors.indigoAccent),
+            _buildStatCard(
+                '${rate.toStringAsFixed(0)}%', 'Rate', Colors.indigoAccent),
           ],
         ),
       ),
@@ -310,8 +336,14 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
       ),
       child: Column(
         children: [
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
-          Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11)),
+          Text(value,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900)),
+          Text(label,
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4), fontSize: 11)),
         ],
       ),
     );
@@ -336,8 +368,10 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                     style: const TextStyle(color: Colors.white, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'Search students...',
-                      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-                      prefixIcon: const Icon(Icons.search, color: Colors.white24, size: 20),
+                      hintStyle:
+                          TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                      prefixIcon: const Icon(Icons.search,
+                          color: Colors.white24, size: 20),
                       border: InputBorder.none,
                     ),
                   ),
@@ -371,8 +405,10 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF818CF8),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Row(
                   children: [
@@ -389,11 +425,16 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
     );
   }
 
-  Widget _buildSmallButton({required VoidCallback onPressed, required String label, required IconData icon, required Color color}) {
+  Widget _buildSmallButton(
+      {required VoidCallback onPressed,
+      required String label,
+      required IconData icon,
+      required Color color}) {
     return OutlinedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 14),
-      label: Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+      label: Text(label,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
       style: OutlinedButton.styleFrom(
         foregroundColor: color,
         side: BorderSide(color: color.withValues(alpha: 0.3)),
@@ -410,7 +451,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
       itemBuilder: (context, index) {
         final s = _filteredStudents[index];
         final status = _modifiedStatuses[s.id] ?? 'absent';
-        
+
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
@@ -426,7 +467,8 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                 backgroundColor: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                 child: Text(
                   s.firstname[0],
-                  style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(width: 16),
@@ -436,11 +478,16 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                   children: [
                     Text(
                       s.fullName,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14),
                     ),
                     Text(
                       'ID: ${s.id}',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 12),
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          fontSize: 12),
                     ),
                   ],
                 ),
@@ -453,7 +500,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
     );
   }
 
-  Widget _buildStatusPicker(int studentId, String currentStatus) {
+  Widget _buildStatusPicker(String studentId, String currentStatus) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
@@ -485,11 +532,16 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'present': return const Color(0xFF34D399);
-      case 'late': return const Color(0xFFFBBF24);
-      case 'excused': return const Color(0xFF38BDF8);
-      case 'absent': return Colors.redAccent;
-      default: return Colors.white54;
+      case 'present':
+        return const Color(0xFF34D399);
+      case 'late':
+        return const Color(0xFFFBBF24);
+      case 'excused':
+        return const Color(0xFF38BDF8);
+      case 'absent':
+        return Colors.redAccent;
+      default:
+        return Colors.white54;
     }
   }
 
@@ -512,7 +564,8 @@ class _GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
 
-  const _GlassCard({required this.child, this.padding = const EdgeInsets.all(20)});
+  const _GlassCard(
+      {required this.child, this.padding = const EdgeInsets.all(20)});
 
   @override
   Widget build(BuildContext context) {

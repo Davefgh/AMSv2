@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/constants.dart';
+import '../utils/id_utils.dart';
 import 'storage_service.dart';
 import '../models/user_profile.dart';
 import '../models/app_user.dart';
@@ -55,6 +56,7 @@ class ApiService {
   }
 
   Future<List<Student>> getStudentsBySection(String sectionId) async {
+    validateId(sectionId, 'Section');
     try {
       final response = await get('/api/sections/$sectionId/all-students');
       if (response is List) {
@@ -78,6 +80,7 @@ class ApiService {
   }
 
   Future<void> updateSection(String id, Map<String, dynamic> data) async {
+    validateId(id, 'Section');
     try {
       await put('/api/sections/$id', data);
     } catch (e) {
@@ -87,6 +90,7 @@ class ApiService {
   }
 
   Future<void> deleteSection(String id) async {
+    validateId(id, 'Section');
     try {
       await delete('/api/sections/$id');
     } catch (e) {
@@ -395,6 +399,7 @@ class ApiService {
   }
 
   Future<Student> getStudent(String id) async {
+    validateId(id, 'Student');
     try {
       final response = await get('/api/students/$id');
       return Student.fromJson(response);
@@ -405,6 +410,7 @@ class ApiService {
   }
 
   Future<void> updateStudent(String id, Map<String, dynamic> data) async {
+    validateId(id, 'Student');
     try {
       await patch('/api/students/$id', data);
     } catch (e) {
@@ -414,6 +420,7 @@ class ApiService {
   }
 
   Future<void> deleteStudent(String id) async {
+    validateId(id, 'Student');
     try {
       await delete('/api/students/$id');
     } catch (e) {
@@ -729,6 +736,7 @@ class ApiService {
   }
 
   Future<AttendanceRecord> getAttendanceById(String id) async {
+    validateId(id, 'Attendance');
     try {
       final response = await get('/api/attendance/$id');
       return AttendanceRecord.fromJson(response);
@@ -739,6 +747,13 @@ class ApiService {
   }
 
   Future<AttendanceRecord> createAttendance(Map<String, dynamic> data) async {
+    // Validate IDs in the data payload
+    if (data['studentId'] != null) {
+      validateId(data['studentId'].toString(), 'Student');
+    }
+    if (data['sessionId'] != null) {
+      validateId(data['sessionId'].toString(), 'Session');
+    }
     try {
       final response = await post('/api/attendance', data);
       return AttendanceRecord.fromJson(response);
@@ -749,6 +764,7 @@ class ApiService {
   }
 
   Future<void> updateAttendance(String id, Map<String, dynamic> data) async {
+    validateId(id, 'Attendance');
     try {
       await put('/api/attendance/$id', data);
     } catch (e) {
@@ -758,6 +774,7 @@ class ApiService {
   }
 
   Future<void> deleteAttendance(String id) async {
+    validateId(id, 'Attendance');
     try {
       await delete('/api/attendance/$id');
     } catch (e) {
@@ -768,6 +785,7 @@ class ApiService {
 
   Future<List<AttendanceRecord>> getAttendanceByStudent(
       String studentId) async {
+    validateId(studentId, 'Student');
     try {
       final response = await get('/api/attendance/student/$studentId');
       if (response is List) {
@@ -832,6 +850,7 @@ class ApiService {
   }
 
   Future<ClassSession> getSessionById(String id) async {
+    validateId(id, 'Session');
     try {
       final response = await get('/api/sessions/$id');
       return ClassSession.fromJson(response);
@@ -853,6 +872,7 @@ class ApiService {
 
   Future<void> deleteSession(String id,
       {required String reason, required String rowVersion}) async {
+    validateId(id, 'Session');
     try {
       await delete('/api/sessions/$id',
           body: {'reason': reason, 'rowVersion': rowVersion});
