@@ -13,15 +13,16 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Load environment variables
   await dotenv.load(fileName: ".env");
-  
+
   await StorageService.init();
 
   final token = StorageService.getString(AppConstants.storageKeyToken);
   final role =
-      StorageService.getString(AppConstants.storageKeyRole)?.toLowerCase() ?? 'user';
+      StorageService.getString(AppConstants.storageKeyRole)?.toLowerCase() ??
+          'user';
 
   String initialRoute = '/';
 
@@ -60,7 +61,8 @@ class MyApp extends StatelessWidget {
   final String initialRoute;
   final String initialRole;
 
-  const MyApp({super.key, required this.initialRoute, required this.initialRole});
+  const MyApp(
+      {super.key, required this.initialRoute, required this.initialRole});
 
   @override
   Widget build(BuildContext context) {
