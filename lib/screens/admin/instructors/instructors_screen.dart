@@ -15,7 +15,6 @@ class InstructorsScreen extends StatefulWidget {
 
 class _InstructorsScreenState extends State<InstructorsScreen> {
   final ApiService _apiService = ApiService();
-  List<Instructor> _allInstructors = [];
   List<Instructor> _filteredInstructors = [];
   bool _isLoading = true;
   String _searchQuery = '';
@@ -34,7 +33,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
           await _apiService.getInstructors(includeDeleted: _showDeleted);
       if (mounted) {
         setState(() {
-          _allInstructors = instructors;
           _filteredInstructors = instructors;
           _isLoading = false;
         });

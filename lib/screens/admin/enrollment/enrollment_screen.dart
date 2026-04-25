@@ -522,12 +522,10 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
 
 class _GlassCard extends StatelessWidget {
   final Widget child;
-  final double? height;
   final EdgeInsetsGeometry padding;
 
   const _GlassCard({
     required this.child,
-    this.height,
     this.padding = const EdgeInsets.all(20),
   });
 
@@ -538,7 +536,6 @@ class _GlassCard extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          height: height,
           padding: padding,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.06),

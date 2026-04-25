@@ -470,13 +470,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 class _GlassCard extends StatelessWidget {
   final Widget child;
-  final double? height;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
 
   const _GlassCard({
     required this.child,
-    this.height,
     this.padding = const EdgeInsets.all(20),
     this.onTap,
   });
@@ -494,7 +492,6 @@ class _GlassCard extends StatelessWidget {
             splashColor: Colors.white.withValues(alpha: 0.1),
             highlightColor: Colors.white.withValues(alpha: 0.05),
             child: Container(
-              height: height,
               padding: padding,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.06),

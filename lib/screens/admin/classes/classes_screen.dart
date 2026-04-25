@@ -31,7 +31,6 @@ class _ClassesScreenState extends State<ClassesScreen> {
   List<Schedule> _schedulesList = [];
   bool _isLoadingSchedules = false;
   List<Instructor> _instructorsList = [];
-  bool _isLoadingInstructors = false;
 
   @override
   void initState() {
@@ -45,15 +44,12 @@ class _ClassesScreenState extends State<ClassesScreen> {
   }
 
   Future<void> _fetchInstructors() async {
-    setState(() => _isLoadingInstructors = true);
     try {
       final instructors = await _apiService.getInstructors();
       setState(() {
         _instructorsList = instructors;
-        _isLoadingInstructors = false;
       });
     } catch (e) {
-      setState(() => _isLoadingInstructors = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -3012,12 +3008,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
 class _GlassCard extends StatelessWidget {
   final Widget child;
-  final double? height;
   final EdgeInsetsGeometry padding;
 
   const _GlassCard({
     required this.child,
-    this.height,
     this.padding = const EdgeInsets.all(20),
   });
 
@@ -3028,7 +3022,6 @@ class _GlassCard extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          height: height,
           padding: padding,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.06),

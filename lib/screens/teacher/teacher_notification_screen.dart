@@ -16,8 +16,6 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
   String? _errorMessage;
-  bool _notificationsEnabled = false;
-  String _statusMessage = '';
 
   @override
   void initState() {
@@ -33,11 +31,9 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
     });
 
     try {
-      final preference = await _apiService.getNotificationPreference();
+      await _apiService.getNotificationPreference();
       if (mounted) {
         setState(() {
-          _notificationsEnabled = preference['enabled'] ?? false;
-          _statusMessage = preference['message'] ?? '';
           _isLoading = false;
         });
       }
