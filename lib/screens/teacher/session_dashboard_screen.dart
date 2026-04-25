@@ -471,27 +471,29 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       ],
       body: _isLoading
           ? const SkeletonSessionList()
-          : RefreshIndicator(
-              onRefresh: _loadData,
-              color: const Color(0xFF38BDF8),
-              child: Column(
-                children: [
-                  _buildHeader(),
-                  _buildTabs(),
-                  Expanded(
-                    child: _filteredSessions.isEmpty
-                        ? _buildEmptyState()
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 20),
-                            itemCount: _filteredSessions.length,
-                            itemBuilder: (context, index) =>
-                                _buildSessionCard(_filteredSessions[index]),
-                          ),
+          : _errorMessage != null
+              ? _buildErrorState()
+              : RefreshIndicator(
+                  onRefresh: _loadData,
+                  color: const Color(0xFF38BDF8),
+                  child: Column(
+                    children: [
+                      _buildHeader(),
+                      _buildTabs(),
+                      Expanded(
+                        child: _filteredSessions.isEmpty
+                            ? _buildEmptyState()
+                            : ListView.builder(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24, vertical: 20),
+                                itemCount: _filteredSessions.length,
+                                itemBuilder: (context, index) =>
+                                    _buildSessionCard(_filteredSessions[index]),
+                              ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
     );
   }
 
@@ -851,6 +853,38 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
           const Text('No sessions found in this category',
               style: TextStyle(color: Colors.white24)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage ?? 'An error occurred',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF38BDF8),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
