@@ -230,7 +230,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Section Name',
                       hint: 'e.g. CS31A',
                       icon: Icons.layers,
-                      errorText: _fieldErrors['name']?.first ?? _fieldErrors['Name']?.first,
+                      errorText: _fieldErrors['name']?.first ??
+                          _fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 16),
                     _buildDialogDropdownField<int>(
@@ -238,14 +239,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       hint: 'Select a course',
                       icon: Icons.book_outlined,
                       value: int.tryParse(courseIdController.text),
-                      items: _coursesList.map((c) => DropdownMenuItem(
-                        value: c.id,
-                        child: Text(c.name, overflow: TextOverflow.ellipsis),
-                      )).toList(),
+                      items: _coursesList
+                          .map((c) => DropdownMenuItem(
+                                value: c.id,
+                                child: Text(c.name,
+                                    overflow: TextOverflow.ellipsis),
+                              ))
+                          .toList(),
                       onChanged: (val) {
-                        if (val != null) courseIdController.text = val.toString();
+                        if (val != null)
+                          courseIdController.text = val.toString();
                       },
-                      errorText: _fieldErrors['courseId']?.first ?? _fieldErrors['CourseId']?.first,
+                      errorText: _fieldErrors['courseId']?.first ??
+                          _fieldErrors['CourseId']?.first,
                     ),
                     const SizedBox(height: 28),
                     SizedBox(
@@ -294,7 +300,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 } on ApiException catch (e) {
                                   setModalState(() {
                                     isSaving = false;
-                                    _fieldErrors = e.fieldErrors.map((k, v) => MapEntry(k.replaceAll('\$.', ''), v));
+                                    _fieldErrors = e.fieldErrors.map((k, v) =>
+                                        MapEntry(k.replaceAll('\$.', ''), v));
                                   });
                                 } catch (_) {
                                   setModalState(() => isSaving = false);
@@ -362,8 +369,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
   Future<void> _updateSection(int id, String name, int courseId) async {
     try {
-      await _apiService
-          .updateSection(id, {'name': name, 'courseId': courseId});
+      await _apiService.updateSection(id, {'name': name, 'courseId': courseId});
       await _fetchSections();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -468,8 +474,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(28)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
                 child: Column(
@@ -501,7 +509,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Subject Name',
                       hint: 'e.g. Computing Fundamentals',
                       icon: Icons.subject,
-                      errorText: _fieldErrors['name']?.first ?? _fieldErrors['Name']?.first,
+                      errorText: _fieldErrors['name']?.first ??
+                          _fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 16),
                     _buildDialogTextField(
@@ -509,7 +518,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Subject Code',
                       hint: 'e.g. IT1008',
                       icon: Icons.tag,
-                      errorText: _fieldErrors['code']?.first ?? _fieldErrors['Code']?.first,
+                      errorText: _fieldErrors['code']?.first ??
+                          _fieldErrors['Code']?.first,
                     ),
                     const SizedBox(height: 28),
                     SizedBox(
@@ -524,7 +534,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 if (name.isEmpty || code.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Please fill in all fields.'),
+                                      content:
+                                          Text('Please fill in all fields.'),
                                       backgroundColor: Colors.orange,
                                     ),
                                   );
@@ -536,7 +547,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 });
                                 try {
                                   if (isEditing) {
-                                    await _updateSubject(subject.id, name, code);
+                                    await _updateSubject(
+                                        subject.id, name, code);
                                   } else {
                                     await _createSubject(name, code);
                                   }
@@ -544,7 +556,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 } on ApiException catch (e) {
                                   setModalState(() {
                                     isSaving = false;
-                                    _fieldErrors = e.fieldErrors.map((k, v) => MapEntry(k.replaceAll('\$.', ''), v));
+                                    _fieldErrors = e.fieldErrors.map((k, v) =>
+                                        MapEntry(k.replaceAll('\$.', ''), v));
                                   });
                                 } catch (_) {
                                   setModalState(() => isSaving = false);
@@ -620,11 +633,13 @@ class _ClassesScreenState extends State<ClassesScreen> {
             fillColor: Colors.white.withValues(alpha: 0.07),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+              borderSide:
+                  BorderSide(color: Colors.white.withValues(alpha: 0.15)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+              borderSide:
+                  BorderSide(color: Colors.white.withValues(alpha: 0.15)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -672,11 +687,13 @@ class _ClassesScreenState extends State<ClassesScreen> {
             fillColor: Colors.white.withValues(alpha: 0.07),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+              borderSide:
+                  BorderSide(color: Colors.white.withValues(alpha: 0.15)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+              borderSide:
+                  BorderSide(color: Colors.white.withValues(alpha: 0.15)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -703,7 +720,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
       icon: icon,
       errorText: errorText,
       readOnly: true,
-      onTap: () => _showScrollableTimePicker(context: context, controller: controller),
+      onTap: () =>
+          _showScrollableTimePicker(context: context, controller: controller),
     );
   }
 
@@ -727,7 +745,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     }
 
     final hourCtrl = FixedExtentScrollController(initialItem: selectedHour - 1);
-    final minCtrl  = FixedExtentScrollController(initialItem: selectedMinute);
+    final minCtrl = FixedExtentScrollController(initialItem: selectedMinute);
     final amPmCtrl = FixedExtentScrollController(initialItem: isAM ? 0 : 1);
 
     await showModalBottomSheet(
@@ -761,7 +779,9 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       child: Text(
                         label(index),
                         style: TextStyle(
-                          color: isSel ? Colors.white : Colors.white.withValues(alpha: 0.25),
+                          color: isSel
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.25),
                           fontSize: isSel ? 46 : 30,
                           fontWeight: isSel ? FontWeight.bold : FontWeight.w300,
                         ),
@@ -784,7 +804,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
               children: [
                 // Handle
                 Container(
-                  width: 40, height: 4,
+                  width: 40,
+                  height: 4,
                   margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
                     color: Colors.white24,
@@ -803,7 +824,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                           height: 70,
                           decoration: const BoxDecoration(
                             border: Border.symmetric(
-                              horizontal: BorderSide(color: Colors.white12, width: 1),
+                              horizontal:
+                                  BorderSide(color: Colors.white12, width: 1),
                             ),
                           ),
                         ),
@@ -882,7 +904,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     ),
                     child: const Text(
                       'Set Time',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                   ),
                 ),
@@ -1060,7 +1083,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Course Name',
                       hint: 'e.g. Bachelor of Science in Computer Science',
                       icon: Icons.book_outlined,
-                      errorText: _fieldErrors['name']?.first ?? _fieldErrors['Name']?.first,
+                      errorText: _fieldErrors['name']?.first ??
+                          _fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 28),
                     SizedBox(
@@ -1074,7 +1098,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 if (name.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Please enter a course name.'),
+                                      content:
+                                          Text('Please enter a course name.'),
                                       backgroundColor: Colors.orange,
                                     ),
                                   );
@@ -1094,7 +1119,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 } on ApiException catch (e) {
                                   setModalState(() {
                                     isSaving = false;
-                                    _fieldErrors = e.fieldErrors.map((k, v) => MapEntry(k.replaceAll('\$.', ''), v));
+                                    _fieldErrors = e.fieldErrors.map((k, v) =>
+                                        MapEntry(k.replaceAll('\$.', ''), v));
                                   });
                                 } catch (_) {
                                   setModalState(() => isSaving = false);
@@ -1301,7 +1327,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Classroom Name',
                       hint: 'e.g. Software Laboratory 1',
                       icon: Icons.meeting_room_outlined,
-                      errorText: _fieldErrors['name']?.first ?? _fieldErrors['Name']?.first,
+                      errorText: _fieldErrors['name']?.first ??
+                          _fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -1345,7 +1372,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 } on ApiException catch (e) {
                                   setModalState(() {
                                     isSaving = false;
-                                    _fieldErrors = e.fieldErrors.map((k, v) => MapEntry(k.replaceAll('\$.', ''), v));
+                                    _fieldErrors = e.fieldErrors.map((k, v) =>
+                                        MapEntry(k.replaceAll('\$.', ''), v));
                                   });
                                 } catch (_) {
                                   setModalState(() => isSaving = false);
@@ -1576,7 +1604,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         label: 'Time In',
                         hint: 'e.g. 08:00:00',
                         icon: Icons.login,
-                        errorText: _fieldErrors['timeIn']?.first ?? _fieldErrors['TimeIn']?.first,
+                        errorText: _fieldErrors['timeIn']?.first ??
+                            _fieldErrors['TimeIn']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogTimePickerField(
@@ -1585,27 +1614,38 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         label: 'Time Out',
                         hint: 'e.g. 09:00:00',
                         icon: Icons.logout,
-                        errorText: _fieldErrors['timeOut']?.first ?? _fieldErrors['TimeOut']?.first,
+                        errorText: _fieldErrors['timeOut']?.first ??
+                            _fieldErrors['TimeOut']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogDropdownField<String>(
                         label: 'Day of Week',
                         hint: 'Select day',
                         icon: Icons.calendar_today,
-                        value: dayOfWeekController.text.isEmpty ? null : dayOfWeekController.text,
+                        value: dayOfWeekController.text.isEmpty
+                            ? null
+                            : dayOfWeekController.text,
                         items: const [
-                          DropdownMenuItem(value: 'Monday', child: Text('Monday')),
-                          DropdownMenuItem(value: 'Tuesday', child: Text('Tuesday')),
-                          DropdownMenuItem(value: 'Wednesday', child: Text('Wednesday')),
-                          DropdownMenuItem(value: 'Thursday', child: Text('Thursday')),
-                          DropdownMenuItem(value: 'Friday', child: Text('Friday')),
-                          DropdownMenuItem(value: 'Saturday', child: Text('Saturday')),
-                          DropdownMenuItem(value: 'Sunday', child: Text('Sunday')),
+                          DropdownMenuItem(
+                              value: 'Monday', child: Text('Monday')),
+                          DropdownMenuItem(
+                              value: 'Tuesday', child: Text('Tuesday')),
+                          DropdownMenuItem(
+                              value: 'Wednesday', child: Text('Wednesday')),
+                          DropdownMenuItem(
+                              value: 'Thursday', child: Text('Thursday')),
+                          DropdownMenuItem(
+                              value: 'Friday', child: Text('Friday')),
+                          DropdownMenuItem(
+                              value: 'Saturday', child: Text('Saturday')),
+                          DropdownMenuItem(
+                              value: 'Sunday', child: Text('Sunday')),
                         ],
                         onChanged: (val) {
                           if (val != null) dayOfWeekController.text = val;
                         },
-                        errorText: _fieldErrors['dayOfWeek']?.first ?? _fieldErrors['DayOfWeek']?.first,
+                        errorText: _fieldErrors['dayOfWeek']?.first ??
+                            _fieldErrors['DayOfWeek']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogDropdownField<int>(
@@ -1613,14 +1653,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         hint: 'Select a subject',
                         icon: Icons.subject,
                         value: int.tryParse(subjectIdController.text),
-                        items: _subjectsList.map((s) => DropdownMenuItem(
-                          value: s.id,
-                          child: Text(s.name, overflow: TextOverflow.ellipsis),
-                        )).toList(),
+                        items: _subjectsList
+                            .map((s) => DropdownMenuItem(
+                                  value: s.id,
+                                  child: Text(s.name,
+                                      overflow: TextOverflow.ellipsis),
+                                ))
+                            .toList(),
                         onChanged: (val) {
-                          if (val != null) subjectIdController.text = val.toString();
+                          if (val != null)
+                            subjectIdController.text = val.toString();
                         },
-                        errorText: _fieldErrors['subjectId']?.first ?? _fieldErrors['SubjectId']?.first,
+                        errorText: _fieldErrors['subjectId']?.first ??
+                            _fieldErrors['SubjectId']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogDropdownField<int>(
@@ -1628,14 +1673,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         hint: 'Select a classroom',
                         icon: Icons.meeting_room,
                         value: int.tryParse(classroomIdController.text),
-                        items: _classroomsList.map((c) => DropdownMenuItem(
-                          value: c.id,
-                          child: Text(c.name, overflow: TextOverflow.ellipsis),
-                        )).toList(),
+                        items: _classroomsList
+                            .map((c) => DropdownMenuItem(
+                                  value: c.id,
+                                  child: Text(c.name,
+                                      overflow: TextOverflow.ellipsis),
+                                ))
+                            .toList(),
                         onChanged: (val) {
-                          if (val != null) classroomIdController.text = val.toString();
+                          if (val != null)
+                            classroomIdController.text = val.toString();
                         },
-                        errorText: _fieldErrors['classroomId']?.first ?? _fieldErrors['ClassroomId']?.first,
+                        errorText: _fieldErrors['classroomId']?.first ??
+                            _fieldErrors['ClassroomId']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogDropdownField<int>(
@@ -1643,14 +1693,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         hint: 'Select a section',
                         icon: Icons.layers,
                         value: int.tryParse(sectionIdController.text),
-                        items: _sectionsList.map((s) => DropdownMenuItem(
-                          value: s.id,
-                          child: Text(s.name, overflow: TextOverflow.ellipsis),
-                        )).toList(),
+                        items: _sectionsList
+                            .map((s) => DropdownMenuItem(
+                                  value: s.id,
+                                  child: Text(s.name,
+                                      overflow: TextOverflow.ellipsis),
+                                ))
+                            .toList(),
                         onChanged: (val) {
-                          if (val != null) sectionIdController.text = val.toString();
+                          if (val != null)
+                            sectionIdController.text = val.toString();
                         },
-                        errorText: _fieldErrors['sectionId']?.first ?? _fieldErrors['SectionId']?.first,
+                        errorText: _fieldErrors['sectionId']?.first ??
+                            _fieldErrors['SectionId']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogDropdownField<int>(
@@ -1658,14 +1713,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         hint: 'Select an instructor',
                         icon: Icons.person,
                         value: int.tryParse(instructorIdController.text),
-                        items: _instructorsList.map((i) => DropdownMenuItem(
-                          value: i.id,
-                          child: Text('${i.firstname} ${i.lastname}', overflow: TextOverflow.ellipsis),
-                        )).toList(),
+                        items: _instructorsList
+                            .map((i) => DropdownMenuItem(
+                                  value: i.id,
+                                  child: Text('${i.firstname} ${i.lastname}',
+                                      overflow: TextOverflow.ellipsis),
+                                ))
+                            .toList(),
                         onChanged: (val) {
-                          if (val != null) instructorIdController.text = val.toString();
+                          if (val != null)
+                            instructorIdController.text = val.toString();
                         },
-                        errorText: _fieldErrors['instructorId']?.first ?? _fieldErrors['InstructorId']?.first,
+                        errorText: _fieldErrors['instructorId']?.first ??
+                            _fieldErrors['InstructorId']?.first,
                       ),
                       const SizedBox(height: 28),
                       SizedBox(
@@ -1675,10 +1735,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                           onPressed: isSaving
                               ? null
                               : () async {
-                                  final timeIn =
-                                      timeInController.text.trim();
-                                  final timeOut =
-                                      timeOutController.text.trim();
+                                  final timeIn = timeInController.text.trim();
+                                  final timeOut = timeOutController.text.trim();
                                   if (timeIn.isEmpty || timeOut.isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
@@ -1707,8 +1765,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                             .trim()
                                             .isEmpty
                                         ? null
-                                        : int.tryParse(classroomIdController.text
-                                            .trim()),
+                                        : int.tryParse(
+                                            classroomIdController.text.trim()),
                                     'sectionId': sectionIdController.text
                                             .trim()
                                             .isEmpty
@@ -1719,8 +1777,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                             .trim()
                                             .isEmpty
                                         ? null
-                                        : int.tryParse(instructorIdController.text
-                                            .trim()),
+                                        : int.tryParse(
+                                            instructorIdController.text.trim()),
                                   };
 
                                   setModalState(() {
@@ -1739,7 +1797,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                   } on ApiException catch (e) {
                                     setModalState(() {
                                       isSaving = false;
-                                      _fieldErrors = e.fieldErrors.map((k, v) => MapEntry(k.replaceAll('\$.', ''), v));
+                                      _fieldErrors = e.fieldErrors.map((k, v) =>
+                                          MapEntry(k.replaceAll('\$.', ''), v));
                                     });
                                   } catch (e) {
                                     setModalState(() => isSaving = false);
@@ -1747,8 +1806,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
-                                          content: Text(
-                                              'Error saving schedule: $e'),
+                                          content:
+                                              Text('Error saving schedule: $e'),
                                           backgroundColor: Colors.redAccent,
                                         ),
                                       );
@@ -1850,7 +1909,9 @@ class _ClassesScreenState extends State<ClassesScreen> {
         );
       }
     }
-  }  @override
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MainScaffold(
       title: 'Classes',
@@ -1887,8 +1948,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             child: ListView(
               physics: const BouncingScrollPhysics(
                   parent: AlwaysScrollableScrollPhysics()),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               children: [
                 if (_selectedTab == 'Classroom') ...[
                   _buildClassroomsOverview(),
@@ -1919,7 +1979,6 @@ class _ClassesScreenState extends State<ClassesScreen> {
       ),
     );
   }
-
 
   Widget _buildTabs() {
     final tabs = ['Classroom', 'Courses', 'Sections', 'Subjects', 'Schedule'];
@@ -2104,13 +2163,21 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard('Total Courses', '${_coursesList.length}',
-                  Icons.book, const Color(0xFFA78BFA), 100),
+              child: _buildOverviewCard(
+                  'Total Courses',
+                  '${_coursesList.length}',
+                  Icons.book,
+                  const Color(0xFFA78BFA),
+                  100),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildOverviewCard('Active Courses', '${_coursesList.length}',
-                  Icons.check_circle, const Color(0xFF34D399), 100),
+              child: _buildOverviewCard(
+                  'Active Courses',
+                  '${_coursesList.length}',
+                  Icons.check_circle,
+                  const Color(0xFF34D399),
+                  100),
             ),
           ],
         ),
@@ -2135,8 +2202,12 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildOverviewCard('Total Sections', '${_sectionsList.length}',
-                  Icons.layers, const Color(0xFFFBBF24), 100),
+              child: _buildOverviewCard(
+                  'Total Sections',
+                  '${_sectionsList.length}',
+                  Icons.layers,
+                  const Color(0xFFFBBF24),
+                  100),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -2368,8 +2439,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     children: [
                       Icon(Icons.delete, color: Colors.redAccent, size: 20),
                       SizedBox(width: 12),
-                      Text('Delete',
-                          style: TextStyle(color: Colors.redAccent)),
+                      Text('Delete', style: TextStyle(color: Colors.redAccent)),
                     ],
                   ),
                 ),
@@ -2504,8 +2574,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     children: [
                       Icon(Icons.delete, color: Colors.redAccent, size: 20),
                       SizedBox(width: 12),
-                      Text('Delete',
-                          style: TextStyle(color: Colors.redAccent)),
+                      Text('Delete', style: TextStyle(color: Colors.redAccent)),
                     ],
                   ),
                 ),
@@ -2642,8 +2711,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     children: [
                       Icon(Icons.delete, color: Colors.redAccent, size: 20),
                       SizedBox(width: 12),
-                      Text('Delete',
-                          style: TextStyle(color: Colors.redAccent)),
+                      Text('Delete', style: TextStyle(color: Colors.redAccent)),
                     ],
                   ),
                 ),
@@ -2778,8 +2846,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     children: [
                       Icon(Icons.delete, color: Colors.redAccent, size: 20),
                       SizedBox(width: 12),
-                      Text('Delete',
-                          style: TextStyle(color: Colors.redAccent)),
+                      Text('Delete', style: TextStyle(color: Colors.redAccent)),
                     ],
                   ),
                 ),
@@ -2930,8 +2997,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     children: [
                       Icon(Icons.delete, color: Colors.redAccent, size: 20),
                       SizedBox(width: 12),
-                      Text('Delete',
-                          style: TextStyle(color: Colors.redAccent)),
+                      Text('Delete', style: TextStyle(color: Colors.redAccent)),
                     ],
                   ),
                 ),
@@ -2942,7 +3008,6 @@ class _ClassesScreenState extends State<ClassesScreen> {
       ),
     );
   }
-
 }
 
 class _GlassCard extends StatelessWidget {
@@ -2979,4 +3044,3 @@ class _GlassCard extends StatelessWidget {
     );
   }
 }
-

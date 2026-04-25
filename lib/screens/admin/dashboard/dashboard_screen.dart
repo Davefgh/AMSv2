@@ -72,7 +72,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-
   List<Widget> _buildDashboardMainSections() {
     return [
       const Text(
@@ -119,10 +118,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final int students =
         _users.where((u) => u.role.toLowerCase() == 'student').length;
     final int instructors = _users
-        .where((u) => u.role.toLowerCase() == 'instructor' || u.role.toLowerCase() == 'teacher')
+        .where((u) =>
+            u.role.toLowerCase() == 'instructor' ||
+            u.role.toLowerCase() == 'teacher')
         .length;
-    final int admins =
-        _users.where((u) => u.role.toLowerCase() == 'admin' || u.role.toLowerCase() == 'administrator').length;
+    final int admins = _users
+        .where((u) =>
+            u.role.toLowerCase() == 'admin' ||
+            u.role.toLowerCase() == 'administrator')
+        .length;
 
     int crossAxisCount = 2;
     if (Responsive.isDesktop(context)) {
@@ -174,7 +178,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-
   Color _getRoleColor(String role) {
     switch (role.toLowerCase()) {
       case 'admin':
@@ -205,8 +208,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Widget _buildStatCard(String value, String label, Color color, IconData icon,
-      int percentage,
+  Widget _buildStatCard(
+      String value, String label, Color color, IconData icon, int percentage,
       {VoidCallback? onTap}) {
     return _GlassCard(
       onTap: onTap,
@@ -281,8 +284,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Icons.fingerprint_rounded,
             label: 'Fingerprint\nEnrollment',
             color: const Color(0xFF38BDF8),
-            onTap: () => Navigator.pushNamed(
-                context, AppRoutes.fingerprintEnrollment),
+            onTap: () =>
+                Navigator.pushNamed(context, AppRoutes.fingerprintEnrollment),
           ),
         ),
         const SizedBox(width: 16),
@@ -494,7 +497,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
 }
 
 class _GlassCard extends StatelessWidget {

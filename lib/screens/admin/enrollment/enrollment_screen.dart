@@ -112,7 +112,6 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
     );
   }
 
-
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -179,13 +178,21 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
   }
 
   Widget _buildEnrollmentList() {
-    final filtered = _enrollments.where((e) => 
-      (e.studentName?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
-      (e.sectionName?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false)
-    ).toList();
+    final filtered = _enrollments
+        .where((e) =>
+            (e.studentName
+                    ?.toLowerCase()
+                    .contains(_searchQuery.toLowerCase()) ??
+                false) ||
+            (e.sectionName
+                    ?.toLowerCase()
+                    .contains(_searchQuery.toLowerCase()) ??
+                false))
+        .toList();
 
     return ListView.builder(
-      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       padding: const EdgeInsets.all(24),
       itemCount: filtered.length,
       itemBuilder: (context, index) {
@@ -204,7 +211,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                     color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
                   ),
                 ),
-                child: const Icon(Icons.school_rounded, color: Color(0xFF38BDF8)),
+                child:
+                    const Icon(Icons.school_rounded, color: Color(0xFF38BDF8)),
               ),
               title: Text(
                 enrollment.studentName ?? 'Student #${enrollment.studentId}',
@@ -240,8 +248,10 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               ),
               trailing: PopupMenuButton<String>(
                 color: const Color(0xFF1E293B),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                icon: Icon(Icons.more_vert, color: Colors.white.withValues(alpha: 0.6)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                icon: Icon(Icons.more_vert,
+                    color: Colors.white.withValues(alpha: 0.6)),
                 onSelected: (value) async {
                   if (value == 'drop') {
                     _handleDrop(enrollment);
@@ -258,11 +268,13 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                 itemBuilder: (context) => [
                   const PopupMenuItem(
                     value: 'reenroll',
-                    child: Text('Re-enroll Student', style: TextStyle(color: Color(0xFF34D399))),
+                    child: Text('Re-enroll Student',
+                        style: TextStyle(color: Color(0xFF34D399))),
                   ),
                   const PopupMenuItem(
                     value: 'drop',
-                    child: Text('Drop Student', style: TextStyle(color: Colors.redAccent)),
+                    child: Text('Drop Student',
+                        style: TextStyle(color: Colors.redAccent)),
                   ),
                 ],
               ),
@@ -312,7 +324,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                       value: selectedStudent,
                       items: _students,
                       itemLabel: (s) => s.fullName,
-                      onChanged: (value) => setStateDialog(() => selectedStudent = value),
+                      onChanged: (value) =>
+                          setStateDialog(() => selectedStudent = value),
                     ),
                     const SizedBox(height: 16),
                     _buildDialogDropdown<Section>(
@@ -321,7 +334,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                       value: selectedSection,
                       items: _sections,
                       itemLabel: (s) => s.name,
-                      onChanged: (value) => setStateDialog(() => selectedSection = value),
+                      onChanged: (value) =>
+                          setStateDialog(() => selectedSection = value),
                     ),
                     const SizedBox(height: 16),
                     _buildDialogDropdown<Subject>(
@@ -330,7 +344,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                       value: selectedSubject,
                       items: _subjects,
                       itemLabel: (s) => s.name,
-                      onChanged: (value) => setStateDialog(() => selectedSubject = value),
+                      onChanged: (value) =>
+                          setStateDialog(() => selectedSubject = value),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -340,7 +355,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                             label: 'A.Y.',
                             value: academicYear,
                             items: academicYears,
-                            onChanged: (v) => setStateDialog(() => academicYear = v!),
+                            onChanged: (v) =>
+                                setStateDialog(() => academicYear = v!),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -349,7 +365,8 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                             label: 'Semester',
                             value: semester,
                             items: semesters,
-                            onChanged: (v) => setStateDialog(() => semester = v!),
+                            onChanged: (v) =>
+                                setStateDialog(() => semester = v!),
                           ),
                         ),
                       ],
@@ -361,17 +378,22 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                              side: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.5)),
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                             ),
-                            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+                            child: const Text('Cancel',
+                                style: TextStyle(color: Colors.white)),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: (selectedStudent == null || selectedSection == null || selectedSubject == null)
+                            onPressed: (selectedStudent == null ||
+                                    selectedSection == null ||
+                                    selectedSubject == null)
                                 ? null
                                 : () async {
                                     try {
@@ -395,9 +417,13 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF38BDF8),
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                             ),
-                            child: const Text('Enroll', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            child: const Text('Enroll',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],
@@ -423,7 +449,9 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.8))),
+        Text(label,
+            style: TextStyle(
+                fontSize: 14, color: Colors.white.withValues(alpha: 0.8))),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -437,9 +465,15 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               isExpanded: true,
               dropdownColor: const Color(0xFF1E293B),
               icon: const Icon(Icons.arrow_drop_down, color: Colors.white60),
-              hint: Text(hint, style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
+              hint: Text(hint,
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
               value: items.contains(value) ? value : null,
-              items: items.map((item) => DropdownMenuItem(value: item, child: Text(itemLabel(item), style: const TextStyle(color: Colors.white)))).toList(),
+              items: items
+                  .map((item) => DropdownMenuItem(
+                      value: item,
+                      child: Text(itemLabel(item),
+                          style: const TextStyle(color: Colors.white))))
+                  .toList(),
               onChanged: onChanged,
             ),
           ),
@@ -457,7 +491,9 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.5))),
+        Text(label,
+            style: TextStyle(
+                fontSize: 12, color: Colors.white.withValues(alpha: 0.5))),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -471,7 +507,13 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               isExpanded: true,
               dropdownColor: const Color(0xFF1E293B),
               value: items.contains(value) ? value : items.first,
-              items: items.map((item) => DropdownMenuItem(value: item, child: Text(item, style: const TextStyle(color: Colors.white, fontSize: 13)))).toList(),
+              items: items
+                  .map((item) => DropdownMenuItem(
+                      value: item,
+                      child: Text(item,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 13))))
+                  .toList(),
               onChanged: onChanged,
             ),
           ),
@@ -479,7 +521,6 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
       ],
     );
   }
-
 }
 
 class _GlassCard extends StatelessWidget {

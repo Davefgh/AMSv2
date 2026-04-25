@@ -66,8 +66,8 @@ class ClassSession {
     }
 
     return ClassSession(
-      id: json['id'] ?? 0,
-      scheduleId: json['scheduleId'] ?? 0,
+      id: parseInt(json['id']) ?? 0,
+      scheduleId: parseInt(json['scheduleId']) ?? 0,
       status: json['status'] ?? 'not_started',
       sessionDate: parseDate(json['sessionDate']),
       createdAt: parseDate(json['createdAt']),
