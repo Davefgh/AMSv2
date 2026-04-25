@@ -8,7 +8,8 @@ class TeacherNotificationScreen extends StatefulWidget {
   const TeacherNotificationScreen({super.key});
 
   @override
-  State<TeacherNotificationScreen> createState() => _TeacherNotificationScreenState();
+  State<TeacherNotificationScreen> createState() =>
+      _TeacherNotificationScreenState();
 }
 
 class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
@@ -164,36 +165,11 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
                 foregroundColor: const Color(0xFF0F172A),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _GlassCard extends StatelessWidget {
-  final Widget child;
-  const _GlassCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
-          child: child,
         ),
       ),
     );

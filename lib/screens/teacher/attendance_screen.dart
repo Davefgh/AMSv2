@@ -61,10 +61,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         final status = s.status.toLowerCase();
         if (status == 'active' || status == 'started') {
           active++;
-        } else if (status == 'ended' || status == 'completed')
+        } else if (status == 'ended' || status == 'completed') {
           ended++;
-        else
+        } else {
           pending++;
+        }
       }
 
       setState(() {

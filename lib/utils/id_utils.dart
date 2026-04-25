@@ -2,6 +2,7 @@
 ///
 /// This file provides helper functions for handling string-based entity IDs,
 /// including validation, display formatting, and error handling.
+library;
 
 /// Validates that an ID is not empty or null
 ///

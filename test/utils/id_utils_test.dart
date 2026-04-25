@@ -37,7 +37,7 @@ void main() {
 
   group('ID Display Tests', () {
     test('displayId truncates long IDs', () {
-      final longId = '550e8400-e29b-41d4-a716-446655440000';
+      const longId = '550e8400-e29b-41d4-a716-446655440000';
       expect(displayId(longId), '550e8400...');
     });
 
@@ -47,7 +47,7 @@ void main() {
     });
 
     test('displayIdWithLength truncates at custom length', () {
-      final longId = '550e8400-e29b-41d4-a716-446655440000';
+      const longId = '550e8400-e29b-41d4-a716-446655440000';
       expect(displayIdWithLength(longId, 12), '550e8400-e29...');
       expect(displayIdWithLength(longId, 4), '550e...');
     });

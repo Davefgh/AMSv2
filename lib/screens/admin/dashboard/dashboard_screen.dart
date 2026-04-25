@@ -16,7 +16,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final ApiService _apiService = ApiService();
-  final int _selectedIndex = 0;
   String _selectedPeriod = 'Monthly';
   List<AppUser> _users = [];
   bool _isLoading = true;
@@ -56,7 +55,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
           icon: Icon(
             Icons.notifications_active_outlined,
-            color: Colors.white.withOpacity(0.55),
+            color: Colors.white.withValues(alpha: 0.55),
             size: 26,
           ),
         ),
@@ -176,36 +175,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ), // Purple-ish
       ],
     );
-  }
-
-  Color _getRoleColor(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
-      case 'administrator':
-        return const Color(0xFFA78BFA);
-      case 'instructor':
-      case 'teacher':
-        return const Color(0xFF60A5FA);
-      case 'student':
-        return const Color(0xFF34D399);
-      default:
-        return Colors.white70;
-    }
-  }
-
-  IconData _getRoleIcon(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
-      case 'administrator':
-        return Icons.admin_panel_settings_rounded;
-      case 'instructor':
-      case 'teacher':
-        return Icons.person_rounded;
-      case 'student':
-        return Icons.school_rounded;
-      default:
-        return Icons.people_alt_rounded;
-    }
   }
 
   Widget _buildStatCard(
@@ -507,6 +476,7 @@ class _GlassCard extends StatelessWidget {
 
   const _GlassCard({
     required this.child,
+    this.height,
     this.padding = const EdgeInsets.all(20),
     this.onTap,
   });

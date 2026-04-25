@@ -68,10 +68,10 @@ class MainScaffold extends StatelessWidget {
             height: 300,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withOpacity(0.15),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF38BDF8).withOpacity(0.15),
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
                   blurRadius: 100,
                   spreadRadius: 50,
                 )
@@ -87,10 +87,10 @@ class MainScaffold extends StatelessWidget {
             height: 400,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF1E3A8A).withOpacity(0.2),
+              color: const Color(0xFF1E3A8A).withValues(alpha: 0.2),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF1E3A8A).withOpacity(0.2),
+                  color: const Color(0xFF1E3A8A).withValues(alpha: 0.2),
                   blurRadius: 120,
                   spreadRadius: 60,
                 )
@@ -227,8 +227,9 @@ class MainScaffold extends StatelessWidget {
       destinations = _teacherDestinations;
     }
 
-    final borderColor =
-        isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.black.withValues(alpha: 0.1);
     final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
 
     return Container(
@@ -246,20 +247,20 @@ class MainScaffold extends StatelessWidget {
         backgroundColor: Colors.transparent,
         selectedIndex: currentIndex == -1 ? null : currentIndex,
         onDestinationSelected: (index) => _onNavigate(context, index),
-        indicatorColor: const Color(0xFF38BDF8).withOpacity(0.2),
+        indicatorColor: const Color(0xFF38BDF8).withValues(alpha: 0.2),
         selectedIconTheme: const IconThemeData(color: Color(0xFF38BDF8)),
         unselectedIconTheme: IconThemeData(
             color: isDark
-                ? Colors.white.withOpacity(0.4)
-                : Colors.black.withOpacity(0.4)),
+                ? Colors.white.withValues(alpha: 0.4)
+                : Colors.black.withValues(alpha: 0.4)),
         selectedLabelTextStyle: const TextStyle(
           color: Color(0xFF38BDF8),
           fontWeight: FontWeight.bold,
         ),
         unselectedLabelTextStyle: TextStyle(
           color: isDark
-              ? Colors.white.withOpacity(0.4)
-              : Colors.black.withOpacity(0.4),
+              ? Colors.white.withValues(alpha: 0.4)
+              : Colors.black.withValues(alpha: 0.4),
         ),
         leading: extended
             ? Padding(
@@ -368,7 +369,7 @@ class MainScaffold extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withOpacity(0.4),
+        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
         showUnselectedLabels: true,
         selectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),

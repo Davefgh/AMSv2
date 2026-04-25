@@ -8,8 +8,6 @@ import '../../../models/course_model.dart';
 import '../../../models/classroom_model.dart';
 import '../../../models/instructor_model.dart';
 import '../../../widgets/main_scaffold.dart';
-import '../../../utils/responsive.dart';
-import '../../../config/routes/app_routes.dart';
 import '../../../widgets/skeleton_loader.dart';
 
 class ClassesScreen extends StatefulWidget {
@@ -20,7 +18,6 @@ class ClassesScreen extends StatefulWidget {
 }
 
 class _ClassesScreenState extends State<ClassesScreen> {
-  final int _selectedIndex = 2;
   String _selectedTab = 'Classroom';
   final ApiService _apiService = ApiService();
   List<Classroom> _classroomsList = [];
@@ -1922,7 +1919,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
       actions: [
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF38BDF8).withOpacity(0.2),
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -3020,6 +3017,7 @@ class _GlassCard extends StatelessWidget {
 
   const _GlassCard({
     required this.child,
+    this.height,
     this.padding = const EdgeInsets.all(20),
   });
 

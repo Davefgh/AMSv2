@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/api_service.dart';
@@ -116,7 +115,6 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
     return Consumer<AppProvider>(
       builder: (context, appProvider, _) {
         final isDark = appProvider.isDarkMode;
-        final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
         final cardColor =
             isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
         final textColor = isDark ? Colors.white : Colors.black;
@@ -417,29 +415,6 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildBackground() {
-    return Stack(
-      children: [
-        Positioned(
-          top: -100,
-          right: -50,
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
-            ),
-          ),
-        ),
-        BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-          child: Container(color: Colors.transparent),
-        ),
-      ],
     );
   }
 
