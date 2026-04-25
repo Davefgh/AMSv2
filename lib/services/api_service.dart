@@ -54,7 +54,7 @@ class ApiService {
     }
   }
 
-  Future<List<Student>> getStudentsBySection(int sectionId) async {
+  Future<List<Student>> getStudentsBySection(String sectionId) async {
     try {
       final response = await get('/api/sections/$sectionId/all-students');
       if (response is List) {
@@ -77,7 +77,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateSection(int id, Map<String, dynamic> data) async {
+  Future<void> updateSection(String id, Map<String, dynamic> data) async {
     try {
       await put('/api/sections/$id', data);
     } catch (e) {
@@ -86,7 +86,7 @@ class ApiService {
     }
   }
 
-  Future<void> deleteSection(int id) async {
+  Future<void> deleteSection(String id) async {
     try {
       await delete('/api/sections/$id');
     } catch (e) {
@@ -118,7 +118,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateSubject(int id, Map<String, dynamic> data) async {
+  Future<void> updateSubject(String id, Map<String, dynamic> data) async {
     try {
       await patch('/api/subjects/$id', data);
     } catch (e) {
@@ -127,7 +127,7 @@ class ApiService {
     }
   }
 
-  Future<void> deleteSubject(int id) async {
+  Future<void> deleteSubject(String id) async {
     try {
       await delete('/api/subjects/$id');
     } catch (e) {
@@ -140,7 +140,9 @@ class ApiService {
     try {
       final response = await get('/api/Course');
       if (response is List) {
-        return response.map((c) => Course.fromJson(c as Map<String, dynamic>)).toList();
+        return response
+            .map((c) => Course.fromJson(c as Map<String, dynamic>))
+            .toList();
       }
       return [];
     } catch (e) {
@@ -149,7 +151,7 @@ class ApiService {
     }
   }
 
-  Future<Course> getCourse(int id) async {
+  Future<Course> getCourse(String id) async {
     try {
       final response = await get('/api/Course/$id');
       return Course.fromJson(response as Map<String, dynamic>);
@@ -169,7 +171,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateCourse(int id, Map<String, dynamic> data) async {
+  Future<void> updateCourse(String id, Map<String, dynamic> data) async {
     try {
       await put('/api/Course/$id', data);
     } catch (e) {
@@ -178,7 +180,7 @@ class ApiService {
     }
   }
 
-  Future<void> deleteCourse(int id) async {
+  Future<void> deleteCourse(String id) async {
     try {
       await delete('/api/Course/$id');
     } catch (e) {
@@ -202,7 +204,7 @@ class ApiService {
     }
   }
 
-  Future<Classroom> getClassroom(int id) async {
+  Future<Classroom> getClassroom(String id) async {
     try {
       final response = await get('/api/classrooms/$id');
       return Classroom.fromJson(response as Map<String, dynamic>);
@@ -222,7 +224,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateClassroom(int id, Map<String, dynamic> data) async {
+  Future<void> updateClassroom(String id, Map<String, dynamic> data) async {
     try {
       await patch('/api/classrooms/$id', data);
     } catch (e) {
@@ -231,7 +233,7 @@ class ApiService {
     }
   }
 
-  Future<void> deleteClassroom(int id) async {
+  Future<void> deleteClassroom(String id) async {
     try {
       await delete('/api/classrooms/$id');
     } catch (e) {
@@ -262,7 +264,7 @@ class ApiService {
     }
   }
 
-  Future<void> dropEnrollment(int id) async {
+  Future<void> dropEnrollment(String id) async {
     try {
       await patch('/api/StudentEnrollment/$id/drop', {});
     } catch (e) {
@@ -271,7 +273,7 @@ class ApiService {
     }
   }
 
-  Future<void> reenrollStudent(int id) async {
+  Future<void> reenrollStudent(String id) async {
     try {
       await patch('/api/StudentEnrollment/$id/reenroll', {});
     } catch (e) {
@@ -280,7 +282,7 @@ class ApiService {
     }
   }
 
-  Future<List<Enrollment>> getEnrollmentsByStudent(int studentId) async {
+  Future<List<Enrollment>> getEnrollmentsByStudent(String studentId) async {
     try {
       final response = await get('/api/StudentEnrollment/student/$studentId');
       if (response is List) {
@@ -318,7 +320,7 @@ class ApiService {
     }
   }
 
-  Future<Instructor> getInstructor(int id) async {
+  Future<Instructor> getInstructor(String id) async {
     try {
       final response = await get('/api/instructors/$id');
       return Instructor.fromJson(response);
@@ -328,7 +330,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateInstructor(int id, Map<String, dynamic> data) async {
+  Future<void> updateInstructor(String id, Map<String, dynamic> data) async {
     try {
       await patch('/api/instructors/$id', data);
     } catch (e) {
@@ -337,7 +339,7 @@ class ApiService {
     }
   }
 
-  Future<void> deleteInstructor(int id) async {
+  Future<void> deleteInstructor(String id) async {
     try {
       await delete('/api/instructors/$id');
     } catch (e) {
@@ -346,7 +348,7 @@ class ApiService {
     }
   }
 
-  Future<void> softDeleteInstructor(int id) async {
+  Future<void> softDeleteInstructor(String id) async {
     try {
       await patch('/api/instructors/$id/soft-delete', {});
     } catch (e) {
@@ -355,7 +357,7 @@ class ApiService {
     }
   }
 
-  Future<void> restoreInstructor(int id) async {
+  Future<void> restoreInstructor(String id) async {
     try {
       await patch('/api/instructors/$id/restore', {});
     } catch (e) {
@@ -392,7 +394,7 @@ class ApiService {
     }
   }
 
-  Future<Student> getStudent(int id) async {
+  Future<Student> getStudent(String id) async {
     try {
       final response = await get('/api/students/$id');
       return Student.fromJson(response);
@@ -402,7 +404,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateStudent(int id, Map<String, dynamic> data) async {
+  Future<void> updateStudent(String id, Map<String, dynamic> data) async {
     try {
       await patch('/api/students/$id', data);
     } catch (e) {
@@ -411,7 +413,7 @@ class ApiService {
     }
   }
 
-  Future<void> deleteStudent(int id) async {
+  Future<void> deleteStudent(String id) async {
     try {
       await delete('/api/students/$id');
     } catch (e) {
@@ -420,7 +422,7 @@ class ApiService {
     }
   }
 
-  Future<void> softDeleteStudent(int id) async {
+  Future<void> softDeleteStudent(String id) async {
     try {
       await patch('/api/students/$id/soft-delete', {});
     } catch (e) {
@@ -429,7 +431,7 @@ class ApiService {
     }
   }
 
-  Future<void> restoreStudent(int id) async {
+  Future<void> restoreStudent(String id) async {
     try {
       await patch('/api/students/$id/restore', {});
     } catch (e) {
@@ -581,7 +583,7 @@ class ApiService {
     }
   }
 
-  Future<Schedule> getSchedule(int id) async {
+  Future<Schedule> getSchedule(String id) async {
     try {
       final response = await get('/api/schedules/$id');
       return Schedule.fromJson(response);
@@ -591,7 +593,7 @@ class ApiService {
     }
   }
 
-  Future<List<Schedule>> getSchedulesBySection(int sectionId) async {
+  Future<List<Schedule>> getSchedulesBySection(String sectionId) async {
     try {
       final response = await get('/api/schedules/by-section/$sectionId');
       if (response is List) {
@@ -604,7 +606,8 @@ class ApiService {
     }
   }
 
-  Future<List<Schedule>> getSchedulesByInstructorAll(int instructorId) async {
+  Future<List<Schedule>> getSchedulesByInstructorAll(
+      String instructorId) async {
     try {
       final response = await get('/api/schedules/$instructorId/all');
       if (response is List) {
@@ -627,7 +630,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateSchedule(int id, Map<String, dynamic> data) async {
+  Future<void> updateSchedule(String id, Map<String, dynamic> data) async {
     try {
       await patch('/api/schedules/$id', data);
     } catch (e) {
@@ -636,7 +639,7 @@ class ApiService {
     }
   }
 
-  Future<void> deleteSchedule(int id) async {
+  Future<void> deleteSchedule(String id) async {
     try {
       await delete('/api/schedules/$id');
     } catch (e) {
@@ -647,7 +650,7 @@ class ApiService {
 
   // --- QR Code Methods ---
 
-  Future<Map<String, dynamic>> generateQrCode(int sessionId) async {
+  Future<Map<String, dynamic>> generateQrCode(String sessionId) async {
     try {
       final String uniqueId = const Uuid().v4();
       final response = await post('/api/QrCode/generate', {
@@ -675,7 +678,8 @@ class ApiService {
 
   Future<Map<String, dynamic>> getNotificationPreference() async {
     try {
-      final response = await get('/api/NotificationPreference/realtime-checkin');
+      final response =
+          await get('/api/NotificationPreference/realtime-checkin');
       return response as Map<String, dynamic>;
     } catch (e) {
       _logger.e('getNotificationPreference Error: $e');
@@ -698,7 +702,10 @@ class ApiService {
     try {
       final response = await get('/api/students/my-subjects');
       final List<dynamic> data = response as List<dynamic>;
-      return data.map((json) => StudentSubjectDetail.fromJson(json as Map<String, dynamic>)).toList();
+      return data
+          .map((json) =>
+              StudentSubjectDetail.fromJson(json as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       _logger.e('getStudentSubjects Error: $e');
       rethrow;
@@ -712,7 +719,8 @@ class ApiService {
     int pageSize = 50,
   }) async {
     try {
-      final response = await get('/api/attendance?pageNumber=$pageNumber&pageSize=$pageSize');
+      final response = await get(
+          '/api/attendance?pageNumber=$pageNumber&pageSize=$pageSize');
       return AttendanceResponse.fromJson(response);
     } catch (e) {
       _logger.e('getAttendances Error: $e');
@@ -720,7 +728,7 @@ class ApiService {
     }
   }
 
-  Future<AttendanceRecord> getAttendanceById(int id) async {
+  Future<AttendanceRecord> getAttendanceById(String id) async {
     try {
       final response = await get('/api/attendance/$id');
       return AttendanceRecord.fromJson(response);
@@ -740,7 +748,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateAttendance(int id, Map<String, dynamic> data) async {
+  Future<void> updateAttendance(String id, Map<String, dynamic> data) async {
     try {
       await put('/api/attendance/$id', data);
     } catch (e) {
@@ -749,7 +757,7 @@ class ApiService {
     }
   }
 
-  Future<void> deleteAttendance(int id) async {
+  Future<void> deleteAttendance(String id) async {
     try {
       await delete('/api/attendance/$id');
     } catch (e) {
@@ -758,7 +766,8 @@ class ApiService {
     }
   }
 
-  Future<List<AttendanceRecord>> getAttendanceByStudent(int studentId) async {
+  Future<List<AttendanceRecord>> getAttendanceByStudent(
+      String studentId) async {
     try {
       final response = await get('/api/attendance/student/$studentId');
       if (response is List) {
@@ -771,7 +780,8 @@ class ApiService {
     }
   }
 
-  Future<List<AttendanceRecord>> getAttendanceBySession(int sessionId) async {
+  Future<List<AttendanceRecord>> getAttendanceBySession(
+      String sessionId) async {
     try {
       final response = await get('/api/attendance/session/$sessionId');
       if (response is List) {
@@ -821,7 +831,7 @@ class ApiService {
     }
   }
 
-  Future<ClassSession> getSessionById(int id) async {
+  Future<ClassSession> getSessionById(String id) async {
     try {
       final response = await get('/api/sessions/$id');
       return ClassSession.fromJson(response);
@@ -841,16 +851,19 @@ class ApiService {
     }
   }
 
-  Future<void> deleteSession(int id, {required String reason, required String rowVersion}) async {
+  Future<void> deleteSession(String id,
+      {required String reason, required String rowVersion}) async {
     try {
-      await delete('/api/sessions/$id', body: {'reason': reason, 'rowVersion': rowVersion});
+      await delete('/api/sessions/$id',
+          body: {'reason': reason, 'rowVersion': rowVersion});
     } catch (e) {
       _logger.e('deleteSession Error: $e');
       rethrow;
     }
   }
 
-  Future<void> updateSessionRoom(int id, {required int actualRoomId, required String rowVersion}) async {
+  Future<void> updateSessionRoom(String id,
+      {required String actualRoomId, required String rowVersion}) async {
     try {
       await patch('/api/sessions/$id/room', {
         'actualRoomId': actualRoomId,
@@ -862,11 +875,15 @@ class ApiService {
     }
   }
 
-  Future<void> startSession(int id, {int? actualRoomId, int? attendanceCutoffMinutes, required String rowVersion}) async {
+  Future<void> startSession(String id,
+      {String? actualRoomId,
+      int? attendanceCutoffMinutes,
+      required String rowVersion}) async {
     try {
       await patch('/api/sessions/$id/start', {
         if (actualRoomId != null) 'actualRoomId': actualRoomId,
-        if (attendanceCutoffMinutes != null) 'attendanceCutoffMinutes': attendanceCutoffMinutes,
+        if (attendanceCutoffMinutes != null)
+          'attendanceCutoffMinutes': attendanceCutoffMinutes,
         'rowVersion': rowVersion,
       });
     } catch (e) {
@@ -875,7 +892,8 @@ class ApiService {
     }
   }
 
-  Future<void> endSession(int id, {String? description, required String rowVersion}) async {
+  Future<void> endSession(String id,
+      {String? description, required String rowVersion}) async {
     try {
       await patch('/api/sessions/$id/end', {
         if (description != null) 'description': description,
@@ -887,15 +905,15 @@ class ApiService {
     }
   }
 
-
   Future<Student> getStudentProfile() async {
     try {
       final me = await getMe();
-      
+
       if (me.role.toLowerCase() != 'student' || me.studentProfile == null) {
-        throw ApiException(404, 'Your account is not linked to any Student record.');
+        throw ApiException(
+            404, 'Your account is not linked to any Student record.');
       }
-      
+
       final sp = me.studentProfile!;
       return Student(
         id: sp.id,
@@ -915,7 +933,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> scanQrCode({
     required String qrHash,
-    required int studentId,
+    required String studentId,
   }) async {
     try {
       final response = await post('/api/QrCode/scan', {
@@ -934,7 +952,7 @@ class ApiService {
   /// POST /api/Fingerprint/enrollment-sessions
   /// Creates an enrollment session for a student on a device.
   Future<EnrollmentSession> createFingerprintEnrollmentSession({
-    required int studentId,
+    required String studentId,
     required String deviceId,
   }) async {
     try {
@@ -953,7 +971,8 @@ class ApiService {
   /// Gets the active enrollment session for a device.
   Future<EnrollmentSession?> getDeviceEnrollmentSession(String deviceId) async {
     try {
-      final response = await get('/api/Fingerprint/devices/$deviceId/enrollment-session');
+      final response =
+          await get('/api/Fingerprint/devices/$deviceId/enrollment-session');
       if (response == null) return null;
       return EnrollmentSession.fromJson(response as Map<String, dynamic>);
     } catch (e) {
@@ -963,7 +982,7 @@ class ApiService {
   }
 
   /// DELETE /api/Fingerprint/{fingerprintId}
-  Future<void> deleteFingerprint(int fingerprintId) async {
+  Future<void> deleteFingerprint(String fingerprintId) async {
     try {
       await delete('/api/Fingerprint/$fingerprintId');
     } catch (e) {
@@ -976,7 +995,8 @@ class ApiService {
   Future<Map<String, dynamic>> submitFingerprintEnrollmentResult(
       Map<String, dynamic> data) async {
     try {
-      final response = await post('/api/Fingerprint/devices/enrollment-result', data);
+      final response =
+          await post('/api/Fingerprint/devices/enrollment-result', data);
       return response as Map<String, dynamic>? ?? {};
     } catch (e) {
       _logger.e('submitFingerprintEnrollmentResult Error: $e');
@@ -985,7 +1005,8 @@ class ApiService {
   }
 
   /// POST /api/Fingerprint/devices/scan
-  Future<Map<String, dynamic>> scanFingerprint(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> scanFingerprint(
+      Map<String, dynamic> data) async {
     try {
       final response = await post('/api/Fingerprint/devices/scan', data);
       return response as Map<String, dynamic>? ?? {};
@@ -996,7 +1017,8 @@ class ApiService {
   }
 
   /// GET /api/Fingerprint/student/{studentId}
-  Future<List<FingerprintInfo>> getFingerprintsByStudent(int studentId) async {
+  Future<List<FingerprintInfo>> getFingerprintsByStudent(
+      String studentId) async {
     try {
       final response = await get('/api/Fingerprint/student/$studentId');
       if (response is List) {
@@ -1038,7 +1060,7 @@ class ApiService {
   }
 
   /// GET /api/Fingerprint/check/{studentId}
-  Future<Map<String, dynamic>> checkStudentFingerprint(int studentId) async {
+  Future<Map<String, dynamic>> checkStudentFingerprint(String studentId) async {
     try {
       final response = await get('/api/Fingerprint/check/$studentId');
       return response as Map<String, dynamic>? ?? {};
@@ -1084,7 +1106,8 @@ class ApiService {
     if (_isRefreshing) return false;
     _isRefreshing = true;
     try {
-      final refreshToken = StorageService.getString(AppConstants.storageKeyRefreshToken);
+      final refreshToken =
+          StorageService.getString(AppConstants.storageKeyRefreshToken);
       if (refreshToken == null || refreshToken.isEmpty) return false;
 
       final response = await http.post(
@@ -1098,9 +1121,11 @@ class ApiService {
         final newToken = data['accessToken'] ?? data['token'];
         final newRefresh = data['refreshToken'];
         if (newToken != null) {
-          await StorageService.setString(AppConstants.storageKeyToken, newToken);
+          await StorageService.setString(
+              AppConstants.storageKeyToken, newToken);
           if (newRefresh != null) {
-            await StorageService.setString(AppConstants.storageKeyRefreshToken, newRefresh);
+            await StorageService.setString(
+                AppConstants.storageKeyRefreshToken, newRefresh);
           }
           return true;
         }
@@ -1155,7 +1180,8 @@ class ApiService {
       if (body.isNotEmpty) {
         final decoded = jsonDecode(body);
         if (decoded is Map<String, dynamic>) {
-          errorMessage = decoded['title'] ?? decoded['message'] ?? response.body;
+          errorMessage =
+              decoded['title'] ?? decoded['message'] ?? response.body;
           if (decoded['errors'] != null) {
             final errorsObj = decoded['errors'] as Map<String, dynamic>;
             errorsObj.forEach((key, value) {
@@ -1176,7 +1202,8 @@ class ApiService {
           : response.reasonPhrase ?? 'Unknown error';
     }
 
-    throw ApiException(response.statusCode, errorMessage, fieldErrors: fieldErrors);
+    throw ApiException(response.statusCode, errorMessage,
+        fieldErrors: fieldErrors);
   }
 
   /// Wraps a request so that on a 401 it attempts a token refresh and retries once.

@@ -291,7 +291,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
     Subject? selectedSubject;
 
     final academicYears = ['2023-2024', '2024-2025'];
-    final semesters = ['1st Semester', '2nd Semester', 'Summer'];
+    final semesters = ['1st Semester', '2nd Semester'];
     String academicYear = academicYears[0];
     String semester = semesters[0];
 
