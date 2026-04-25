@@ -5,7 +5,6 @@ import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/session_model.dart';
 import 'session_details_screen.dart';
-import 'dart:ui';
 import '../../widgets/main_scaffold.dart';
 import '../../models/instructor_model.dart';
 import '../../services/storage_service.dart';
@@ -27,7 +26,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   List<ClassSession> _allSessions = [];
   List<ClassSession> _filteredSessions = [];
   List<Schedule> _instructorSchedules = [];
-  int _activeTabIndex = 0; // 0: All, 1: Not Started, 2: Active, 3: Completed, 4: Cancelled
+  int _activeTabIndex =
+      0; // 0: All, 1: Not Started, 2: Active, 3: Completed, 4: Cancelled
   Instructor? _profile;
 
   @override
@@ -64,16 +64,32 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     setState(() {
       switch (_activeTabIndex) {
         case 1: // Not Started
-          _filteredSessions = _allSessions.where((s) => s.status.toLowerCase() == 'pending' || s.status.toLowerCase() == 'not_started').toList();
+          _filteredSessions = _allSessions
+              .where((s) =>
+                  s.status.toLowerCase() == 'pending' ||
+                  s.status.toLowerCase() == 'not_started')
+              .toList();
           break;
         case 2: // Active
-          _filteredSessions = _allSessions.where((s) => s.status.toLowerCase() == 'active' || s.status.toLowerCase() == 'started').toList();
+          _filteredSessions = _allSessions
+              .where((s) =>
+                  s.status.toLowerCase() == 'active' ||
+                  s.status.toLowerCase() == 'started')
+              .toList();
           break;
         case 3: // Completed
-          _filteredSessions = _allSessions.where((s) => s.status.toLowerCase() == 'ended' || s.status.toLowerCase() == 'completed').toList();
+          _filteredSessions = _allSessions
+              .where((s) =>
+                  s.status.toLowerCase() == 'ended' ||
+                  s.status.toLowerCase() == 'completed')
+              .toList();
           break;
         case 4: // Cancelled
-          _filteredSessions = _allSessions.where((s) => s.status.toLowerCase() == 'cancelled' || s.status.toLowerCase() == 'deleted').toList();
+          _filteredSessions = _allSessions
+              .where((s) =>
+                  s.status.toLowerCase() == 'cancelled' ||
+                  s.status.toLowerCase() == 'deleted')
+              .toList();
           break;
         default:
           _filteredSessions = _allSessions;
@@ -83,11 +99,32 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
   int _getCount(int index) {
     switch (index) {
-      case 1: return _allSessions.where((s) => s.status.toLowerCase() == 'pending' || s.status.toLowerCase() == 'not_started').length;
-      case 2: return _allSessions.where((s) => s.status.toLowerCase() == 'active' || s.status.toLowerCase() == 'started').length;
-      case 3: return _allSessions.where((s) => s.status.toLowerCase() == 'ended' || s.status.toLowerCase() == 'completed').length;
-      case 4: return _allSessions.where((s) => s.status.toLowerCase() == 'cancelled' || s.status.toLowerCase() == 'deleted').length;
-      default: return _allSessions.length;
+      case 1:
+        return _allSessions
+            .where((s) =>
+                s.status.toLowerCase() == 'pending' ||
+                s.status.toLowerCase() == 'not_started')
+            .length;
+      case 2:
+        return _allSessions
+            .where((s) =>
+                s.status.toLowerCase() == 'active' ||
+                s.status.toLowerCase() == 'started')
+            .length;
+      case 3:
+        return _allSessions
+            .where((s) =>
+                s.status.toLowerCase() == 'ended' ||
+                s.status.toLowerCase() == 'completed')
+            .length;
+      case 4:
+        return _allSessions
+            .where((s) =>
+                s.status.toLowerCase() == 'cancelled' ||
+                s.status.toLowerCase() == 'deleted')
+            .length;
+      default:
+        return _allSessions.length;
     }
   }
 
@@ -106,7 +143,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
   void _onCreateSession() {
     if (_instructorSchedules.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No schedules assigned to you.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No schedules assigned to you.')));
       return;
     }
 
@@ -114,7 +152,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     DateTime selectedDate = DateTime.now();
     final TextEditingController reasonController = TextEditingController();
     final TextEditingController notesController = TextEditingController();
-    final TextEditingController dateController = TextEditingController(text: DateFormat('MM/dd/yyyy').format(selectedDate));
+    final TextEditingController dateController = TextEditingController(
+        text: DateFormat('MM/dd/yyyy').format(selectedDate));
 
     showModalBottomSheet(
       context: context,
@@ -127,8 +166,9 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
           if (selectedSchedule != null && selectedSchedule!.dayOfWeek != null) {
             isOffSchedule = selectedDate.weekday != selectedSchedule!.dayOfWeek;
           }
-          
-          final isReasonValid = !isOffSchedule || reasonController.text.trim().length >= 5;
+
+          final isReasonValid =
+              !isOffSchedule || reasonController.text.trim().length >= 5;
 
           return _GlassModal(
             child: Column(
@@ -140,56 +180,73 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                   children: [
                     const Text(
                       'Create New Session',
-                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Colors.white38),
+                      icon: const Icon(Icons.close_rounded,
+                          color: Colors.white38),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Schedule Input
-                const Text('Schedule *', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                const Text('Schedule *',
+                    style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<Schedule>(
                       value: selectedSchedule,
                       isExpanded: true,
                       dropdownColor: const Color(0xFF1E293B),
-                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white38),
+                      icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                          color: Colors.white38),
                       items: _instructorSchedules.map((Schedule s) {
                         return DropdownMenuItem<Schedule>(
                           value: s,
                           child: Text(
                             'Section ${s.sectionName} - ${s.classroomName} - ${s.dayName} ${_formatTime(s.timeIn)} - ${_formatTime(s.timeOut)}',
-                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 14),
                           ),
                         );
                       }).toList(),
-                      onChanged: (val) => setModalState(() => selectedSchedule = val),
+                      onChanged: (val) =>
+                          setModalState(() => selectedSchedule = val),
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
 
                 // Date Input
-                const Text('Session Date *', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                const Text('Session Date *',
+                    style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 GestureDetector(
                   onTap: () async {
                     final DateTime? picked = await showDatePicker(
                       context: context,
                       initialDate: selectedDate,
-                      firstDate: DateTime.now().subtract(const Duration(minutes: 1)), // Allow today
+                      firstDate: DateTime.now()
+                          .subtract(const Duration(minutes: 1)), // Allow today
                       lastDate: DateTime.now().add(const Duration(days: 365)),
                       builder: (context, child) {
                         return Theme(
@@ -207,7 +264,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     if (picked != null) {
                       setModalState(() {
                         selectedDate = picked;
-                        dateController.text = DateFormat('MM/dd/yyyy').format(picked);
+                        dateController.text =
+                            DateFormat('MM/dd/yyyy').format(picked);
                       });
                     }
                   },
@@ -220,9 +278,15 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                         fillColor: Colors.white.withValues(alpha: 0.05),
                         hintText: 'mm/dd/yyyy',
                         hintStyle: const TextStyle(color: Colors.white24),
-                        suffixIcon: const Icon(Icons.calendar_today_rounded, size: 18, color: Colors.white38),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+                        suffixIcon: const Icon(Icons.calendar_today_rounded,
+                            size: 18, color: Colors.white38),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                                color: Colors.white.withValues(alpha: 0.1))),
                       ),
                     ),
                   ),
@@ -231,7 +295,11 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
                 // Off-Schedule Reason Input
                 if (isOffSchedule) ...[
-                  const Text('Reason for Off-Schedule Session *', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                  const Text('Reason for Off-Schedule Session *',
+                      style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: reasonController,
@@ -241,17 +309,28 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white.withValues(alpha: 0.05),
-                      hintText: 'Explain why this class is being held on a different day',
+                      hintText:
+                          'Explain why this class is being held on a different day',
                       hintStyle: const TextStyle(color: Colors.white24),
-                      errorText: (reasonController.text.isEmpty) ? null : (reasonController.text.length < 5 ? 'Minimum 5 characters required' : null),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+                      errorText: (reasonController.text.isEmpty)
+                          ? null
+                          : (reasonController.text.length < 5
+                              ? 'Minimum 5 characters required'
+                              : null),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.1))),
                     ),
                   ),
                   const SizedBox(height: 8),
                   const Row(
                     children: [
-                      Icon(Icons.info_outline_rounded, size: 12, color: Colors.white38),
+                      Icon(Icons.info_outline_rounded,
+                          size: 12, color: Colors.white38),
                       SizedBox(width: 6),
                       Expanded(
                         child: Text(
@@ -265,7 +344,11 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                 ],
 
                 // Notes Input
-                const Text('Description (Optional)', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                const Text('Description (Optional)',
+                    style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: notesController,
@@ -277,9 +360,15 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     fillColor: Colors.white.withValues(alpha: 0.05),
                     hintText: 'Enter session description or notes...',
                     hintStyle: const TextStyle(color: Colors.white24),
-                    counterStyle: const TextStyle(color: Colors.white24, fontSize: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+                    counterStyle:
+                        const TextStyle(color: Colors.white24, fontSize: 10),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none),
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.1))),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -289,68 +378,77 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: (!isReasonValid || _isLoading) ? null : () async {
-                          if (selectedSchedule == null) return;
-                          
-                          setModalState(() => _isLoading = true);
-                          
-                          try {
-                            await _apiService.createSession({
-                              'scheduleId': selectedSchedule!.id,
-                              'sessionDate': selectedDate.toIso8601String(),
-                              'description': notesController.text,
-                              if (isOffSchedule) 'offScheduleReason': reasonController.text,
-                            });
-                            
-                            if (!context.mounted) return;
-                            Navigator.pop(context); // Close modal only on success
-                            
-                            _loadData();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Session created successfully!'), 
-                                backgroundColor: Color(0xFF34D399)
-                              )
-                            );
-                          } catch (e) {
-                            setModalState(() => _isLoading = false);
-                            
-                            String errorMsg = e.toString();
-                            if (e is ApiException) {
-                              errorMsg = e.message;
-                            }
-                            
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(errorMsg), 
-                                  backgroundColor: Colors.redAccent,
-                                  behavior: SnackBarBehavior.floating,
-                                )
-                              );
-                            }
-                          }
-                        },
+                        onPressed: (!isReasonValid || _isLoading)
+                            ? null
+                            : () async {
+                                if (selectedSchedule == null) return;
+
+                                setModalState(() => _isLoading = true);
+
+                                try {
+                                  await _apiService.createSession({
+                                    'scheduleId': selectedSchedule!.id,
+                                    'sessionDate':
+                                        selectedDate.toIso8601String(),
+                                    'description': notesController.text,
+                                    if (isOffSchedule)
+                                      'offScheduleReason':
+                                          reasonController.text,
+                                  });
+
+                                  if (!context.mounted) return;
+                                  Navigator.pop(
+                                      context); // Close modal only on success
+
+                                  _loadData();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Session created successfully!'),
+                                          backgroundColor: Color(0xFF34D399)));
+                                } catch (e) {
+                                  setModalState(() => _isLoading = false);
+
+                                  String errorMsg = e.toString();
+                                  if (e is ApiException) {
+                                    errorMsg = e.message;
+                                  }
+
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content: Text(errorMsg),
+                                      backgroundColor: Colors.redAccent,
+                                      behavior: SnackBarBehavior.floating,
+                                    ));
+                                  }
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF38BDF8),
                           foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          disabledBackgroundColor: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          disabledBackgroundColor:
+                              const Color(0xFF38BDF8).withValues(alpha: 0.3),
                         ),
-                        child: _isLoading 
-                          ? const SizedBox(
-                              height: 20, 
-                              width: 20, 
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black)
-                            )
-                          : const Text('Create Session', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.black))
+                            : const Text('Create Session',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                     const SizedBox(width: 12),
                     TextButton(
-                      onPressed: _isLoading ? null : () => Navigator.pop(context),
-                      child: const Text('Cancel', style: TextStyle(color: Colors.white38)),
+                      onPressed:
+                          _isLoading ? null : () => Navigator.pop(context),
+                      child: const Text('Cancel',
+                          style: TextStyle(color: Colors.white38)),
                     ),
                   ],
                 ),
@@ -384,9 +482,11 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     child: _filteredSessions.isEmpty
                         ? _buildEmptyState()
                         : ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 20),
                             itemCount: _filteredSessions.length,
-                            itemBuilder: (context, index) => _buildSessionCard(_filteredSessions[index]),
+                            itemBuilder: (context, index) =>
+                                _buildSessionCard(_filteredSessions[index]),
                           ),
                   ),
                 ],
@@ -407,7 +507,11 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
               children: [
                 Text(
                   'Session Management',
-                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5),
                 ),
                 Text(
                   'Manage your class sessions...',
@@ -422,12 +526,14 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
           ElevatedButton.icon(
             onPressed: _onCreateSession,
             icon: const Icon(Icons.add, size: 16),
-            label: const Text('Create', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            label: const Text('Create',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF38BDF8),
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
               elevation: 0,
             ),
           ),
@@ -466,15 +572,23 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: active ? const Color(0xFF38BDF8).withValues(alpha: 0.1) : Colors.transparent,
+          color: active
+              ? const Color(0xFF38BDF8).withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: active ? const Color(0xFF38BDF8).withValues(alpha: 0.3) : Colors.transparent),
+          border: Border.all(
+              color: active
+                  ? const Color(0xFF38BDF8).withValues(alpha: 0.3)
+                  : Colors.transparent),
         ),
         child: Row(
           children: [
             Text(
               label,
-              style: TextStyle(color: active ? const Color(0xFF38BDF8) : Colors.white38, fontWeight: active ? FontWeight.bold : FontWeight.normal, fontSize: 13),
+              style: TextStyle(
+                  color: active ? const Color(0xFF38BDF8) : Colors.white38,
+                  fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 13),
             ),
             const SizedBox(width: 8),
             Container(
@@ -485,7 +599,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
               ),
               child: Text(
                 '$count',
-                style: TextStyle(color: active ? Colors.black : Colors.white38, fontSize: 10, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: active ? Colors.black : Colors.white38,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -519,20 +636,27 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${s.subjectCode} - ${s.subjectName}', 
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      '${s.subjectCode} - ${s.subjectName}',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.location_on_outlined, size: 10, color: Colors.white.withValues(alpha: 0.3)),
+                        Icon(Icons.location_on_outlined,
+                            size: 10,
+                            color: Colors.white.withValues(alpha: 0.3)),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            s.actualRoomName ?? s.scheduledRoomName, 
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11),
+                            s.actualRoomName ?? s.scheduledRoomName,
+                            style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                fontSize: 11),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -555,14 +679,17 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
               Expanded(
                 child: Row(
                   children: [
-                    Icon(Icons.access_time_rounded, size: 12, color: Colors.white.withValues(alpha: 0.3)),
+                    Icon(Icons.access_time_rounded,
+                        size: 12, color: Colors.white.withValues(alpha: 0.3)),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        s.actualStartTime != null 
+                        s.actualStartTime != null
                             ? '${DateFormat('h:mm a').format(s.actualStartTime!)} - ${s.actualEndTime != null ? DateFormat('h:mm a').format(s.actualEndTime!) : 'Progress'}'
                             : '${_formatTime(s.scheduledTimeIn)} - ${_formatTime(s.scheduledTimeOut)}',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10),
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 10),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -571,13 +698,24 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              if (isActive) 
+              if (isActive)
                 _buildActiveActions(s)
-              else 
+              else
                 TextButton(
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s))),
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                  child: const Text('View Only', style: TextStyle(color: Colors.white38, fontSize: 10, decoration: TextDecoration.underline)),
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              SessionDetailsScreen(session: s))),
+                  style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                  child: const Text('View Only',
+                      style: TextStyle(
+                          color: Colors.white38,
+                          fontSize: 10,
+                          decoration: TextDecoration.underline)),
                 ),
             ],
           ),
@@ -596,8 +734,16 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       ),
       child: Column(
         children: [
-          Text(DateFormat('MMM').format(date).toUpperCase(), style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 9, fontWeight: FontWeight.w900)),
-          Text(DateFormat('dd').format(date), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+          Text(DateFormat('MMM').format(date).toUpperCase(),
+              style: const TextStyle(
+                  color: Color(0xFF38BDF8),
+                  fontSize: 9,
+                  fontWeight: FontWeight.w900)),
+          Text(DateFormat('dd').format(date),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -606,7 +752,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   Widget _buildStatusPill(String status) {
     Color color;
     String label = status.toUpperCase();
-    
+
     if (status == 'active' || status == 'started') {
       color = const Color(0xFF34D399);
       label = 'ACTIVE';
@@ -628,7 +774,9 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
-      child: Text(label, style: TextStyle(color: color, fontSize: 8, fontWeight: FontWeight.w900)),
+      child: Text(label,
+          style: TextStyle(
+              color: color, fontSize: 8, fontWeight: FontWeight.w900)),
     );
   }
 
@@ -636,16 +784,37 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildSmallAction(Icons.qr_code_rounded, 'QR', () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s)))),
+        _buildSmallAction(
+            Icons.qr_code_rounded,
+            'QR',
+            () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SessionDetailsScreen(session: s)))),
         const SizedBox(width: 4),
-        _buildSmallAction(Icons.visibility_outlined, 'View', () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s)))),
+        _buildSmallAction(
+            Icons.visibility_outlined,
+            'View',
+            () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SessionDetailsScreen(session: s)))),
         const SizedBox(width: 4),
-        _buildSmallAction(Icons.stop_circle_outlined, 'End', () => Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s))), color: Colors.redAccent.withValues(alpha: 0.2), iconColor: Colors.redAccent),
+        _buildSmallAction(
+            Icons.stop_circle_outlined,
+            'End',
+            () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SessionDetailsScreen(session: s))),
+            color: Colors.redAccent.withValues(alpha: 0.2),
+            iconColor: Colors.redAccent),
       ],
     );
   }
 
-  Widget _buildSmallAction(IconData icon, String label, VoidCallback onTap, {Color? color, Color? iconColor}) {
+  Widget _buildSmallAction(IconData icon, String label, VoidCallback onTap,
+      {Color? color, Color? iconColor}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -660,7 +829,11 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
           children: [
             Icon(icon, size: 12, color: iconColor ?? Colors.white70),
             const SizedBox(width: 4),
-            Text(label, style: TextStyle(color: iconColor ?? Colors.white70, fontSize: 9, fontWeight: FontWeight.bold)),
+            Text(label,
+                style: TextStyle(
+                    color: iconColor ?? Colors.white70,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -672,9 +845,11 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.event_busy_rounded, size: 48, color: Colors.white.withValues(alpha: 0.1)),
+          Icon(Icons.event_busy_rounded,
+              size: 48, color: Colors.white.withValues(alpha: 0.1)),
           const SizedBox(height: 16),
-          const Text('No sessions found in this category', style: TextStyle(color: Colors.white24)),
+          const Text('No sessions found in this category',
+              style: TextStyle(color: Colors.white24)),
         ],
       ),
     );
@@ -688,12 +863,15 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
+          border: Border.all(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+              width: 1.5),
         ),
         child: CircleAvatar(
           radius: 16,
           backgroundColor: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-          backgroundImage: const NetworkImage('https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
+          backgroundImage: const NetworkImage(
+              'https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
         ),
       ),
     );
@@ -718,32 +896,44 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFF38BDF8), width: 2),
                 boxShadow: [
-                  BoxShadow(color: const Color(0xFF38BDF8).withValues(alpha: 0.2), blurRadius: 20)
+                  BoxShadow(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                      blurRadius: 20)
                 ],
               ),
               child: const CircleAvatar(
-                backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
+                backgroundImage: NetworkImage(
+                    'https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
               ),
             ),
             const SizedBox(height: 20),
             Text(
               _profile!.fullName,
-              style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900),
             ),
             Text(
               'Subject Instructor',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 13, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 32),
-            _buildProfileInfoRow(Icons.badge_outlined, 'Instructor ID', _profile!.id.toString()),
-            _buildProfileInfoRow(Icons.calendar_today_outlined, 'Joined', DateFormat('MMMM dd, yyyy').format(_profile!.createdAt)),
+            _buildProfileInfoRow(
+                Icons.badge_outlined, 'Instructor ID', _profile!.id.toString()),
+            _buildProfileInfoRow(Icons.calendar_today_outlined, 'Joined',
+                DateFormat('MMMM dd, yyyy').format(_profile!.createdAt)),
             const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _handleLogout,
                 icon: const Icon(Icons.logout_rounded, size: 18),
-                label: const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: const Text('Logout',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent.withValues(alpha: 0.1),
                   foregroundColor: Colors.redAccent,
@@ -770,9 +960,14 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         children: [
           Icon(icon, size: 18, color: Colors.white24),
           const SizedBox(width: 16),
-          Text(label, style: const TextStyle(color: Colors.white38, fontSize: 14)),
+          Text(label,
+              style: const TextStyle(color: Colors.white38, fontSize: 14)),
           const Spacer(),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+          Text(value,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -784,15 +979,18 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
         title: const Text('Logout', style: TextStyle(color: Colors.white)),
-        content: const Text('Are you sure you want to log out?', style: TextStyle(color: Colors.white70)),
+        content: const Text('Are you sure you want to log out?',
+            style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white38)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white38)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
+            child:
+                const Text('Logout', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),

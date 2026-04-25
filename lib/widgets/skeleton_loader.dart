@@ -87,7 +87,8 @@ class SkeletonListItem extends StatelessWidget {
               children: [
                 const SkeletonBox(height: 14),
                 const SizedBox(height: 8),
-                SkeletonBox(width: MediaQuery.of(context).size.width * 0.4, height: 11),
+                SkeletonBox(
+                    width: MediaQuery.of(context).size.width * 0.4, height: 11),
               ],
             ),
           ),
@@ -126,17 +127,17 @@ class _SkeletonStatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const SkeletonBox(width: 40, height: 40, radius: 12),
-          const SizedBox(height: 8),
-          const SkeletonBox(width: 60, height: 28, radius: 8),
-          const SizedBox(height: 6),
-          const SkeletonBox(height: 11),
-          const SizedBox(height: 8),
-          const SkeletonBox(height: 6, radius: 4),
+          SkeletonBox(width: 40, height: 40, radius: 12),
+          SizedBox(height: 8),
+          SkeletonBox(width: 60, height: 28, radius: 8),
+          SizedBox(height: 6),
+          SkeletonBox(height: 11),
+          SizedBox(height: 8),
+          SkeletonBox(height: 6, radius: 4),
         ],
       ),
     );
@@ -205,18 +206,18 @@ class _SkeletonWideCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const SkeletonBox(width: 80, height: 32, radius: 8),
+              SkeletonBox(width: 80, height: 32, radius: 8),
               SkeletonBox(width: 120, height: 28, radius: 14),
             ],
           ),
-          const SizedBox(height: 24),
-          const SkeletonBox(height: 100, radius: 12),
+          SizedBox(height: 24),
+          SkeletonBox(height: 100, radius: 12),
         ],
       ),
     );
@@ -243,13 +244,13 @@ class SkeletonProfile extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
             ),
-            child: Column(
+            child: const Column(
               children: [
-                const SkeletonBox(width: 100, height: 100, radius: 50),
-                const SizedBox(height: 16),
-                const SkeletonBox(width: 160, height: 20, radius: 8),
-                const SizedBox(height: 8),
-                const SkeletonBox(width: 80, height: 14, radius: 20),
+                SkeletonBox(width: 100, height: 100, radius: 50),
+                SizedBox(height: 16),
+                SkeletonBox(width: 160, height: 20, radius: 8),
+                SizedBox(height: 8),
+                SkeletonBox(width: 80, height: 14, radius: 20),
               ],
             ),
           ),
@@ -262,25 +263,28 @@ class SkeletonProfile extends StatelessWidget {
               border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
             ),
             child: Column(
-              children: List.generate(4, (i) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                child: Row(
-                  children: [
-                    const SkeletonBox(width: 40, height: 40, radius: 12),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SkeletonBox(width: 80, height: 11),
-                          const SizedBox(height: 6),
-                          const SkeletonBox(height: 14),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              )),
+              children: List.generate(
+                  4,
+                  (i) => const Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        child: Row(
+                          children: [
+                            SkeletonBox(width: 40, height: 40, radius: 12),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SkeletonBox(width: 80, height: 11),
+                                  SizedBox(height: 6),
+                                  SkeletonBox(height: 14),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )),
             ),
           ),
         ],
@@ -308,22 +312,22 @@ class SkeletonSessionList extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
         ),
-        child: Column(
+        child: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const SkeletonBox(width: 80, height: 11),
+                SkeletonBox(width: 80, height: 11),
                 SkeletonBox(width: 60, height: 22, radius: 20),
               ],
             ),
-            const SizedBox(height: 12),
-            const SkeletonBox(height: 18),
-            const SizedBox(height: 16),
-            const SkeletonBox(height: 11),
-            const SizedBox(height: 6),
-            const SkeletonBox(width: 160, height: 11),
+            SizedBox(height: 12),
+            SkeletonBox(height: 18),
+            SizedBox(height: 16),
+            SkeletonBox(height: 11),
+            SizedBox(height: 6),
+            SkeletonBox(width: 160, height: 11),
           ],
         ),
       ),

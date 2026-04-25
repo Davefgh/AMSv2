@@ -20,7 +20,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   String? _errorMessage;
   List<ClassSession> _sessions = [];
   List<ClassSession> _filteredSessions = [];
-  
+
   Map<String, int> _stats = {
     'active': 0,
     'pending': 0,
@@ -51,17 +51,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     });
     try {
       final sessions = await _apiService.getMySessions();
-      
+
       // Calculate stats
       int active = 0;
       int pending = 0;
       int ended = 0;
-      
+
       for (var s in sessions) {
         final status = s.status.toLowerCase();
-        if (status == 'active' || status == 'started') active++;
-        else if (status == 'ended' || status == 'completed') ended++;
-        else pending++;
+        if (status == 'active' || status == 'started') {
+          active++;
+        } else if (status == 'ended' || status == 'completed')
+          ended++;
+        else
+          pending++;
       }
 
       setState(() {
@@ -87,29 +90,31 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     setState(() {
       _filteredSessions = _sessions.where((s) {
         // Search
-        final matchesSearch = s.subjectName.toLowerCase().contains(query) || 
-                             s.subjectCode.toLowerCase().contains(query) ||
-                             s.sectionName.toLowerCase().contains(query);
-        
+        final matchesSearch = s.subjectName.toLowerCase().contains(query) ||
+            s.subjectCode.toLowerCase().contains(query) ||
+            s.sectionName.toLowerCase().contains(query);
+
         // Status filter
         bool matchesStatus = true;
         if (_statusFilter == 'Active') {
-          matchesStatus = s.status.toLowerCase() == 'active' || s.status.toLowerCase() == 'started';
+          matchesStatus = s.status.toLowerCase() == 'active' ||
+              s.status.toLowerCase() == 'started';
         } else if (_statusFilter == 'Ended') {
-          matchesStatus = s.status.toLowerCase() == 'ended' || s.status.toLowerCase() == 'completed';
+          matchesStatus = s.status.toLowerCase() == 'ended' ||
+              s.status.toLowerCase() == 'completed';
         } else if (_statusFilter == 'Pending') {
-          matchesStatus = s.status.toLowerCase() != 'active' && 
-                         s.status.toLowerCase() != 'started' && 
-                         s.status.toLowerCase() != 'ended' && 
-                         s.status.toLowerCase() != 'completed';
+          matchesStatus = s.status.toLowerCase() != 'active' &&
+              s.status.toLowerCase() != 'started' &&
+              s.status.toLowerCase() != 'ended' &&
+              s.status.toLowerCase() != 'completed';
         }
 
         // Date filter (Simplified for now - can be expanded)
         bool matchesDate = true;
         if (s.sessionDate != null) {
           matchesDate = s.sessionDate!.day == _selectedDate.day &&
-                        s.sessionDate!.month == _selectedDate.month &&
-                        s.sessionDate!.year == _selectedDate.year;
+              s.sessionDate!.month == _selectedDate.month &&
+              s.sessionDate!.year == _selectedDate.year;
         }
 
         return matchesSearch && matchesStatus && matchesDate;
@@ -138,10 +143,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         child: _filteredSessions.isEmpty
                             ? _buildEmptyState()
                             : ListView.builder(
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24, vertical: 12),
+                                physics: const BouncingScrollPhysics(
+                                    parent: AlwaysScrollableScrollPhysics()),
                                 itemCount: _filteredSessions.length,
-                                itemBuilder: (context, index) => _buildSessionCard(_filteredSessions[index]),
+                                itemBuilder: (context, index) =>
+                                    _buildSessionCard(_filteredSessions[index]),
                               ),
                       ),
           ),
@@ -161,13 +169,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             style: TextStyle(color: Colors.white54, fontSize: 13),
           ),
           const SizedBox(height: 20),
-          
+
           // Stats Row
           Row(
             children: [
-              _buildStatChip('${_stats['active']} Active', const Color(0xFF34D399)),
+              _buildStatChip(
+                  '${_stats['active']} Active', const Color(0xFF34D399)),
               const SizedBox(width: 8),
-              _buildStatChip('${_stats['pending']} Pending', const Color(0xFFFBBF24)),
+              _buildStatChip(
+                  '${_stats['pending']} Pending', const Color(0xFFFBBF24)),
               const SizedBox(width: 8),
               _buildStatChip('${_stats['ended']} Ended', Colors.redAccent),
             ],
@@ -201,7 +211,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+        style:
+            TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -220,7 +231,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         decoration: InputDecoration(
           hintText: 'Search sessions...',
           hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-          prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.3), size: 20),
+          prefixIcon: Icon(Icons.search,
+              color: Colors.white.withValues(alpha: 0.3), size: 20),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
@@ -262,7 +274,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today, color: Colors.white.withValues(alpha: 0.3), size: 18),
+            Icon(Icons.calendar_today,
+                color: Colors.white.withValues(alpha: 0.3), size: 18),
             const SizedBox(width: 8),
             Text(
               DateFormat('MM/dd/yyyy').format(_selectedDate),
@@ -287,7 +300,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         child: DropdownButton<String>(
           value: _statusFilter,
           dropdownColor: const Color(0xFF1E293B),
-          icon: Icon(Icons.filter_list, color: Colors.white.withValues(alpha: 0.3), size: 18),
+          icon: Icon(Icons.filter_list,
+              color: Colors.white.withValues(alpha: 0.3), size: 18),
           style: const TextStyle(color: Colors.white70, fontSize: 13),
           items: ['All', 'Active', 'Pending', 'Ended'].map((String value) {
             return DropdownMenuItem<String>(
@@ -308,9 +322,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final status = session.status.toLowerCase();
     final isActive = status == 'active' || status == 'started';
     final isEnded = status == 'ended' || status == 'completed';
-    
-    final statusColor = isActive ? const Color(0xFF34D399) : (isEnded ? Colors.redAccent : const Color(0xFFFBBF24));
-    
+
+    final statusColor = isActive
+        ? const Color(0xFF34D399)
+        : (isEnded ? Colors.redAccent : const Color(0xFFFBBF24));
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: GestureDetector(
@@ -335,11 +351,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     children: [
                       Text(
                         session.subjectCode,
-                        style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: statusColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold),
                       ),
                       Text(
                         session.sectionName,
-                        style: const TextStyle(color: Colors.white70, fontSize: 11),
+                        style: const TextStyle(
+                            color: Colors.white70, fontSize: 11),
                       ),
                     ],
                   ),
@@ -349,16 +369,25 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               const SizedBox(height: 12),
               Text(
                 session.subjectName,
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5),
               ),
               const SizedBox(height: 16),
-              _buildCardInfoRow(Icons.calendar_today_rounded, DateFormat('EEE, MMM d').format(session.sessionDate ?? DateTime.now())),
+              _buildCardInfoRow(
+                  Icons.calendar_today_rounded,
+                  DateFormat('EEE, MMM d')
+                      .format(session.sessionDate ?? DateTime.now())),
               if (session.actualStartTime != null)
-                _buildCardInfoRow(Icons.access_time_rounded, 'Started: ${DateFormat('HH:mm').format(session.actualStartTime!)}'),
+                _buildCardInfoRow(Icons.access_time_rounded,
+                    'Started: ${DateFormat('HH:mm').format(session.actualStartTime!)}'),
               if (session.attendanceCutOff != null)
-                _buildCardInfoRow(Icons.timer_off_rounded, 'Cut-off: ${DateFormat('HH:mm').format(session.attendanceCutOff!)}'),
-              _buildCardInfoRow(Icons.location_on_rounded, session.actualRoomName ?? session.scheduledRoomName),
-              
+                _buildCardInfoRow(Icons.timer_off_rounded,
+                    'Cut-off: ${DateFormat('HH:mm').format(session.attendanceCutOff!)}'),
+              _buildCardInfoRow(Icons.location_on_rounded,
+                  session.actualRoomName ?? session.scheduledRoomName),
               const SizedBox(height: 16),
               const Divider(color: Colors.white10),
               const SizedBox(height: 12),
@@ -366,10 +395,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 children: [
                   Text(
                     session.startedByName ?? 'Unknown Instructor',
-                    style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500),
                   ),
                   const Spacer(),
-                  Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.2)),
+                  Icon(Icons.chevron_right_rounded,
+                      color: Colors.white.withValues(alpha: 0.2)),
                 ],
               ),
             ],
@@ -386,7 +419,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         children: [
           Icon(icon, size: 14, color: Colors.white.withValues(alpha: 0.3)),
           const SizedBox(width: 8),
-          Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
+          Text(label,
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
         ],
       ),
     );
@@ -399,7 +434,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         children: [
           const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
           const SizedBox(height: 16),
-          Text(_errorMessage!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70)),
+          Text(_errorMessage!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white70)),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _loadData,
@@ -424,9 +461,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.event_busy_rounded, size: 48, color: Colors.white.withValues(alpha: 0.2)),
+            Icon(Icons.event_busy_rounded,
+                size: 48, color: Colors.white.withValues(alpha: 0.2)),
             const SizedBox(height: 12),
-            Text('No sessions found for this filters.', style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
+            Text('No sessions found for this filters.',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
           ],
         ),
       ),
@@ -438,7 +477,8 @@ class _GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
 
-  const _GlassCard({required this.child, this.padding = const EdgeInsets.all(20)});
+  const _GlassCard(
+      {required this.child, this.padding = const EdgeInsets.all(20)});
 
   @override
   Widget build(BuildContext context) {

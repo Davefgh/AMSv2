@@ -30,7 +30,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
 
   Future<void> _fetchStudents() async {
     try {
-      final students = await _apiService.getStudents(includeDeleted: _showDeleted);
+      final students =
+          await _apiService.getStudents(includeDeleted: _showDeleted);
       if (mounted) {
         setState(() {
           _allStudents = students;
@@ -63,7 +64,9 @@ class _StudentsScreenState extends State<StudentsScreen> {
         final results = await _apiService.searchStudentsByName(query);
         if (mounted) {
           setState(() {
-            _filteredStudents = _showDeleted ? results : results.where((s) => !s.isDeleted).toList();
+            _filteredStudents = _showDeleted
+                ? results
+                : results.where((s) => !s.isDeleted).toList();
             _isLoading = false;
           });
         }
@@ -151,27 +154,31 @@ class _StudentsScreenState extends State<StudentsScreen> {
     }
   }
 
-  Future<bool?> _showConfirmDialog(String title, String message, String action, Color color) {
+  Future<bool?> _showConfirmDialog(
+      String title, String message, String action, Color color) {
     return showDialog<bool>(
       context: context,
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: AlertDialog(
           backgroundColor: const Color(0xFF1E293B),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(title, style: const TextStyle(color: Colors.white)),
           content: Text(message, style: const TextStyle(color: Colors.white70)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+              child:
+                  const Text('Cancel', style: TextStyle(color: Colors.white60)),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: color,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
               child: Text(action),
             ),
@@ -234,7 +241,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.white),
             style: IconButton.styleFrom(
               backgroundColor: Colors.white.withValues(alpha: 0.05),
             ),
@@ -245,11 +253,17 @@ class _StudentsScreenState extends State<StudentsScreen> {
             children: [
               Text(
                 'Students',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
               Text(
                 'Directory',
-                style: TextStyle(fontSize: 14, color: Color(0xFF38BDF8), fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF38BDF8),
+                    fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -263,13 +277,15 @@ class _StudentsScreenState extends State<StudentsScreen> {
               _fetchStudents();
             },
             icon: Icon(
-              _showDeleted ? Icons.delete_sweep_rounded : Icons.delete_outline_rounded,
+              _showDeleted
+                  ? Icons.delete_sweep_rounded
+                  : Icons.delete_outline_rounded,
               color: _showDeleted ? const Color(0xFFFACC15) : Colors.white60,
             ),
             style: IconButton.styleFrom(
-              backgroundColor: _showDeleted 
-                ? const Color(0xFFFACC15).withValues(alpha: 0.1)
-                : Colors.white.withValues(alpha: 0.05),
+              backgroundColor: _showDeleted
+                  ? const Color(0xFFFACC15).withValues(alpha: 0.1)
+                  : Colors.white.withValues(alpha: 0.05),
             ),
             tooltip: _showDeleted ? 'Showing All' : 'Show Trash',
           ),
@@ -293,9 +309,11 @@ class _StudentsScreenState extends State<StudentsScreen> {
           decoration: InputDecoration(
             hintText: 'Search students...',
             hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
-            prefixIcon: Icon(Icons.search_rounded, color: Colors.white.withValues(alpha: 0.4)),
+            prefixIcon: Icon(Icons.search_rounded,
+                color: Colors.white.withValues(alpha: 0.4)),
             border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           ),
         ),
       ),
@@ -371,15 +389,14 @@ class _StudentsScreenState extends State<StudentsScreen> {
   Widget _buildStudentCard(Student student) {
     return Container(
       decoration: BoxDecoration(
-        color: student.isDeleted 
-          ? Colors.orangeAccent.withValues(alpha: 0.05) 
-          : Colors.white.withValues(alpha: 0.05),
+        color: student.isDeleted
+            ? Colors.orangeAccent.withValues(alpha: 0.05)
+            : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: student.isDeleted
-            ? Colors.orangeAccent.withValues(alpha: 0.1)
-            : Colors.white.withValues(alpha: 0.08)
-        ),
+            color: student.isDeleted
+                ? Colors.orangeAccent.withValues(alpha: 0.1)
+                : Colors.white.withValues(alpha: 0.08)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
@@ -393,34 +410,43 @@ class _StudentsScreenState extends State<StudentsScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF34D399).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF34D399).withValues(alpha: 0.3)),
+                border: Border.all(
+                    color: const Color(0xFF34D399).withValues(alpha: 0.3)),
               ),
               child: const Icon(Icons.school_rounded, color: Color(0xFF34D399)),
             ),
             title: Text(
               student.fullName,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16),
             ),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 4.0),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       'Section ${student.sectionId}',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 12),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     student.isRegular ? 'Regular' : 'Irregular',
                     style: TextStyle(
-                      color: student.isRegular ? const Color(0xFF34D399) : Colors.amberAccent,
+                      color: student.isRegular
+                          ? const Color(0xFF34D399)
+                          : Colors.amberAccent,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -428,7 +454,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
                 ],
               ),
             ),
-            trailing: Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withValues(alpha: 0.2), size: 16),
+            trailing: Icon(Icons.arrow_forward_ios_rounded,
+                color: Colors.white.withValues(alpha: 0.2), size: 16),
           ),
         ),
       ),
@@ -440,11 +467,15 @@ class _StudentsScreenState extends State<StudentsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.person_search_rounded, size: 64, color: Colors.white.withValues(alpha: 0.1)),
+          Icon(Icons.person_search_rounded,
+              size: 64, color: Colors.white.withValues(alpha: 0.1)),
           const SizedBox(height: 16),
           Text(
-            _searchQuery.isEmpty ? 'No students found' : 'No results for "$_searchQuery"',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 16),
+            _searchQuery.isEmpty
+                ? 'No students found'
+                : 'No results for "$_searchQuery"',
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.4), fontSize: 16),
           ),
         ],
       ),
@@ -470,7 +501,8 @@ class _StudentEditModalState extends State<_StudentEditModal> {
   @override
   void initState() {
     super.initState();
-    _firstNameController = TextEditingController(text: widget.student.firstname);
+    _firstNameController =
+        TextEditingController(text: widget.student.firstname);
     _lastNameController = TextEditingController(text: widget.student.lastname);
     _isRegular = widget.student.isRegular;
   }
@@ -494,7 +526,8 @@ class _StudentEditModalState extends State<_StudentEditModal> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -518,7 +551,8 @@ class _StudentEditModalState extends State<_StudentEditModal> {
         children: [
           const Text(
             'Edit Student',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 24),
           _buildTextField('First Name', _firstNameController),
@@ -528,11 +562,12 @@ class _StudentEditModalState extends State<_StudentEditModal> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Regular Student', style: TextStyle(color: Colors.white, fontSize: 16)),
+              const Text('Regular Student',
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
               Switch(
                 value: _isRegular,
                 onChanged: (v) => setState(() => _isRegular = v),
-                activeColor: const Color(0xFF38BDF8),
+                activeThumbColor: const Color(0xFF38BDF8),
               ),
             ],
           ),
@@ -544,11 +579,16 @@ class _StudentEditModalState extends State<_StudentEditModal> {
               onPressed: _isLoading ? null : _update,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
               ),
               child: _isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Save Changes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                  : const Text('Save Changes',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
             ),
           ),
         ],
@@ -560,7 +600,8 @@ class _StudentEditModalState extends State<_StudentEditModal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+        Text(label,
+            style: const TextStyle(color: Colors.white70, fontSize: 13)),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
@@ -572,7 +613,8 @@ class _StudentEditModalState extends State<_StudentEditModal> {
             style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
           ),
         ),

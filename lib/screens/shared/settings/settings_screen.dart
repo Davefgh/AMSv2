@@ -59,9 +59,9 @@ class SettingsScreen extends StatelessWidget {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          ListTile(
-            title: const Text('Version'),
-            subtitle: const Text('1.0.0'),
+          const ListTile(
+            title: Text('Version'),
+            subtitle: Text('1.0.0'),
           ),
           ListTile(
             title: const Text('About AMSv2'),

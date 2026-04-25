@@ -48,7 +48,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted || _session?.attendanceCutOff == null) {
-        if (_timeRemainingText.isNotEmpty) setState(() => _timeRemainingText = '');
+        if (_timeRemainingText.isNotEmpty)
+          setState(() => _timeRemainingText = '');
         return;
       }
 
@@ -119,11 +120,11 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
 
   Future<void> _handleStartSession(Classroom? classroom, String? cutoff) async {
     if (_schedule == null) return;
-    
+
     setState(() => _isLoading = true);
     try {
-      final int? initialCutoffMinutes = cutoff != null && cutoff.isNotEmpty 
-          ? int.tryParse(cutoff.replaceAll(RegExp(r'[^0-9]'), '')) 
+      final int? initialCutoffMinutes = cutoff != null && cutoff.isNotEmpty
+          ? int.tryParse(cutoff.replaceAll(RegExp(r'[^0-9]'), ''))
           : null;
 
       // 1. If session doesn't exist yet, create it now
@@ -133,21 +134,19 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           'scheduleId': _schedule!.id,
           'sessionDate': date.toIso8601String(),
           if (classroom != null) 'actualRoom': classroom.name,
-          if (initialCutoffMinutes != null) 'attendanceCutoffMinutes': initialCutoffMinutes,
+          if (initialCutoffMinutes != null)
+            'attendanceCutoffMinutes': initialCutoffMinutes,
         });
-        
+
         setState(() => _session = newSession);
       } else {
         // 2. If it already exists, update the room if changed
         if (classroom != null && classroom.name != _session!.actualRoomName) {
           if (_session!.rowVersion == null) {
-             throw Exception('Session rowVersion is missing. Please refresh.');
+            throw Exception('Session rowVersion is missing. Please refresh.');
           }
-          await _apiService.updateSessionRoom(
-            _session!.id, 
-            actualRoomId: classroom.id, 
-            rowVersion: _session!.rowVersion!
-          );
+          await _apiService.updateSessionRoom(_session!.id,
+              actualRoomId: classroom.id, rowVersion: _session!.rowVersion!);
           // Refresh to get new rowVersion
           final intermediate = await _apiService.getSessionById(_session!.id);
           setState(() => _session = intermediate);
@@ -160,7 +159,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       if (cutoff != null) {
         cutoffMinutes = int.tryParse(cutoff.replaceAll(RegExp(r'[^0-9]'), ''));
       }
-      
+
       // Fallback to schedule's cutoff if still null and not provided
       cutoffMinutes ??= _schedule?.attendanceCutoffMinutes;
 
@@ -168,19 +167,17 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
         throw Exception('Session rowVersion is missing. Please refresh.');
       }
 
-      await _apiService.startSession(
-        _session!.id, 
-        actualRoomId: classroom?.id,
-        attendanceCutoffMinutes: cutoffMinutes,
-        rowVersion: _session!.rowVersion!
-      );
-      
+      await _apiService.startSession(_session!.id,
+          actualRoomId: classroom?.id,
+          attendanceCutoffMinutes: cutoffMinutes,
+          rowVersion: _session!.rowVersion!);
+
       final updatedSession = await _apiService.getSessionById(_session!.id);
       setState(() {
         _session = updatedSession;
         _isLoading = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -204,7 +201,15 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     int? targetWeekday = schedule.dayOfWeek;
 
     if (targetWeekday == null && schedule.dayName != null) {
-      final days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      final days = [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday'
+      ];
       final idx = days.indexOf(schedule.dayName!.toLowerCase());
       if (idx != -1) targetWeekday = idx + 1;
     }
@@ -218,7 +223,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
 
   Future<void> _handleEndSession() async {
     if (_session == null) return;
-    
+
     final TextEditingController descriptionController = TextEditingController();
     final bool? confirm = await showDialog<bool>(
       context: context,
@@ -239,11 +244,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       if (_session!.rowVersion == null) {
         throw Exception('Session rowVersion is missing.');
       }
-      await _apiService.endSession(
-        _session!.id, 
-        description: descriptionController.text,
-        rowVersion: _session!.rowVersion!
-      );
+      await _apiService.endSession(_session!.id,
+          description: descriptionController.text,
+          rowVersion: _session!.rowVersion!);
       await _refreshSession();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -256,7 +259,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
 
   Future<void> _handleDeleteSession() async {
     if (_session == null) return;
-    
+
     final TextEditingController reasonController = TextEditingController();
     final bool? confirm = await showDialog<bool>(
       context: context,
@@ -277,11 +280,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       if (_session!.rowVersion == null) {
         throw Exception('Session rowVersion is missing.');
       }
-      await _apiService.deleteSession(
-        _session!.id, 
-        reason: reasonController.text,
-        rowVersion: _session!.rowVersion!
-      );
+      await _apiService.deleteSession(_session!.id,
+          reason: reasonController.text, rowVersion: _session!.rowVersion!);
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -309,28 +309,38 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
       child: AlertDialog(
         backgroundColor: const Color(0xFF1E293B).withOpacity(0.9),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: const BorderSide(color: Colors.white10)),
-        title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: Colors.white10)),
+        title: Text(title,
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            Text(label,
+                style: const TextStyle(color: Colors.white70, fontSize: 13)),
             const SizedBox(height: 12),
-            _buildModalTextField(controller: controller, hint: hint, icon: Icons.edit_note_rounded),
+            _buildModalTextField(
+                controller: controller,
+                hint: hint,
+                icon: Icons.edit_note_rounded),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white38)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white38)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: confirmColor,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: Text(confirmLabel),
           ),
@@ -342,29 +352,33 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   List<Classroom> get _filteredClassrooms {
     if (_selectedCategory == 'All') return _classrooms;
     if (_selectedCategory == 'Labs') {
-      return _classrooms.where((c) => 
-        c.name.toLowerCase().contains('lab') || 
-        c.name.toLowerCase().contains('laboratory')
-      ).toList();
+      return _classrooms
+          .where((c) =>
+              c.name.toLowerCase().contains('lab') ||
+              c.name.toLowerCase().contains('laboratory'))
+          .toList();
     }
     if (_selectedCategory == 'Rooms') {
-      return _classrooms.where((c) => 
-        c.name.toLowerCase().contains('room') || 
-        RegExp(r'\d+').hasMatch(c.name)
-      ).where((c) => 
-        !c.name.toLowerCase().contains('lab')
-      ).toList();
+      return _classrooms
+          .where((c) =>
+              c.name.toLowerCase().contains('room') ||
+              RegExp(r'\d+').hasMatch(c.name))
+          .where((c) => !c.name.toLowerCase().contains('lab'))
+          .toList();
     }
     return _classrooms;
   }
 
   void _showStartModal() {
-    final String initialRoomName = _session?.scheduledRoomName ?? _schedule?.classroomName ?? '';
+    final String initialRoomName =
+        _session?.scheduledRoomName ?? _schedule?.classroomName ?? '';
     _tempSelectedClassroom = _classrooms.firstWhere(
       (c) => c.name == initialRoomName,
     );
-    final String initialCutoff = (_schedule?.attendanceCutoffMinutes ?? '').toString();
-    final TextEditingController cutoffController = TextEditingController(text: initialCutoff);
+    final String initialCutoff =
+        (_schedule?.attendanceCutoffMinutes ?? '').toString();
+    final TextEditingController cutoffController =
+        TextEditingController(text: initialCutoff);
 
     showModalBottomSheet(
       context: context,
@@ -390,8 +404,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               const Text(
                 'Session Configuration',
                 style: TextStyle(
-                  fontSize: 24, 
-                  fontWeight: FontWeight.w900, 
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
                   color: Colors.white,
                   letterSpacing: -0.5,
                 ),
@@ -400,13 +414,13 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               Text(
                 'Select your classroom category and location.',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4), 
+                  color: Colors.white.withValues(alpha: 0.4),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Category Chips
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -421,16 +435,24 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF38BDF8) : Colors.white.withValues(alpha: 0.05),
+                            color: isSelected
+                                ? const Color(0xFF38BDF8)
+                                : Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: isSelected ? Colors.transparent : Colors.white10),
+                            border: Border.all(
+                                color: isSelected
+                                    ? Colors.transparent
+                                    : Colors.white10),
                           ),
                           child: Text(
                             cat,
                             style: TextStyle(
-                              color: isSelected ? const Color(0xFF0F172A) : Colors.white70,
+                              color: isSelected
+                                  ? const Color(0xFF0F172A)
+                                  : Colors.white70,
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
                             ),
@@ -442,10 +464,11 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Rooms Grid
               Container(
-                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.3),
+                constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.3),
                 child: GridView.builder(
                   shrinkWrap: true,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -467,18 +490,25 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                         alignment: Alignment.center,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF38BDF8).withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.03),
+                          color: isSelected
+                              ? const Color(0xFF38BDF8).withValues(alpha: 0.15)
+                              : Colors.white.withValues(alpha: 0.03),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected ? const Color(0xFF38BDF8) : Colors.white.withValues(alpha: 0.05),
+                            color: isSelected
+                                ? const Color(0xFF38BDF8)
+                                : Colors.white.withValues(alpha: 0.05),
                             width: isSelected ? 2 : 1,
                           ),
-                          boxShadow: isSelected ? [
-                            BoxShadow(
-                              color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
-                              blurRadius: 8,
-                            )
-                          ] : [],
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFF38BDF8)
+                                        .withValues(alpha: 0.2),
+                                    blurRadius: 8,
+                                  )
+                                ]
+                              : [],
                         ),
                         child: Text(
                           room.name,
@@ -486,8 +516,11 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: isSelected ? const Color(0xFF38BDF8) : Colors.white70,
-                            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                            color: isSelected
+                                ? const Color(0xFF38BDF8)
+                                : Colors.white70,
+                            fontWeight:
+                                isSelected ? FontWeight.w900 : FontWeight.w500,
                             fontSize: 11,
                           ),
                         ),
@@ -496,7 +529,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                   },
                 ),
               ),
-              
+
               const SizedBox(height: 24),
               _buildModalLabel('Attendance Cutoff'),
               const SizedBox(height: 12),
@@ -523,7 +556,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                     child: _buildModalButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        _handleStartSession(_tempSelectedClassroom, cutoffController.text);
+                        _handleStartSession(
+                            _tempSelectedClassroom, cutoffController.text);
                       },
                       label: 'Start Session',
                       color: const Color(0xFF38BDF8),
@@ -548,13 +582,15 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        boxShadow: isOutlined ? [] : [
-          BoxShadow(
-            color: color.withValues(alpha: 0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: isOutlined
+            ? []
+            : [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: ElevatedButton(
         onPressed: onPressed,
@@ -564,13 +600,16 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           padding: const EdgeInsets.symmetric(vertical: 20),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: isOutlined ? BorderSide(color: Colors.white.withValues(alpha: 0.1)) : BorderSide.none,
+            side: isOutlined
+                ? BorderSide(color: Colors.white.withValues(alpha: 0.1))
+                : BorderSide.none,
           ),
           elevation: 0,
         ),
         child: Text(
           label,
-          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 0.5),
+          style: const TextStyle(
+              fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 0.5),
         ),
       ),
     );
@@ -579,14 +618,16 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isInitialLoading) {
-      return Scaffold(
-        backgroundColor: const Color(0xFF0F172A),
-        body: const SkeletonSessionList(),
+      return const Scaffold(
+        backgroundColor: Color(0xFF0F172A),
+        body: SkeletonSessionList(),
       );
     }
 
-    final isActive = _session?.status == 'active' || _session?.status == 'started';
-    final isEnded = _session?.status == 'ended' || _session?.status == 'completed';
+    final isActive =
+        _session?.status == 'active' || _session?.status == 'started';
+    final isEnded =
+        _session?.status == 'ended' || _session?.status == 'completed';
 
     // Room name logic
     String roomName = 'Room';
@@ -604,7 +645,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       titleText = '${_schedule!.sectionName} - ${_schedule!.subjectName}';
     }
 
-    bool _hasRoomChanged = _session?.actualRoomName != null && _session?.actualRoomName != _session?.scheduledRoomName;
+    bool hasRoomChanged = _session?.actualRoomName != null &&
+        _session?.actualRoomName != _session?.scheduledRoomName;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -617,7 +659,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 _buildAppBar(),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -633,61 +676,85 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                           ),
                         ),
                         const SizedBox(height: 32),
-                        
+
                         // Glass Container for Details
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.03),
                             borderRadius: BorderRadius.circular(32),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.08)),
                           ),
                           child: Column(
                             children: [
                               _buildInfoRow(
-                                icon: Icons.access_time_filled_rounded, 
-                                title: _schedule != null 
+                                icon: Icons.access_time_filled_rounded,
+                                title: _schedule != null
                                     ? '${_formatTime(_schedule!.timeIn)} - ${_formatTime(_schedule!.timeOut)}'
-                                    : '10:30 AM - 12:30 PM', 
+                                    : '10:30 AM - 12:30 PM',
                                 subtitle: _getDurationText(_schedule),
                                 iconColor: const Color(0xFF38BDF8),
                               ),
                               _buildDivider(),
                               _buildInfoRow(
-                                icon: Icons.location_on_rounded, 
+                                icon: Icons.location_on_rounded,
                                 title: roomName,
                                 subtitle: 'Classroom Location',
-                                badge: _hasRoomChanged ? 'Updated' : null,
+                                badge: hasRoomChanged ? 'Updated' : null,
                                 iconColor: const Color(0xFF38BDF8),
                               ),
                               _buildDivider(),
                               _buildInfoRow(
-                                icon: isActive ? Icons.play_circle_fill_rounded : (isEnded ? Icons.stop_circle_rounded : Icons.hourglass_full_rounded),
-                                title: isActive ? 'Session Active' : (isEnded ? 'Session Ended' : 'Session Not Started'),
+                                icon: isActive
+                                    ? Icons.play_circle_fill_rounded
+                                    : (isEnded
+                                        ? Icons.stop_circle_rounded
+                                        : Icons.hourglass_full_rounded),
+                                title: isActive
+                                    ? 'Session Active'
+                                    : (isEnded
+                                        ? 'Session Ended'
+                                        : 'Session Not Started'),
                                 subtitle: 'Current Status',
-                                iconColor: isActive ? const Color(0xFF34D399) : (isEnded ? Colors.redAccent : const Color(0xFFFBBF24)),
-                              ),
-                              _buildDivider(),
-                               _buildInfoRow(
-                                icon: Icons.timer_rounded, 
-                                title: _session?.attendanceCutOff != null 
-                                    ? DateFormat('h:mm a').format(_session!.attendanceCutOff!)
-                                    : (_schedule?.attendanceCutoffMinutes != null 
-                                        ? '${_schedule!.attendanceCutoffMinutes} minutes' 
-                                        : 'Not Set'), 
-                                subtitle: _timeRemainingText.isNotEmpty ? _timeRemainingText : 'Attendance Cutoff',
-                                iconColor: _timeRemainingText == 'EXPIRED' ? Colors.redAccent : const Color(0xFF38BDF8),
-                                trailing: isActive ? IconButton(
-                                  onPressed: _showCutoffSelection,
-                                  icon: const Icon(Icons.edit_calendar_rounded, size: 18, color: Color(0xFF38BDF8)),
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                ) : null,
+                                iconColor: isActive
+                                    ? const Color(0xFF34D399)
+                                    : (isEnded
+                                        ? Colors.redAccent
+                                        : const Color(0xFFFBBF24)),
                               ),
                               _buildDivider(),
                               _buildInfoRow(
-                                icon: Icons.person_rounded, 
-                                title: 'Jovelyn Comaingking', 
+                                icon: Icons.timer_rounded,
+                                title: _session?.attendanceCutOff != null
+                                    ? DateFormat('h:mm a')
+                                        .format(_session!.attendanceCutOff!)
+                                    : (_schedule?.attendanceCutoffMinutes !=
+                                            null
+                                        ? '${_schedule!.attendanceCutoffMinutes} minutes'
+                                        : 'Not Set'),
+                                subtitle: _timeRemainingText.isNotEmpty
+                                    ? _timeRemainingText
+                                    : 'Attendance Cutoff',
+                                iconColor: _timeRemainingText == 'EXPIRED'
+                                    ? Colors.redAccent
+                                    : const Color(0xFF38BDF8),
+                                trailing: isActive
+                                    ? IconButton(
+                                        onPressed: _showCutoffSelection,
+                                        icon: const Icon(
+                                            Icons.edit_calendar_rounded,
+                                            size: 18,
+                                            color: Color(0xFF38BDF8)),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                      )
+                                    : null,
+                              ),
+                              _buildDivider(),
+                              _buildInfoRow(
+                                icon: Icons.person_rounded,
+                                title: 'Jovelyn Comaingking',
                                 subtitle: 'Subject Instructor',
                                 iconColor: const Color(0xFF38BDF8),
                                 isInstructor: true,
@@ -707,7 +774,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           if (_isLoading)
             Container(
               color: Colors.black45,
-              child: const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8))),
+              child: const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF38BDF8))),
             ),
         ],
       ),
@@ -791,14 +859,15 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             ),
             child: IconButton(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white, size: 18),
             ),
           ),
           const Text(
             'Session Details',
             style: TextStyle(
-              color: Colors.white, 
-              fontWeight: FontWeight.bold, 
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
               fontSize: 16,
               letterSpacing: 0.5,
             ),
@@ -810,10 +879,10 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   }
 
   Widget _buildInfoRow({
-    required IconData icon, 
-    required String title, 
-    String? subtitle, 
-    Color? iconColor, 
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    Color? iconColor,
     String? badge,
     bool isInstructor = false,
     Widget? trailing,
@@ -827,21 +896,23 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             decoration: BoxDecoration(
               color: (iconColor ?? Colors.white).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: (iconColor ?? Colors.white).withValues(alpha: 0.1)),
+              border: Border.all(
+                  color: (iconColor ?? Colors.white).withValues(alpha: 0.1)),
             ),
-            child: isInstructor 
-              ? Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    image: const DecorationImage(
-                      image: NetworkImage('https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
-                      fit: BoxFit.cover,
+            child: isInstructor
+                ? Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: const DecorationImage(
+                        image: NetworkImage(
+                            'https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
-                )
-              : Icon(icon, color: iconColor ?? Colors.white70, size: 24),
+                  )
+                : Icon(icon, color: iconColor ?? Colors.white70, size: 24),
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -854,8 +925,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                       child: Text(
                         title,
                         style: const TextStyle(
-                          color: Colors.white, 
-                          fontWeight: FontWeight.bold, 
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                           fontSize: 16,
                           letterSpacing: -0.2,
                         ),
@@ -864,14 +935,20 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                     if (badge != null) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFBBF24).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFFFBBF24).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           badge,
-                          style: const TextStyle(color: Color(0xFFFBBF24), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                          style: const TextStyle(
+                              color: Color(0xFFFBBF24),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5),
                         ),
                       ),
                     ],
@@ -883,9 +960,13 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                     child: Text(
                       subtitle,
                       style: TextStyle(
-                        color: _timeRemainingText.contains('m') ? const Color(0xFF38BDF8) : Colors.white.withValues(alpha: 0.3), 
+                        color: _timeRemainingText.contains('m')
+                            ? const Color(0xFF38BDF8)
+                            : Colors.white.withValues(alpha: 0.3),
                         fontSize: 12,
-                        fontWeight: _timeRemainingText.contains('m') ? FontWeight.bold : FontWeight.w500,
+                        fontWeight: _timeRemainingText.contains('m')
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                       ),
                     ),
                   ),
@@ -909,12 +990,16 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           children: [
             const Text(
               'Set Attendance Cutoff',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white),
             ),
             const SizedBox(height: 8),
             Text(
               'After the cutoff, new scans will be rejected.',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
             ),
             const SizedBox(height: 24),
             Row(
@@ -938,18 +1023,17 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       onTap: () async {
         Navigator.pop(context);
         if (_session == null || _session!.rowVersion == null) return;
-        
+
         setState(() => _isLoading = true);
         try {
-          await _apiService.startSession(
-            _session!.id, 
-            attendanceCutoffMinutes: minutes == 0 ? null : minutes,
-            rowVersion: _session!.rowVersion!
-          );
+          await _apiService.startSession(_session!.id,
+              attendanceCutoffMinutes: minutes == 0 ? null : minutes,
+              rowVersion: _session!.rowVersion!);
           await _refreshSession();
           _startCountdownTimer();
         } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating cutoff: $e')));
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error updating cutoff: $e')));
         } finally {
           setState(() => _isLoading = false);
         }
@@ -964,7 +1048,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
         child: Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -982,7 +1067,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B).withValues(alpha: 0.5),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+        border: Border(
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1051,25 +1137,30 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        boxShadow: isOutlined ? [] : [
-          BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        boxShadow: isOutlined
+            ? []
+            : [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ],
       ),
       child: ElevatedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon, size: 20),
-        label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        label: Text(label,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         style: ElevatedButton.styleFrom(
           backgroundColor: isOutlined ? Colors.transparent : color,
           foregroundColor: textColor,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
-            side: isOutlined ? BorderSide(color: color.withValues(alpha: 0.3)) : BorderSide.none,
+            side: isOutlined
+                ? BorderSide(color: color.withValues(alpha: 0.3))
+                : BorderSide.none,
           ),
           elevation: 0,
         ),
@@ -1104,11 +1195,11 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     try {
       final qrResponse = await _apiService.generateQrCode(_session!.id);
       final String qrHash = qrResponse['qrHash'] ?? '';
-      
+
       setState(() => _isLoading = false);
-      
+
       if (!mounted) return;
-      
+
       _displayQRCodeModal(qrHash);
     } catch (e) {
       setState(() => _isLoading = false);
@@ -1153,7 +1244,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                   ),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.close_rounded, color: Colors.white54),
+                    child:
+                        const Icon(Icons.close_rounded, color: Colors.white54),
                   ),
                 ],
               ),
@@ -1213,17 +1305,16 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return Text(
       text,
       style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.5), 
-        fontWeight: FontWeight.bold, 
+        color: Colors.white.withValues(alpha: 0.5),
+        fontWeight: FontWeight.bold,
         fontSize: 12,
         letterSpacing: 0.5,
       ),
     );
   }
 
-
   Widget _buildModalTextField({
-    required TextEditingController controller, 
+    required TextEditingController controller,
     required String hint,
     IconData? icon,
   }) {
@@ -1236,12 +1327,15 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       ),
       child: TextField(
         controller: controller,
-        style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+        style: const TextStyle(
+            color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.2), fontSize: 15),
+          hintStyle: TextStyle(
+              color: Colors.white.withValues(alpha: 0.2), fontSize: 15),
           border: InputBorder.none,
-          suffixIcon: icon != null ? Icon(icon, color: Colors.white24, size: 20) : null,
+          suffixIcon:
+              icon != null ? Icon(icon, color: Colors.white24, size: 20) : null,
         ),
       ),
     );

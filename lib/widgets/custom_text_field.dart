@@ -63,15 +63,17 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.redAccent.withValues(alpha: 0.5)),
+          borderSide:
+              BorderSide(color: Colors.redAccent.withValues(alpha: 0.5)),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.redAccent),
+          borderSide: const BorderSide(color: Colors.redAccent),
         ),
         suffixIcon: widget.obscureText
             ? IconButton(
-                icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility,
+                icon: Icon(
+                    _obscureText ? Icons.visibility_off : Icons.visibility,
                     color: Colors.white70),
                 onPressed: () {
                   setState(() {

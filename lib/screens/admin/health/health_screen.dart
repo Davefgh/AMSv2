@@ -153,8 +153,7 @@ class _HealthScreenState extends State<HealthScreen> {
                                   maxLines: 4,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    color:
-                                        Colors.white.withValues(alpha: 0.55),
+                                    color: Colors.white.withValues(alpha: 0.55),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -240,13 +239,13 @@ class _HealthScreenState extends State<HealthScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Health status',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -391,4 +390,3 @@ class _GlassCard extends StatelessWidget {
     );
   }
 }
-

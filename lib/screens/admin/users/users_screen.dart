@@ -22,7 +22,7 @@ class _UsersScreenState extends State<UsersScreen> {
   List<AppUser> _users = [];
   bool _isLoading = true;
   bool _adminDataBusy = false;
-  
+
   int _selectedLimit = 5;
   String _selectedRole = 'All';
 
@@ -104,9 +104,11 @@ class _UsersScreenState extends State<UsersScreen> {
                   value: 'import',
                   child: Row(
                     children: [
-                      Icon(Icons.file_upload_outlined, color: Colors.white, size: 20),
+                      Icon(Icons.file_upload_outlined,
+                          color: Colors.white, size: 20),
                       SizedBox(width: 12),
-                      Text('Import Data', style: TextStyle(color: Colors.white)),
+                      Text('Import Data',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -114,9 +116,11 @@ class _UsersScreenState extends State<UsersScreen> {
                   value: 'export',
                   child: Row(
                     children: [
-                      Icon(Icons.file_download_outlined, color: Colors.white, size: 20),
+                      Icon(Icons.file_download_outlined,
+                          color: Colors.white, size: 20),
                       SizedBox(width: 12),
-                      Text('Export Data', style: TextStyle(color: Colors.white)),
+                      Text('Export Data',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -177,11 +181,10 @@ class _UsersScreenState extends State<UsersScreen> {
         },
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics()),
+            parent:
+                BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           ),
-          padding: const EdgeInsets.symmetric(
-              horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           children: [
             _buildSectionTitle('User Growth'),
             const SizedBox(height: 16),
@@ -204,18 +207,26 @@ class _UsersScreenState extends State<UsersScreen> {
     );
   }
 
-
   IconData _getIconForEntity(String entity) {
     switch (entity.toLowerCase()) {
-      case 'users': return Icons.people_outline_rounded;
-      case 'students': return Icons.workspace_premium_outlined;
-      case 'instructors': return Icons.badge_outlined;
-      case 'sections': return Icons.view_module_rounded;
-      case 'subjects': return Icons.menu_book_rounded;
-      case 'schedules': return Icons.calendar_month_rounded;
-      case 'courses': return Icons.account_tree_outlined;
-      case 'classrooms': return Icons.meeting_room_outlined;
-      default: return Icons.folder_outlined;
+      case 'users':
+        return Icons.people_outline_rounded;
+      case 'students':
+        return Icons.workspace_premium_outlined;
+      case 'instructors':
+        return Icons.badge_outlined;
+      case 'sections':
+        return Icons.view_module_rounded;
+      case 'subjects':
+        return Icons.menu_book_rounded;
+      case 'schedules':
+        return Icons.calendar_month_rounded;
+      case 'courses':
+        return Icons.account_tree_outlined;
+      case 'classrooms':
+        return Icons.meeting_room_outlined;
+      default:
+        return Icons.folder_outlined;
     }
   }
 
@@ -232,7 +243,8 @@ class _UsersScreenState extends State<UsersScreen> {
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF0F172A).withValues(alpha: 0.65),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(32)),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.15),
                   width: 1.5,
@@ -247,7 +259,8 @@ class _UsersScreenState extends State<UsersScreen> {
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -262,7 +275,8 @@ class _UsersScreenState extends State<UsersScreen> {
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.hub_outlined, color: Color(0xFF38BDF8), size: 28),
+                          const Icon(Icons.hub_outlined,
+                              color: Color(0xFF38BDF8), size: 28),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
@@ -284,7 +298,8 @@ class _UsersScreenState extends State<UsersScreen> {
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Icons.close_rounded,
-                                  color: Colors.white.withValues(alpha: 0.8), size: 18),
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  size: 18),
                             ),
                           ),
                         ],
@@ -293,7 +308,8 @@ class _UsersScreenState extends State<UsersScreen> {
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
@@ -307,10 +323,13 @@ class _UsersScreenState extends State<UsersScreen> {
                             child: InkWell(
                               onTap: () => Navigator.pop(ctx, e),
                               borderRadius: BorderRadius.circular(16),
-                              splashColor: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                              highlightColor: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                              splashColor: const Color(0xFF38BDF8)
+                                  .withValues(alpha: 0.3),
+                              highlightColor: const Color(0xFF38BDF8)
+                                  .withValues(alpha: 0.1),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(16),
@@ -322,7 +341,8 @@ class _UsersScreenState extends State<UsersScreen> {
                                   children: [
                                     Icon(
                                       _getIconForEntity(e),
-                                      color: const Color(0xFF38BDF8).withValues(alpha: 0.8),
+                                      color: const Color(0xFF38BDF8)
+                                          .withValues(alpha: 0.8),
                                       size: 22,
                                     ),
                                     const SizedBox(width: 12),
@@ -356,8 +376,7 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Future<void> _openAdminDataExport() async {
-    final entity =
-        await _pickEntity(context, title: 'Export which entity?');
+    final entity = await _pickEntity(context, title: 'Export which entity?');
     if (entity == null) return;
 
     setState(() => _adminDataBusy = true);
@@ -465,8 +484,7 @@ class _UsersScreenState extends State<UsersScreen> {
                 entity,
                 {'data': parsed},
               );
-              final pretty =
-                  const JsonEncoder.withIndent('  ').convert(result);
+              final pretty = const JsonEncoder.withIndent('  ').convert(result);
               if (!ctx.mounted) return;
               await showDialog<void>(
                 context: context,
@@ -553,8 +571,7 @@ class _UsersScreenState extends State<UsersScreen> {
             setModalState(() => isBusy = true);
             try {
               final result = await _apiService.getAdminDataTemplate(entity);
-              final pretty =
-                  const JsonEncoder.withIndent('  ').convert(result);
+              final pretty = const JsonEncoder.withIndent('  ').convert(result);
               controller.text = pretty;
             } catch (e) {
               if (!mounted) return;
@@ -661,7 +678,8 @@ class _UsersScreenState extends State<UsersScreen> {
                         onPressed: isBusy ? null : runPreview,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white,
-                          side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                          side: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.5)),
                         ),
                         child: const Text('Preview'),
                       ),
@@ -800,9 +818,9 @@ class _UsersScreenState extends State<UsersScreen> {
             child: Row(
               children: [
                 // Y-axis
-                Column(
+                const Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
+                  children: [
                     Text('10',
                         style: TextStyle(color: Colors.white70, fontSize: 10)),
                     Text('5',
@@ -860,10 +878,15 @@ class _UsersScreenState extends State<UsersScreen> {
     final students =
         _users.where((u) => u.role.toLowerCase() == 'student').length;
     final instructors = _users
-        .where((u) => u.role.toLowerCase() == 'instructor' || u.role.toLowerCase() == 'teacher')
+        .where((u) =>
+            u.role.toLowerCase() == 'instructor' ||
+            u.role.toLowerCase() == 'teacher')
         .length;
-    final admins =
-        _users.where((u) => u.role.toLowerCase() == 'admin' || u.role.toLowerCase() == 'administrator').length;
+    final admins = _users
+        .where((u) =>
+            u.role.toLowerCase() == 'admin' ||
+            u.role.toLowerCase() == 'administrator')
+        .length;
 
     return Row(
       children: [
@@ -936,12 +959,20 @@ class _UsersScreenState extends State<UsersScreen> {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: ['All', 'Student', 'Instructor', 'Admin'].contains(_selectedRole) ? _selectedRole : 'All',
+              value: ['All', 'Student', 'Instructor', 'Admin']
+                      .contains(_selectedRole)
+                  ? _selectedRole
+                  : 'All',
               dropdownColor: const Color(0xFF1E293B),
-              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 16),
-              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+              icon: const Icon(Icons.keyboard_arrow_down,
+                  color: Colors.white70, size: 16),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500),
               isDense: true,
-              items: ['All', 'Student', 'Instructor', 'Admin'].map((String value) {
+              items:
+                  ['All', 'Student', 'Instructor', 'Admin'].map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(value),
@@ -970,8 +1001,12 @@ class _UsersScreenState extends State<UsersScreen> {
             child: DropdownButton<int>(
               value: [5, 10, 15].contains(_selectedLimit) ? _selectedLimit : 10,
               dropdownColor: const Color(0xFF1E293B),
-              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 16),
-              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+              icon: const Icon(Icons.keyboard_arrow_down,
+                  color: Colors.white70, size: 16),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500),
               isDense: true,
               items: [5, 10, 15].map((int value) {
                 return DropdownMenuItem<int>(
@@ -1010,7 +1045,7 @@ class _UsersScreenState extends State<UsersScreen> {
         return r == _selectedRole.toLowerCase();
       }).toList();
     }
-    
+
     filteredUsers = filteredUsers.take(_selectedLimit).toList();
 
     if (filteredUsers.isEmpty) {
@@ -1204,7 +1239,7 @@ class _CurvedChartPainter extends CustomPainter {
 
     // Smooth sample data simulating growth
     final data = [2.0, 2.5, 3.2, 4.0, 5.5, 7.0, 7.8, 8.5, 9.2, 9.8, 10.0];
-    final maxData = 12.0;
+    const maxData = 12.0;
 
     final xStep = size.width / (data.length - 1);
 

@@ -16,7 +16,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final ApiService _apiService = ApiService();
-  int _selectedIndex = 0;
+  final int _selectedIndex = 0;
   String _selectedPeriod = 'Monthly';
   List<AppUser> _users = [];
   bool _isLoading = true;
@@ -397,11 +397,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 30,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
                       Text('100%',
                           style:
                               TextStyle(fontSize: 10, color: Colors.white70)),
@@ -452,7 +452,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildChart() {
     final data = [100, 85, 90, 95, 88, 92];
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    final maxHeight = 100.0;
+    const maxHeight = 100.0;
 
     return Expanded(
       child: Row(
@@ -507,7 +507,6 @@ class _GlassCard extends StatelessWidget {
 
   const _GlassCard({
     required this.child,
-    this.height,
     this.padding = const EdgeInsets.all(20),
     this.onTap,
   });

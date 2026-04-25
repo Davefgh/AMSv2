@@ -19,7 +19,7 @@ class EnrollmentScreen extends StatefulWidget {
 
 class _EnrollmentScreenState extends State<EnrollmentScreen> {
   final ApiService _apiService = ApiService();
-  int _selectedIndex = 1;
+  final int _selectedIndex = 1;
   String _searchQuery = '';
   List<Enrollment> _enrollments = [];
   List<Student> _students = [];
@@ -530,7 +530,6 @@ class _GlassCard extends StatelessWidget {
 
   const _GlassCard({
     required this.child,
-    this.height,
     this.padding = const EdgeInsets.all(20),
   });
 

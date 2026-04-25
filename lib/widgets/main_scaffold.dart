@@ -35,7 +35,7 @@ class MainScaffold extends StatelessWidget {
       builder: (context, appProvider, _) {
         final isDark = appProvider.isDarkMode;
         final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
-        
+
         return Scaffold(
           backgroundColor: bgColor,
           body: Responsive(
@@ -43,9 +43,10 @@ class MainScaffold extends StatelessWidget {
             tablet: _buildTabletLayout(context, isDark),
             desktop: _buildTabletLayout(context, isDark),
           ),
-          bottomNavigationBar: (currentIndex >= 0 && Responsive.isMobile(context))
-              ? _buildBottomNavBar(context, isDark)
-              : null,
+          bottomNavigationBar:
+              (currentIndex >= 0 && Responsive.isMobile(context))
+                  ? _buildBottomNavBar(context, isDark)
+                  : null,
           floatingActionButton: floatingActionButton,
         );
       },
@@ -56,7 +57,7 @@ class MainScaffold extends StatelessWidget {
     if (!isDark) {
       return Container(color: Colors.white);
     }
-    
+
     return Stack(
       children: [
         Positioned(
@@ -124,7 +125,8 @@ class MainScaffold extends StatelessWidget {
   Widget _buildTabletLayout(BuildContext context, bool isDark) {
     return Row(
       children: [
-        _buildNavigationRail(context, isDark, extended: MediaQuery.of(context).size.width > 900),
+        _buildNavigationRail(context, isDark,
+            extended: MediaQuery.of(context).size.width > 900),
         Expanded(
           child: Stack(
             children: [
@@ -151,9 +153,10 @@ class MainScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark, {bool showLogo = true}) {
+  Widget _buildHeader(BuildContext context, bool isDark,
+      {bool showLogo = true}) {
     final textColor = isDark ? Colors.white : Colors.black;
-    
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: Sizing.w(24),
@@ -180,8 +183,10 @@ class MainScaffold extends StatelessWidget {
                     'assets/aclc_logo.png',
                     height: Sizing.h(40),
                     width: Sizing.w(40),
-                    errorBuilder: (context, error, stackTrace) =>
-                        Icon(Icons.shield, color: textColor, size: Sizing.sp(32)),
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                        Icons.shield,
+                        color: textColor,
+                        size: Sizing.sp(32)),
                   ),
                   SizedBox(width: Sizing.w(12)),
                 ],
@@ -211,7 +216,8 @@ class MainScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildNavigationRail(BuildContext context, bool isDark, {required bool extended}) {
+  Widget _buildNavigationRail(BuildContext context, bool isDark,
+      {required bool extended}) {
     List<_NavDestination> destinations;
     if (isAdmin) {
       destinations = _adminDestinations;
@@ -221,7 +227,8 @@ class MainScaffold extends StatelessWidget {
       destinations = _teacherDestinations;
     }
 
-    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+    final borderColor =
+        isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
     final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
 
     return Container(
@@ -241,14 +248,18 @@ class MainScaffold extends StatelessWidget {
         onDestinationSelected: (index) => _onNavigate(context, index),
         indicatorColor: const Color(0xFF38BDF8).withOpacity(0.2),
         selectedIconTheme: const IconThemeData(color: Color(0xFF38BDF8)),
-        unselectedIconTheme:
-            IconThemeData(color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.4)),
+        unselectedIconTheme: IconThemeData(
+            color: isDark
+                ? Colors.white.withOpacity(0.4)
+                : Colors.black.withOpacity(0.4)),
         selectedLabelTextStyle: const TextStyle(
           color: Color(0xFF38BDF8),
           fontWeight: FontWeight.bold,
         ),
         unselectedLabelTextStyle: TextStyle(
-          color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.4),
+          color: isDark
+              ? Colors.white.withOpacity(0.4)
+              : Colors.black.withOpacity(0.4),
         ),
         leading: extended
             ? Padding(
@@ -260,8 +271,9 @@ class MainScaffold extends StatelessWidget {
                       'assets/aclc_logo.png',
                       height: 32,
                       width: 32,
-                      errorBuilder: (context, error, stackTrace) =>
-                          Icon(Icons.shield, color: isDark ? Colors.white : Colors.black),
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.shield,
+                          color: isDark ? Colors.white : Colors.black),
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -281,8 +293,9 @@ class MainScaffold extends StatelessWidget {
                   'assets/aclc_logo.png',
                   height: 32,
                   width: 32,
-                  errorBuilder: (context, error, stackTrace) =>
-                      Icon(Icons.shield, color: isDark ? Colors.white : Colors.black),
+                  errorBuilder: (context, error, stackTrace) => Icon(
+                      Icons.shield,
+                      color: isDark ? Colors.white : Colors.black),
                 ),
               ),
         destinations: destinations
@@ -306,13 +319,15 @@ class MainScaffold extends StatelessWidget {
       ];
 
   List<_NavDestination> get _teacherDestinations => const [
-        _NavDestination(
-            Icons.home_rounded, 'Home', AppRoutes.teacherDashboard),
+        _NavDestination(Icons.home_rounded, 'Home', AppRoutes.teacherDashboard),
         _NavDestination(
             Icons.library_books_rounded, 'Attendance', AppRoutes.attendance),
-        _NavDestination(Icons.qr_code_scanner_rounded, 'Sessions', AppRoutes.sessionDashboard),
-        _NavDestination(Icons.calendar_today_rounded, 'Schedules', AppRoutes.teacherSchedules),
-        _NavDestination(Icons.people_alt_rounded, 'Sections', AppRoutes.teacherSections),
+        _NavDestination(Icons.qr_code_scanner_rounded, 'Sessions',
+            AppRoutes.sessionDashboard),
+        _NavDestination(Icons.calendar_today_rounded, 'Schedules',
+            AppRoutes.teacherSchedules),
+        _NavDestination(
+            Icons.people_alt_rounded, 'Sections', AppRoutes.teacherSections),
       ];
 
   List<_NavDestination> get _studentDestinations => const [
@@ -338,7 +353,7 @@ class MainScaffold extends StatelessWidget {
     const borderColor = Color(0xFF1E293B);
 
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: bgColor,
         border: Border(
           top: BorderSide(

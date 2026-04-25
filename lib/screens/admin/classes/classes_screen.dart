@@ -179,7 +179,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
         text: section?.courseId != null ? '${section!.courseId}' : '');
     final isEditing = section != null;
     bool isSaving = false;
-    Map<String, List<String>> _fieldErrors = {};
+    Map<String, List<String>> fieldErrors = {};
 
     showModalBottomSheet(
       context: context,
@@ -230,8 +230,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Section Name',
                       hint: 'e.g. CS31A',
                       icon: Icons.layers,
-                      errorText: _fieldErrors['name']?.first ??
-                          _fieldErrors['Name']?.first,
+                      errorText: fieldErrors['name']?.first ??
+                          fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 16),
                     _buildDialogDropdownField<int>(
@@ -247,11 +247,12 @@ class _ClassesScreenState extends State<ClassesScreen> {
                               ))
                           .toList(),
                       onChanged: (val) {
-                        if (val != null)
+                        if (val != null) {
                           courseIdController.text = val.toString();
+                        }
                       },
-                      errorText: _fieldErrors['courseId']?.first ??
-                          _fieldErrors['CourseId']?.first,
+                      errorText: fieldErrors['courseId']?.first ??
+                          fieldErrors['CourseId']?.first,
                     ),
                     const SizedBox(height: 28),
                     SizedBox(
@@ -287,7 +288,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 }
                                 setModalState(() {
                                   isSaving = true;
-                                  _fieldErrors = {};
+                                  fieldErrors = {};
                                 });
                                 try {
                                   if (isEditing) {
@@ -300,7 +301,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 } on ApiException catch (e) {
                                   setModalState(() {
                                     isSaving = false;
-                                    _fieldErrors = e.fieldErrors.map((k, v) =>
+                                    fieldErrors = e.fieldErrors.map((k, v) =>
                                         MapEntry(k.replaceAll('\$.', ''), v));
                                   });
                                 } catch (_) {
@@ -458,7 +459,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     final codeController = TextEditingController(text: subject?.code ?? '');
     final isEditing = subject != null;
     bool isSaving = false;
-    Map<String, List<String>> _fieldErrors = {};
+    Map<String, List<String>> fieldErrors = {};
 
     showModalBottomSheet(
       context: context,
@@ -509,8 +510,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Subject Name',
                       hint: 'e.g. Computing Fundamentals',
                       icon: Icons.subject,
-                      errorText: _fieldErrors['name']?.first ??
-                          _fieldErrors['Name']?.first,
+                      errorText: fieldErrors['name']?.first ??
+                          fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 16),
                     _buildDialogTextField(
@@ -518,8 +519,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Subject Code',
                       hint: 'e.g. IT1008',
                       icon: Icons.tag,
-                      errorText: _fieldErrors['code']?.first ??
-                          _fieldErrors['Code']?.first,
+                      errorText: fieldErrors['code']?.first ??
+                          fieldErrors['Code']?.first,
                     ),
                     const SizedBox(height: 28),
                     SizedBox(
@@ -543,7 +544,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 }
                                 setModalState(() {
                                   isSaving = true;
-                                  _fieldErrors = {};
+                                  fieldErrors = {};
                                 });
                                 try {
                                   if (isEditing) {
@@ -556,7 +557,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 } on ApiException catch (e) {
                                   setModalState(() {
                                     isSaving = false;
-                                    _fieldErrors = e.fieldErrors.map((k, v) =>
+                                    fieldErrors = e.fieldErrors.map((k, v) =>
                                         MapEntry(k.replaceAll('\$.', ''), v));
                                   });
                                 } catch (_) {
@@ -673,7 +674,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<T>(
-          value: items.any((item) => item.value == value) ? value : null,
+          initialValue: items.any((item) => item.value == value) ? value : null,
           items: items,
           onChanged: onChanged,
           dropdownColor: const Color(0xFF1E293B),
@@ -754,7 +755,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
       backgroundColor: Colors.transparent,
       builder: (_) {
         return StatefulBuilder(builder: (ctx, setS) {
-          Widget _wheel({
+          Widget wheel({
             required FixedExtentScrollController ctrl,
             required int count,
             required String Function(int) label,
@@ -835,7 +836,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // Hours
-                          _wheel(
+                          wheel(
                             ctrl: hourCtrl,
                             count: 12,
                             label: (i) => '${i + 1}',
@@ -857,7 +858,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                           ),
 
                           // Minutes
-                          _wheel(
+                          wheel(
                             ctrl: minCtrl,
                             count: 60,
                             label: (i) => i.toString().padLeft(2, '0'),
@@ -868,7 +869,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                           const SizedBox(width: 8),
 
                           // AM / PM
-                          _wheel(
+                          wheel(
                             ctrl: amPmCtrl,
                             count: 2,
                             label: (i) => i == 0 ? 'AM' : 'PM',
@@ -1032,7 +1033,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     final nameController = TextEditingController(text: course?.name ?? '');
     final isEditing = course != null;
     bool isSaving = false;
-    Map<String, List<String>> _fieldErrors = {};
+    Map<String, List<String>> fieldErrors = {};
 
     showModalBottomSheet(
       context: context,
@@ -1083,8 +1084,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Course Name',
                       hint: 'e.g. Bachelor of Science in Computer Science',
                       icon: Icons.book_outlined,
-                      errorText: _fieldErrors['name']?.first ??
-                          _fieldErrors['Name']?.first,
+                      errorText: fieldErrors['name']?.first ??
+                          fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 28),
                     SizedBox(
@@ -1107,7 +1108,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 }
                                 setModalState(() {
                                   isSaving = true;
-                                  _fieldErrors = {};
+                                  fieldErrors = {};
                                 });
                                 try {
                                   if (isEditing) {
@@ -1119,7 +1120,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 } on ApiException catch (e) {
                                   setModalState(() {
                                     isSaving = false;
-                                    _fieldErrors = e.fieldErrors.map((k, v) =>
+                                    fieldErrors = e.fieldErrors.map((k, v) =>
                                         MapEntry(k.replaceAll('\$.', ''), v));
                                   });
                                 } catch (_) {
@@ -1276,7 +1277,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
     final nameController = TextEditingController(text: classroom?.name ?? '');
     final isEditing = classroom != null;
     bool isSaving = false;
-    Map<String, List<String>> _fieldErrors = {};
+    Map<String, List<String>> fieldErrors = {};
 
     showModalBottomSheet(
       context: context,
@@ -1327,8 +1328,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       label: 'Classroom Name',
                       hint: 'e.g. Software Laboratory 1',
                       icon: Icons.meeting_room_outlined,
-                      errorText: _fieldErrors['name']?.first ??
-                          _fieldErrors['Name']?.first,
+                      errorText: fieldErrors['name']?.first ??
+                          fieldErrors['Name']?.first,
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -1360,7 +1361,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 }
                                 setModalState(() {
                                   isSaving = true;
-                                  _fieldErrors = {};
+                                  fieldErrors = {};
                                 });
                                 try {
                                   if (isEditing) {
@@ -1372,7 +1373,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 } on ApiException catch (e) {
                                   setModalState(() {
                                     isSaving = false;
-                                    _fieldErrors = e.fieldErrors.map((k, v) =>
+                                    fieldErrors = e.fieldErrors.map((k, v) =>
                                         MapEntry(k.replaceAll('\$.', ''), v));
                                   });
                                 } catch (_) {
@@ -1528,7 +1529,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
   void _showAddEditScheduleDialog({Schedule? schedule}) {
     final isEditing = schedule != null;
     bool isSaving = false;
-    Map<String, List<String>> _fieldErrors = {};
+    Map<String, List<String>> fieldErrors = {};
 
     String? initialDayOfWeek;
     if (schedule?.dayOfWeek != null) {
@@ -1604,8 +1605,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         label: 'Time In',
                         hint: 'e.g. 08:00:00',
                         icon: Icons.login,
-                        errorText: _fieldErrors['timeIn']?.first ??
-                            _fieldErrors['TimeIn']?.first,
+                        errorText: fieldErrors['timeIn']?.first ??
+                            fieldErrors['TimeIn']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogTimePickerField(
@@ -1614,8 +1615,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         label: 'Time Out',
                         hint: 'e.g. 09:00:00',
                         icon: Icons.logout,
-                        errorText: _fieldErrors['timeOut']?.first ??
-                            _fieldErrors['TimeOut']?.first,
+                        errorText: fieldErrors['timeOut']?.first ??
+                            fieldErrors['TimeOut']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogDropdownField<String>(
@@ -1644,8 +1645,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         onChanged: (val) {
                           if (val != null) dayOfWeekController.text = val;
                         },
-                        errorText: _fieldErrors['dayOfWeek']?.first ??
-                            _fieldErrors['DayOfWeek']?.first,
+                        errorText: fieldErrors['dayOfWeek']?.first ??
+                            fieldErrors['DayOfWeek']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogDropdownField<int>(
@@ -1661,11 +1662,12 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 ))
                             .toList(),
                         onChanged: (val) {
-                          if (val != null)
+                          if (val != null) {
                             subjectIdController.text = val.toString();
+                          }
                         },
-                        errorText: _fieldErrors['subjectId']?.first ??
-                            _fieldErrors['SubjectId']?.first,
+                        errorText: fieldErrors['subjectId']?.first ??
+                            fieldErrors['SubjectId']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogDropdownField<int>(
@@ -1681,11 +1683,12 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 ))
                             .toList(),
                         onChanged: (val) {
-                          if (val != null)
+                          if (val != null) {
                             classroomIdController.text = val.toString();
+                          }
                         },
-                        errorText: _fieldErrors['classroomId']?.first ??
-                            _fieldErrors['ClassroomId']?.first,
+                        errorText: fieldErrors['classroomId']?.first ??
+                            fieldErrors['ClassroomId']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogDropdownField<int>(
@@ -1701,11 +1704,12 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 ))
                             .toList(),
                         onChanged: (val) {
-                          if (val != null)
+                          if (val != null) {
                             sectionIdController.text = val.toString();
+                          }
                         },
-                        errorText: _fieldErrors['sectionId']?.first ??
-                            _fieldErrors['SectionId']?.first,
+                        errorText: fieldErrors['sectionId']?.first ??
+                            fieldErrors['SectionId']?.first,
                       ),
                       const SizedBox(height: 16),
                       _buildDialogDropdownField<int>(
@@ -1721,11 +1725,12 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 ))
                             .toList(),
                         onChanged: (val) {
-                          if (val != null)
+                          if (val != null) {
                             instructorIdController.text = val.toString();
+                          }
                         },
-                        errorText: _fieldErrors['instructorId']?.first ??
-                            _fieldErrors['InstructorId']?.first,
+                        errorText: fieldErrors['instructorId']?.first ??
+                            fieldErrors['InstructorId']?.first,
                       ),
                       const SizedBox(height: 28),
                       SizedBox(
@@ -1783,7 +1788,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
                                   setModalState(() {
                                     isSaving = true;
-                                    _fieldErrors = {};
+                                    fieldErrors = {};
                                   });
                                   try {
                                     if (isEditing) {
@@ -1797,7 +1802,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                   } on ApiException catch (e) {
                                     setModalState(() {
                                       isSaving = false;
-                                      _fieldErrors = e.fieldErrors.map((k, v) =>
+                                      fieldErrors = e.fieldErrors.map((k, v) =>
                                           MapEntry(k.replaceAll('\$.', ''), v));
                                     });
                                   } catch (e) {
@@ -3017,7 +3022,6 @@ class _GlassCard extends StatelessWidget {
 
   const _GlassCard({
     required this.child,
-    this.height,
     this.padding = const EdgeInsets.all(20),
   });
 

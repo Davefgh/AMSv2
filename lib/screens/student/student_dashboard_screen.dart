@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../widgets/main_scaffold.dart';
-import '../../providers/app_provider.dart';
 import '../../config/routes/app_routes.dart';
-import '../../services/api_service.dart';import '../../utils/sizing_utils.dart';
+import '../../services/api_service.dart';
+import '../../utils/sizing_utils.dart';
 import '../../models/student_subject_detail.dart';
 import '../../widgets/skeleton_loader.dart';
 
@@ -45,6 +44,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
@@ -55,11 +55,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       actions: [
         IconButton(
           onPressed: () {
-             ScaffoldMessenger.of(context).showSnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Notifications coming soon!')),
             );
           },
-          icon: const Icon(Icons.notifications_none_rounded, color: Colors.white70),
+          icon: const Icon(Icons.notifications_none_rounded,
+              color: Colors.white70),
           splashRadius: 20,
         ),
         const SizedBox(width: 4),
@@ -71,7 +72,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white24, width: 1),
             ),
-            child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
+            child:
+                const Icon(Icons.person_rounded, color: Colors.white, size: 20),
           ),
           splashRadius: 20,
         ),
@@ -84,22 +86,24 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               : RefreshIndicator(
                   onRefresh: _loadData,
                   color: const Color(0xFF38BDF8),
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                      padding: EdgeInsets.symmetric(horizontal: Sizing.w(24), vertical: Sizing.h(20)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildWelcomeHeader(),
-                          SizedBox(height: Sizing.h(32)),
-                          _buildFingerprintBanner(),
-                          SizedBox(height: Sizing.h(20)),
-                          _buildAttendanceStats(),
-                          SizedBox(height: Sizing.h(32)),
-                          _buildUpcomingSessions(),
-                        ],
-                      ),
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics()),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: Sizing.w(24), vertical: Sizing.h(20)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildWelcomeHeader(),
+                        SizedBox(height: Sizing.h(32)),
+                        _buildFingerprintBanner(),
+                        SizedBox(height: Sizing.h(20)),
+                        _buildAttendanceStats(),
+                        SizedBox(height: Sizing.h(32)),
+                        _buildUpcomingSessions(),
+                      ],
                     ),
+                  ),
                 ),
     );
   }
@@ -126,7 +130,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
                 foregroundColor: const Color(0xFF0F172A),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
@@ -266,7 +271,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(Sizing.r(12)),
                 ),
-                child: Icon(Icons.book_rounded, color: const Color(0xFF38BDF8), size: Sizing.sp(20)),
+                child: Icon(Icons.book_rounded,
+                    color: const Color(0xFF38BDF8), size: Sizing.sp(20)),
               ),
               SizedBox(width: Sizing.w(14)),
               Expanded(
@@ -292,7 +298,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: Sizing.w(10), vertical: Sizing.h(4)),
+                padding: EdgeInsets.symmetric(
+                    horizontal: Sizing.w(10), vertical: Sizing.h(4)),
                 decoration: BoxDecoration(
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(Sizing.r(8)),
@@ -333,7 +340,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   color: Colors.white.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.person_outline_rounded, size: 14, color: Colors.white54),
+                child: const Icon(Icons.person_outline_rounded,
+                    size: 14, color: Colors.white54),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -354,7 +362,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
   Widget _buildInfoChip(IconData icon, String text) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: Sizing.w(10), vertical: Sizing.h(6)),
+      padding:
+          EdgeInsets.symmetric(horizontal: Sizing.w(10), vertical: Sizing.h(6)),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(Sizing.r(10)),
@@ -362,7 +371,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: Sizing.sp(14), color: Colors.white.withValues(alpha: 0.4)),
+          Icon(icon,
+              size: Sizing.sp(14), color: Colors.white.withValues(alpha: 0.4)),
           SizedBox(width: Sizing.w(6)),
           Flexible(
             child: Text(
@@ -456,7 +466,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String label, String value, Color color, IconData icon) {
+  Widget _buildStatCard(
+      String label, String value, Color color, IconData icon) {
     return Container(
       padding: EdgeInsets.all(Sizing.w(20)),
       decoration: BoxDecoration(
