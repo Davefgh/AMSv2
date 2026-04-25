@@ -1,6 +1,8 @@
+import '../utils/id_utils.dart';
+
 class ClassSession {
-  final int id;
-  final int scheduleId;
+  final String id;
+  final String scheduleId;
   final String status;
   final DateTime? sessionDate;
   final DateTime? createdAt;
@@ -24,7 +26,7 @@ class ClassSession {
   final String? offScheduleReason;
 
   ClassSession({
-    this.id = 0,
+    this.id = '',
     required this.scheduleId,
     required this.status,
     this.sessionDate,
@@ -49,6 +51,12 @@ class ClassSession {
     this.offScheduleReason,
   });
 
+  /// Returns true if this session has a valid ID
+  bool get hasValidId => isValidId(id);
+
+  /// Returns a display-friendly version of the ID (truncated if too long)
+  String get displayId => id.length > 8 ? '${id.substring(0, 8)}...' : id;
+
   factory ClassSession.fromJson(Map<String, dynamic> json) {
     DateTime? parseDate(String? raw) {
       if (raw == null || raw.isEmpty) return null;
@@ -66,8 +74,8 @@ class ClassSession {
     }
 
     return ClassSession(
-      id: parseInt(json['id']) ?? 0,
-      scheduleId: parseInt(json['scheduleId']) ?? 0,
+      id: json['id']?.toString() ?? '',
+      scheduleId: json['scheduleId']?.toString() ?? '',
       status: json['status'] ?? 'not_started',
       sessionDate: parseDate(json['sessionDate']),
       createdAt: parseDate(json['createdAt']),
@@ -79,7 +87,8 @@ class ClassSession {
       subjectName: json['subjectName'] ?? '',
       sectionName: json['sectionName'] ?? '',
       scheduledRoomName: json['scheduledRoomName'] ?? '',
-      actualRoomName: json['actualRoomName'] ?? json['actualRoom'] ?? json['room'],
+      actualRoomName:
+          json['actualRoomName'] ?? json['actualRoom'] ?? json['room'],
       scheduledTimeIn: json['scheduledTimeIn'] ?? json['timeIn'] ?? '',
       scheduledTimeOut: json['scheduledTimeOut'] ?? json['timeOut'] ?? '',
       startedBy: parseInt(json['startedBy']),
@@ -94,8 +103,8 @@ class ClassSession {
 
   Map<String, dynamic> toJson() {
     return {
-      if (id > 0) 'id': id,
-      'scheduleId': scheduleId,
+      if (id.isNotEmpty) 'id': id,
+      if (scheduleId.isNotEmpty) 'scheduleId': scheduleId,
       'status': status,
       if (sessionDate != null) 'sessionDate': sessionDate!.toIso8601String(),
       if (actualRoomName != null) 'actualRoomName': actualRoomName,
@@ -104,6 +113,3 @@ class ClassSession {
     };
   }
 }
-
-
-

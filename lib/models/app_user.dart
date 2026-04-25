@@ -34,13 +34,14 @@ class AppUser {
       username: json['username'] ?? '',
       email: json['email'] ?? '',
       role: json['role'] ?? '',
-      profile: profileData != null ? UserProfileDetails.fromJson(profileData) : null,
+      profile:
+          profileData != null ? UserProfileDetails.fromJson(profileData) : null,
     );
   }
 }
 
 class UserProfileDetails {
-  final int id;
+  final String id;
   final String firstname;
   final String lastname;
   final DateTime createdAt;
@@ -48,7 +49,7 @@ class UserProfileDetails {
   final bool isDeleted;
 
   UserProfileDetails({
-    required this.id,
+    this.id = '',
     required this.firstname,
     required this.lastname,
     required this.createdAt,
@@ -58,7 +59,7 @@ class UserProfileDetails {
 
   factory UserProfileDetails.fromJson(Map<String, dynamic> json) {
     return UserProfileDetails(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '',
       firstname: json['firstname'] ?? '',
       lastname: json['lastname'] ?? '',
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toString()),

@@ -1,7 +1,9 @@
+import '../utils/id_utils.dart';
+
 class AttendanceRecord {
-  final int id;
-  final int sessionId;
-  final int studentId;
+  final String id;
+  final String sessionId;
+  final String studentId;
   final String status;
   final String? remarks;
   final DateTime? createdAt;
@@ -9,7 +11,7 @@ class AttendanceRecord {
   final DateTime? timeOut;
 
   AttendanceRecord({
-    required this.id,
+    this.id = '',
     required this.sessionId,
     required this.studentId,
     required this.status,
@@ -19,24 +21,32 @@ class AttendanceRecord {
     this.timeOut,
   });
 
+  /// Returns true if this attendance record has a valid ID
+  bool get hasValidId => isValidId(id);
+
+  /// Returns a display-friendly version of the ID (truncated if too long)
+  String get displayId => id.length > 8 ? '${id.substring(0, 8)}...' : id;
+
   factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
     return AttendanceRecord(
-      id: json['id'] ?? 0,
-      sessionId: json['sessionId'] ?? 0,
-      studentId: json['studentId'] ?? 0,
+      id: json['id']?.toString() ?? '',
+      sessionId: json['sessionId']?.toString() ?? '',
+      studentId: json['studentId']?.toString() ?? '',
       status: json['status'] ?? 'absent',
       remarks: json['remarks'],
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      updatedAt:
+          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
       timeOut: json['timeOut'] != null ? DateTime.parse(json['timeOut']) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'sessionId': sessionId,
-      'studentId': studentId,
+      if (id.isNotEmpty) 'id': id,
+      if (sessionId.isNotEmpty) 'sessionId': sessionId,
+      if (studentId.isNotEmpty) 'studentId': studentId,
       'status': status,
       'remarks': remarks,
       if (timeOut != null) 'timeOut': timeOut!.toIso8601String(),
@@ -59,7 +69,8 @@ class AttendanceResponse {
 
   factory AttendanceResponse.fromJson(Map<String, dynamic> json) {
     var list = json['items'] as List? ?? [];
-    List<AttendanceRecord> itemsList = list.map((i) => AttendanceRecord.fromJson(i)).toList();
+    List<AttendanceRecord> itemsList =
+        list.map((i) => AttendanceRecord.fromJson(i)).toList();
 
     return AttendanceResponse(
       items: itemsList,

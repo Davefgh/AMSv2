@@ -1,5 +1,7 @@
+import '../utils/id_utils.dart';
+
 class Schedule {
-  final int id;
+  final String id;
 
   /// API uses `timeIn` / `timeOut`. Older clients may send `timeStart` / `timeEnd`.
   final String timeIn;
@@ -9,10 +11,10 @@ class Schedule {
   final int? dayOfWeek;
   final String? dayName;
 
-  final int? subjectId;
-  final int? classroomId;
-  final int? sectionId;
-  final int? instructorId;
+  final String? subjectId;
+  final String? classroomId;
+  final String? sectionId;
+  final String? instructorId;
 
   /// Nested objects returned by API.
   final Map<String, dynamic>? subject;
@@ -25,7 +27,7 @@ class Schedule {
   final int? attendanceCutoffMinutes;
 
   const Schedule({
-    required this.id,
+    this.id = '',
     required this.timeIn,
     required this.timeOut,
     this.dayOfWeek,
@@ -51,9 +53,18 @@ class Schedule {
   }
 
   String get subjectName => (subject?['name'] as String?)?.trim() ?? '';
-  String get subjectCode => (subject?['subjectCode'] as String?)?.trim() ?? (subject?['code'] as String?)?.trim() ?? '';
+  String get subjectCode =>
+      (subject?['subjectCode'] as String?)?.trim() ??
+      (subject?['code'] as String?)?.trim() ??
+      '';
   String get sectionName => (section?['name'] as String?)?.trim() ?? '';
   String get classroomName => (classroom?['name'] as String?)?.trim() ?? '';
+
+  /// Returns true if this schedule has a valid ID
+  bool get hasValidId => isValidId(id);
+
+  /// Returns a display-friendly version of the ID (truncated if too long)
+  String get displayId => id.length > 8 ? '${id.substring(0, 8)}...' : id;
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
     final dynamic day = json['dayOfWeek'];
@@ -86,6 +97,11 @@ class Schedule {
       return int.tryParse('$v');
     }
 
+    String? readString(String key) {
+      final v = json[key];
+      return v?.toString();
+    }
+
     Map<String, dynamic>? readMap(String key) {
       final v = json[key];
       if (v is Map<String, dynamic>) return v;
@@ -94,15 +110,15 @@ class Schedule {
     }
 
     return Schedule(
-      id: readInt('id') ?? 0,
+      id: readString('id') ?? '',
       timeIn: readTime('timeIn', 'timeStart'),
       timeOut: readTime('timeOut', 'timeEnd'),
       dayOfWeek: dayInt,
       dayName: dayStr,
-      subjectId: readInt('subjectId'),
-      classroomId: readInt('classroomId'),
-      sectionId: readInt('sectionId'),
-      instructorId: readInt('instructorId'),
+      subjectId: readString('subjectId'),
+      classroomId: readString('classroomId'),
+      sectionId: readString('sectionId'),
+      instructorId: readString('instructorId'),
       subject: readMap('subject'),
       classroom: readMap('classroom'),
       section: readMap('section'),
@@ -115,21 +131,24 @@ class Schedule {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      if (id.isNotEmpty) 'id': id,
       'timeIn': timeIn,
       'timeOut': timeOut,
       'dayOfWeek': dayOfWeek ?? dayName,
-      if (subjectId != null) 'subjectId': subjectId,
-      if (classroomId != null) 'classroomId': classroomId,
-      if (sectionId != null) 'sectionId': sectionId,
-      if (instructorId != null) 'instructorId': instructorId,
+      if (subjectId != null && subjectId!.isNotEmpty) 'subjectId': subjectId,
+      if (classroomId != null && classroomId!.isNotEmpty)
+        'classroomId': classroomId,
+      if (sectionId != null && sectionId!.isNotEmpty) 'sectionId': sectionId,
+      if (instructorId != null && instructorId!.isNotEmpty)
+        'instructorId': instructorId,
       if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
       if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
       if (subject != null) 'subject': subject,
       if (classroom != null) 'classroom': classroom,
       if (section != null) 'section': section,
       if (instructor != null) 'instructor': instructor,
-      if (attendanceCutoffMinutes != null) 'attendanceCutoffMinutes': attendanceCutoffMinutes,
+      if (attendanceCutoffMinutes != null)
+        'attendanceCutoffMinutes': attendanceCutoffMinutes,
     };
   }
 }
