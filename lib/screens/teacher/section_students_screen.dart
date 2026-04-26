@@ -31,6 +31,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
   List<Student> _students = [];
   List<Schedule> _schedules = [];
   String _selectedStatus = 'All'; 
+  final Set<String> _expandedIds = {}; 
 
   final List<String> _statusOptions = ['All', 'Regular', 'Irregular', 'Retake'];
 
@@ -307,10 +308,11 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
     final cardColor = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
     final secondaryTextColor = isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B);
+    final isExpanded = _expandedIds.contains(schedule.id);
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
       margin: EdgeInsets.only(bottom: Sizing.h(12)),
-      padding: EdgeInsets.all(Sizing.w(16)),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
@@ -319,75 +321,186 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      schedule.subjectName,
-                      style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: Sizing.sp(15)),
-                    ),
-                    Text(
-                      schedule.subjectCode,
-                      style: TextStyle(color: const Color(0xFF38BDF8), fontSize: Sizing.sp(11), fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-              ),
-              Row(
+          InkWell(
+            onTap: () {
+              setState(() {
+                if (isExpanded) {
+                  _expandedIds.remove(schedule.id);
+                } else {
+                  _expandedIds.add(schedule.id);
+                }
+              });
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: EdgeInsets.all(Sizing.w(16)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   Text(
-                    '${_students.length} Students',
-                    style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11), fontWeight: FontWeight.w600),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              schedule.subjectName,
+                              style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: Sizing.sp(15)),
+                            ),
+                            Text(
+                              schedule.subjectCode,
+                              style: TextStyle(color: const Color(0xFF38BDF8), fontSize: Sizing.sp(11), fontWeight: FontWeight.w700),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            '${_students.length} Students',
+                            style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11), fontWeight: FontWeight.w600),
+                          ),
+                          SizedBox(width: Sizing.w(4)),
+                          Icon(
+                            isExpanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                            color: secondaryTextColor,
+                            size: Sizing.sp(20),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  Icon(Icons.chevron_right_rounded, color: secondaryTextColor, size: Sizing.sp(20)),
+                  SizedBox(height: Sizing.h(12)),
+                  Wrap(
+                    spacing: Sizing.w(12),
+                    runSpacing: Sizing.h(8),
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          schedule.dayName ?? 'Day',
+                          style: const TextStyle(color: Color(0xFF818CF8), fontSize: 10, fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.access_time, size: Sizing.sp(12), color: secondaryTextColor),
+                          SizedBox(width: Sizing.w(4)),
+                          Text('${schedule.timeIn} - ${schedule.timeOut}', style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11))),
+                        ],
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.location_on_outlined, size: Sizing.sp(12), color: secondaryTextColor),
+                          SizedBox(width: Sizing.w(4)),
+                          Flexible(
+                            child: Text(
+                              schedule.classroomName, 
+                              style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            ],
+            ),
           ),
-          SizedBox(height: Sizing.h(12)),
-          Wrap(
-            spacing: Sizing.w(12),
-            runSpacing: Sizing.h(8),
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  schedule.dayName ?? 'Day',
-                  style: const TextStyle(color: Color(0xFF818CF8), fontSize: 10, fontWeight: FontWeight.w900),
-                ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.access_time, size: Sizing.sp(12), color: secondaryTextColor),
-                  SizedBox(width: Sizing.w(4)),
-                  Text('${schedule.timeIn} - ${schedule.timeOut}', style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11))),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.location_on_outlined, size: Sizing.sp(12), color: secondaryTextColor),
-                  SizedBox(width: Sizing.w(4)),
-                  Flexible(
-                    child: Text(
-                      schedule.classroomName, 
-                      style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11)),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+          if (isExpanded) ...[
+            _buildTableHeader(isDark),
+            ..._students.map((student) => _buildTableRow(student, isDark)),
+            SizedBox(height: Sizing.h(16)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableHeader(bool isDark) {
+    final labelColor = isDark ? Colors.white.withOpacity(0.4) : const Color(0xFF64748B);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: Sizing.w(16), vertical: Sizing.h(12)),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.02) : Colors.black.withOpacity(0.02),
+        border: Border(
+          top: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+          bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(flex: 3, child: Text('Student ID', style: TextStyle(color: labelColor, fontSize: Sizing.sp(10), fontWeight: FontWeight.bold))),
+          Expanded(flex: 4, child: Text('Name', style: TextStyle(color: labelColor, fontSize: Sizing.sp(10), fontWeight: FontWeight.bold))),
+          Expanded(flex: 2, child: Text('Status', style: TextStyle(color: labelColor, fontSize: Sizing.sp(10), fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableRow(Student student, bool isDark) {
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final secondaryTextColor = isDark ? Colors.white.withOpacity(0.3) : const Color(0xFF64748B);
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: Sizing.w(16), vertical: Sizing.h(12)),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.03)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              student.id.length > 12 ? '${student.id.substring(0, 12)}...' : student.id,
+              style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(10), fontFamily: 'Monospace'),
+            ),
+          ),
+          Expanded(
+            flex: 4,
+            child: Row(
+              children: [
+                Icon(Icons.fingerprint_rounded, size: Sizing.sp(12), color: isDark ? Colors.white24 : Colors.black26),
+                SizedBox(width: Sizing.w(8)),
+                Expanded(
+                  child: Text(
+                    student.fullName,
+                    style: TextStyle(color: textColor, fontSize: Sizing.sp(11), fontWeight: FontWeight.w600),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: student.isRegular ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
               ),
-            ],
+              child: Text(
+                student.isRegular ? 'REGULAR' : 'IRREGULAR',
+                style: TextStyle(
+                  color: student.isRegular ? Colors.greenAccent : Colors.orangeAccent,
+                  fontSize: Sizing.sp(8),
+                  fontWeight: FontWeight.w900,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
           ),
         ],
       ),
