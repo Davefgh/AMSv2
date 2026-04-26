@@ -929,15 +929,15 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                       border: Border.all(
                           color: successGreen.withValues(alpha: 0.2)),
                     ),
-                    child: Row(
+                    child: const Row(
                       children: [
-                        const Icon(Icons.play_circle_outline,
+                        Icon(Icons.play_circle_outline,
                             color: successGreen, size: 24),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text('Ready to start?',
                                   style: TextStyle(
                                       color: successGreen,

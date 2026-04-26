@@ -19,7 +19,7 @@ class SectionsScreenBefore extends StatefulWidget {
   const SectionsScreenBefore({super.key});
 
   @override
-  _SectionsScreenBeforeState createState() => _SectionsScreenBeforeState();
+  State<SectionsScreenBefore> createState() => _SectionsScreenBeforeState();
 }
 
 class _SectionsScreenBeforeState extends State<SectionsScreenBefore> {
@@ -59,10 +59,10 @@ class _SectionsScreenBeforeState extends State<SectionsScreenBefore> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sections'),
+        title: const Text('Sections'),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: _loadSections,
           ),
         ],
@@ -73,7 +73,7 @@ class _SectionsScreenBeforeState extends State<SectionsScreenBefore> {
 
   Widget _buildBody() {
     if (_loading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_error != null) {
@@ -81,13 +81,13 @@ class _SectionsScreenBeforeState extends State<SectionsScreenBefore> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.red),
-            SizedBox(height: 16),
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
             Text('Error: $_error'),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadSections,
-              child: Text('Retry'),
+              child: const Text('Retry'),
             ),
           ],
         ),
@@ -95,7 +95,7 @@ class _SectionsScreenBeforeState extends State<SectionsScreenBefore> {
     }
 
     if (_sections.isEmpty) {
-      return Center(child: Text('No sections found'));
+      return const Center(child: Text('No sections found'));
     }
 
     return ListView.builder(
@@ -105,7 +105,7 @@ class _SectionsScreenBeforeState extends State<SectionsScreenBefore> {
         return ListTile(
           title: Text(section.name),
           subtitle: Text('Capacity: ${section.capacity ?? "N/A"}'),
-          trailing: Icon(Icons.chevron_right),
+          trailing: const Icon(Icons.chevron_right),
           onTap: () {
             // Navigate to section details
           },
@@ -123,7 +123,7 @@ class SectionsScreenAfter extends StatefulWidget {
   const SectionsScreenAfter({super.key});
 
   @override
-  _SectionsScreenAfterState createState() => _SectionsScreenAfterState();
+  State<SectionsScreenAfter> createState() => _SectionsScreenAfterState();
 }
 
 class _SectionsScreenAfterState extends State<SectionsScreenAfter> {
@@ -179,11 +179,11 @@ class _SectionsScreenAfterState extends State<SectionsScreenAfter> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sections'),
+        title: const Text('Sections'),
         backgroundColor: _isOffline ? Colors.grey : null,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: () => _loadSections(forceRefresh: true),
             tooltip: 'Force refresh from server',
           ),
@@ -195,8 +195,8 @@ class _SectionsScreenAfterState extends State<SectionsScreenAfter> {
             Container(
               width: double.infinity,
               color: Colors.orange,
-              padding: EdgeInsets.all(12),
-              child: Row(
+              padding: const EdgeInsets.all(12),
+              child: const Row(
                 children: [
                   Icon(Icons.cloud_off, color: Colors.white),
                   SizedBox(width: 8),
@@ -217,7 +217,7 @@ class _SectionsScreenAfterState extends State<SectionsScreenAfter> {
 
   Widget _buildBody() {
     if (_loading && _sections.isEmpty) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_error != null && _sections.isEmpty) {
@@ -225,13 +225,13 @@ class _SectionsScreenAfterState extends State<SectionsScreenAfter> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.red),
-            SizedBox(height: 16),
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
             Text('Error: $_error'),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => _loadSections(forceRefresh: true),
-              child: Text('Retry'),
+              child: const Text('Retry'),
             ),
           ],
         ),
@@ -239,7 +239,7 @@ class _SectionsScreenAfterState extends State<SectionsScreenAfter> {
     }
 
     if (_sections.isEmpty) {
-      return Center(child: Text('No sections found'));
+      return const Center(child: Text('No sections found'));
     }
 
     return RefreshIndicator(
@@ -251,7 +251,7 @@ class _SectionsScreenAfterState extends State<SectionsScreenAfter> {
           return ListTile(
             title: Text(section.name),
             subtitle: Text('Capacity: ${section.capacity ?? "N/A"}'),
-            trailing: Icon(Icons.chevron_right),
+            trailing: const Icon(Icons.chevron_right),
             onTap: () {
               // Navigate to section details
             },
@@ -396,9 +396,9 @@ class AppInitializer {
     try {
       // This runs in background and populates cache
       await cachedApi.preloadStaticData();
-      print('✓ Static data preloaded');
+      debugPrint('✓ Static data preloaded');
     } catch (e) {
-      print('⚠ Preload failed (will load on demand): $e');
+      debugPrint('⚠ Preload failed (will load on demand): $e');
       // Non-critical - app can still work
     }
   }
