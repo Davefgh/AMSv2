@@ -1218,9 +1218,12 @@ class ApiService {
     }
 
     if (response.statusCode == 401) {
-      final path = response.request?.url.path ?? '';
+      final urlStr = response.request?.url.toString().toLowerCase() ?? '';
+      _logger.w('401 Unauthorized detected for: $urlStr');
+      
       // Don't logout if we're actually trying to login or refresh
-      if (!path.contains('/api/account/login') && !path.contains('/api/account/refresh')) {
+      if (!urlStr.contains('login') && !urlStr.contains('refresh')) {
+        _logger.i('Auto-logging out due to 401 on non-auth endpoint');
         _handleLogout();
         throw ApiException(401, 'Session expired. Please log in again.');
       }
@@ -1265,13 +1268,14 @@ class ApiService {
     try {
       return await request();
     } on ApiException catch (e) {
+      // Only attempt refresh if it's a 401 and not already a login attempt
       if (e.statusCode == 401) {
+        // If it's a login attempt, don't try to refresh or logout here
+        // _handleResponse already decided whether to logout based on the URL.
         final refreshed = await tryRefreshToken();
         if (refreshed) {
           return await request();
         }
-        _handleLogout();
-        rethrow;
       }
       rethrow;
     }
