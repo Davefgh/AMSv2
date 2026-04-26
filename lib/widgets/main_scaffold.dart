@@ -12,7 +12,6 @@ class MainScaffold extends StatelessWidget {
   final int currentIndex;
   final List<Widget>? actions;
   final Widget? floatingActionButton;
-  final bool isAdmin;
   final bool isStudent;
   final bool showBackButton;
 
@@ -23,7 +22,6 @@ class MainScaffold extends StatelessWidget {
     required this.currentIndex,
     this.actions,
     this.floatingActionButton,
-    this.isAdmin = true,
     this.isStudent = false,
     this.showBackButton = false,
   });
@@ -68,10 +66,10 @@ class MainScaffold extends StatelessWidget {
             height: 300,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withOpacity(0.15),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF38BDF8).withOpacity(0.15),
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
                   blurRadius: 100,
                   spreadRadius: 50,
                 )
@@ -87,10 +85,10 @@ class MainScaffold extends StatelessWidget {
             height: 400,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF1E3A8A).withOpacity(0.2),
+              color: const Color(0xFF1E3A8A).withValues(alpha: 0.2),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF1E3A8A).withOpacity(0.2),
+                  color: const Color(0xFF1E3A8A).withValues(alpha: 0.2),
                   blurRadius: 120,
                   spreadRadius: 60,
                 )
@@ -219,17 +217,15 @@ class MainScaffold extends StatelessWidget {
   Widget _buildNavigationRail(BuildContext context, bool isDark,
       {required bool extended}) {
     List<_NavDestination> destinations;
-    if (isAdmin) {
-      destinations = _adminDestinations;
-    } else if (isStudent) {
+    if (isStudent) {
       destinations = _studentDestinations;
     } else {
       destinations = _teacherDestinations;
     }
 
     final borderColor = isDark
-        ? Colors.white.withOpacity(0.1)
-        : Colors.black.withOpacity(0.1);
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.black.withValues(alpha: 0.1);
     final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
 
     return Container(
@@ -247,20 +243,20 @@ class MainScaffold extends StatelessWidget {
         backgroundColor: Colors.transparent,
         selectedIndex: currentIndex == -1 ? null : currentIndex,
         onDestinationSelected: (index) => _onNavigate(context, index),
-        indicatorColor: const Color(0xFF38BDF8).withOpacity(0.2),
+        indicatorColor: const Color(0xFF38BDF8).withValues(alpha: 0.2),
         selectedIconTheme: const IconThemeData(color: Color(0xFF38BDF8)),
         unselectedIconTheme: IconThemeData(
             color: isDark
-                ? Colors.white.withOpacity(0.4)
-                : Colors.black.withOpacity(0.4)),
+                ? Colors.white.withValues(alpha: 0.4)
+                : Colors.black.withValues(alpha: 0.4)),
         selectedLabelTextStyle: const TextStyle(
           color: Color(0xFF38BDF8),
           fontWeight: FontWeight.bold,
         ),
         unselectedLabelTextStyle: TextStyle(
           color: isDark
-              ? Colors.white.withOpacity(0.4)
-              : Colors.black.withOpacity(0.4),
+              ? Colors.white.withValues(alpha: 0.4)
+              : Colors.black.withValues(alpha: 0.4),
         ),
         leading: extended
             ? Padding(
@@ -310,15 +306,6 @@ class MainScaffold extends StatelessWidget {
     );
   }
 
-  List<_NavDestination> get _adminDestinations => const [
-        _NavDestination(
-            Icons.dashboard_rounded, 'Dashboard', AppRoutes.dashboard),
-        _NavDestination(
-            Icons.person_add_rounded, 'Enrollment', AppRoutes.enrollment),
-        _NavDestination(Icons.class_rounded, 'Classes', AppRoutes.classes),
-        _NavDestination(Icons.people_rounded, 'Users', AppRoutes.users),
-      ];
-
   List<_NavDestination> get _teacherDestinations => const [
         _NavDestination(Icons.home_rounded, 'Home', AppRoutes.teacherDashboard),
         _NavDestination(
@@ -339,9 +326,7 @@ class MainScaffold extends StatelessWidget {
 
   Widget _buildBottomNavBar(BuildContext context, bool isDark) {
     List<_NavDestination> destinations;
-    if (isAdmin) {
-      destinations = _adminDestinations;
-    } else if (isStudent) {
+    if (isStudent) {
       destinations = _studentDestinations;
     } else {
       destinations = _teacherDestinations;
@@ -367,7 +352,7 @@ class MainScaffold extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withOpacity(0.4),
+        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
         showUnselectedLabels: true,
         selectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
@@ -388,9 +373,7 @@ class MainScaffold extends StatelessWidget {
     if (index == currentIndex) return;
 
     List<_NavDestination> destinations;
-    if (isAdmin) {
-      destinations = _adminDestinations;
-    } else if (isStudent) {
+    if (isStudent) {
       destinations = _studentDestinations;
     } else {
       destinations = _teacherDestinations;

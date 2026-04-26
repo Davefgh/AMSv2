@@ -309,7 +309,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
       child: AlertDialog(
-        backgroundColor: const Color(0xFF1E293B).withOpacity(0.9),
+        backgroundColor: const Color(0xFF1E293B).withValues(alpha: 0.9),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
             side: const BorderSide(color: Colors.white10)),
@@ -396,7 +396,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                   width: 48,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -415,7 +415,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               Text(
                 'Select your classroom category and location.',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -441,7 +441,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? const Color(0xFF38BDF8)
-                                : Colors.white.withOpacity(0.05),
+                                : Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                                 color: isSelected
@@ -492,20 +492,20 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFF38BDF8).withOpacity(0.15)
-                              : Colors.white.withOpacity(0.03),
+                              ? const Color(0xFF38BDF8).withValues(alpha: 0.15)
+                              : Colors.white.withValues(alpha: 0.03),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
                                 ? const Color(0xFF38BDF8)
-                                : Colors.white.withOpacity(0.05),
+                                : Colors.white.withValues(alpha: 0.05),
                             width: isSelected ? 2 : 1,
                           ),
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
                                     color: const Color(0xFF38BDF8)
-                                        .withOpacity(0.2),
+                                        .withValues(alpha: 0.2),
                                     blurRadius: 8,
                                   )
                                 ]
@@ -587,7 +587,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             ? []
             : [
                 BoxShadow(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -602,7 +602,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: isOutlined
-                ? BorderSide(color: Colors.white.withOpacity(0.1))
+                ? BorderSide(color: Colors.white.withValues(alpha: 0.1))
                 : BorderSide.none,
           ),
           elevation: 0,
@@ -682,10 +682,10 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.03),
+                            color: Colors.white.withValues(alpha: 0.03),
                             borderRadius: BorderRadius.circular(32),
                             border: Border.all(
-                                color: Colors.white.withOpacity(0.08)),
+                                color: Colors.white.withValues(alpha: 0.08)),
                           ),
                           child: Column(
                             children: [
@@ -809,7 +809,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             height: 300,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withOpacity(0.12),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
             ),
           ),
         ),
@@ -822,7 +822,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             height: 350,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withOpacity(0.05),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.05),
             ),
           ),
         ),
@@ -835,7 +835,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             height: 250,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withOpacity(0.08),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
             ),
           ),
         ),
@@ -855,7 +855,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
@@ -895,10 +895,10 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: (iconColor ?? Colors.white).withOpacity(0.1),
+              color: (iconColor ?? Colors.white).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                  color: (iconColor ?? Colors.white).withOpacity(0.1)),
+                  color: (iconColor ?? Colors.white).withValues(alpha: 0.1)),
             ),
             child: isInstructor
                 ? Container(
@@ -940,7 +940,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color:
-                              const Color(0xFFFBBF24).withOpacity(0.15),
+                              const Color(0xFFFBBF24).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -963,7 +963,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                       style: TextStyle(
                         color: _timeRemainingText.contains('m')
                             ? const Color(0xFF38BDF8)
-                            : Colors.white.withOpacity(0.3),
+                            : Colors.white.withValues(alpha: 0.3),
                         fontSize: 12,
                         fontWeight: _timeRemainingText.contains('m')
                             ? FontWeight.bold
@@ -1000,7 +1000,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             Text(
               'After the cutoff, new scans will be rejected.',
               style: TextStyle(
-                  color: Colors.white.withOpacity(0.4), fontSize: 13),
+                  color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
             ),
             const SizedBox(height: 24),
             Row(
@@ -1042,9 +1042,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Text(
           label,
@@ -1059,7 +1059,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   Widget _buildDivider() {
     return Padding(
       padding: const EdgeInsets.only(left: 68),
-      child: Divider(color: Colors.white.withOpacity(0.05), height: 1),
+      child: Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
     );
   }
 
@@ -1067,9 +1067,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withOpacity(0.5),
+        color: const Color(0xFF1E293B).withValues(alpha: 0.5),
         border: Border(
-            top: BorderSide(color: Colors.white.withOpacity(0.05))),
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1095,7 +1095,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               onPressed: _handleEndSession,
               icon: Icons.stop_rounded,
               label: 'End Session',
-              color: Colors.redAccent.withOpacity(0.1),
+              color: Colors.redAccent.withValues(alpha: 0.1),
               textColor: Colors.redAccent,
               isOutlined: true,
             ),
@@ -1107,7 +1107,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 onPressed: _handleDeleteSession,
                 icon: Icons.delete_forever_rounded,
                 label: 'Delete Session',
-                color: Colors.redAccent.withOpacity(0.1),
+                color: Colors.redAccent.withValues(alpha: 0.1),
                 textColor: Colors.redAccent,
                 isOutlined: true,
               ),
@@ -1117,7 +1117,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               onPressed: () => Navigator.pop(context),
               icon: Icons.check_rounded,
               label: 'Done',
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               textColor: Colors.white,
             ),
           ],
@@ -1142,7 +1142,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             ? []
             : [
                 BoxShadow(
-                  color: color.withOpacity(0.3),
+                  color: color.withValues(alpha: 0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 6),
                 ),
@@ -1160,7 +1160,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
             side: isOutlined
-                ? BorderSide(color: color.withOpacity(0.3))
+                ? BorderSide(color: color.withValues(alpha: 0.3))
                 : BorderSide.none,
           ),
           elevation: 0,
@@ -1283,7 +1283,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 'Students can scan this to record attendance.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 12,
                   decoration: TextDecoration.none,
                   fontWeight: FontWeight.normal,
@@ -1301,7 +1301,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return Text(
       text,
       style: TextStyle(
-        color: Colors.white.withOpacity(0.5),
+        color: Colors.white.withValues(alpha: 0.5),
         fontWeight: FontWeight.bold,
         fontSize: 12,
         letterSpacing: 0.5,
@@ -1317,9 +1317,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: TextField(
         controller: controller,
@@ -1328,7 +1328,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(
-              color: Colors.white.withOpacity(0.2), fontSize: 15),
+              color: Colors.white.withValues(alpha: 0.2), fontSize: 15),
           border: InputBorder.none,
           suffixIcon:
               icon != null ? Icon(icon, color: Colors.white24, size: 20) : null,

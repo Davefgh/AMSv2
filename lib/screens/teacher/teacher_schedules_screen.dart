@@ -41,10 +41,10 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
     try {
       // 1. Get Profile
       final profile = await _apiService.getMe();
-      
+
       // 2. Get Schedules
       final schedules = await _apiService.getMySchedules();
-      
+
       if (mounted) {
         setState(() {
           _profile = profile;
@@ -60,15 +60,18 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
         final sectionId = (section?['id'] ?? s.sectionId)?.toString();
 
         if (sectionId != null && sectionId.isNotEmpty) {
-          sectionMap[sectionId] = section ?? {
-            'id': sectionId,
-            'name': s.sectionName.isNotEmpty ? s.sectionName : 'Section $sectionId',
-          };
+          sectionMap[sectionId] = section ??
+              {
+                'id': sectionId,
+                'name': s.sectionName.isNotEmpty
+                    ? s.sectionName
+                    : 'Section $sectionId',
+              };
         }
       }
 
       final sectionIds = sectionMap.keys.toList();
-      
+
       // Fetch student counts in background
       for (var id in sectionIds) {
         _apiService.getStudentsBySection(id).then((students) {
@@ -79,10 +82,9 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
           }
         }).catchError((_) {});
       }
-      
+
       // Calculate total unique students
       _fetchTotalUniqueStudents(sectionIds);
-
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -115,12 +117,11 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
     return MainScaffold(
       title: 'My Classes',
       currentIndex: 3,
-      isAdmin: false,
       body: _isLoading
           ? const SkeletonDashboard()
           : _errorMessage != null
-               ? _buildErrorState()
-               : _buildContent(),
+              ? _buildErrorState()
+              : _buildContent(),
     );
   }
 
@@ -129,15 +130,18 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
       builder: (context, appProvider, _) {
         final isDark = appProvider.isDarkMode;
         final sections = _getGroupedSections();
-        
+
         final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
-        final subtitleColor = isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B);
+        final subtitleColor = isDark
+            ? Colors.white.withValues(alpha: 0.5)
+            : const Color(0xFF64748B);
         final bgColor = isDark ? Colors.transparent : const Color(0xFFF8FAFC);
 
         return Container(
           color: bgColor,
           child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: Sizing.w(24), vertical: Sizing.h(20)),
+            padding: EdgeInsets.symmetric(
+                horizontal: Sizing.w(24), vertical: Sizing.h(20)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -194,7 +198,8 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                       padding: EdgeInsets.symmetric(vertical: Sizing.h(60)),
                       child: Text(
                         'No classes found',
-                        style: TextStyle(color: subtitleColor, fontSize: Sizing.sp(16)),
+                        style: TextStyle(
+                            color: subtitleColor, fontSize: Sizing.sp(16)),
                       ),
                     ),
                   )
@@ -203,8 +208,8 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).size.width > 900 
-                          ? 4 
+                      crossAxisCount: MediaQuery.of(context).size.width > 900
+                          ? 4
                           : (MediaQuery.of(context).size.width > 600 ? 3 : 2),
                       crossAxisSpacing: Sizing.w(16),
                       mainAxisSpacing: Sizing.h(16),
@@ -224,18 +229,22 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color iconColor, bool isDark) {
+  Widget _buildStatCard(
+      String label, String value, IconData icon, Color iconColor, bool isDark) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: Sizing.w(12), vertical: Sizing.h(16)),
+      padding: EdgeInsets.symmetric(
+          horizontal: Sizing.w(12), vertical: Sizing.h(16)),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.05),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -246,7 +255,7 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
           Container(
             padding: EdgeInsets.all(Sizing.w(8)),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: iconColor, size: Sizing.sp(18)),
@@ -260,7 +269,9 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                 Text(
                   label,
                   style: TextStyle(
-                    color: isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.5)
+                        : const Color(0xFF64748B),
                     fontSize: Sizing.sp(10),
                     fontWeight: FontWeight.w600,
                   ),
@@ -290,19 +301,23 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
     final int classCount = section['classCount'] ?? 0;
 
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
-    final subtitleColor = isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B);
-    final cardColor = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
+    final subtitleColor =
+        isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
+    final cardColor =
+        isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
 
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.05),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -362,22 +377,32 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.book_outlined, size: Sizing.sp(12), color: subtitleColor.withOpacity(0.6)),
+                          Icon(Icons.book_outlined,
+                              size: Sizing.sp(12),
+                              color: subtitleColor.withValues(alpha: 0.6)),
                           SizedBox(width: Sizing.w(4)),
                           Text(
                             '$classCount Class${classCount > 1 ? 'es' : ''}',
-                            style: TextStyle(color: subtitleColor, fontSize: Sizing.sp(10), fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                                color: subtitleColor,
+                                fontSize: Sizing.sp(10),
+                                fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.people_outline, size: Sizing.sp(12), color: subtitleColor.withOpacity(0.6)),
+                          Icon(Icons.people_outline,
+                              size: Sizing.sp(12),
+                              color: subtitleColor.withValues(alpha: 0.6)),
                           SizedBox(width: Sizing.w(4)),
                           Text(
                             '$studentCount Student${studentCount > 1 ? 's' : ''}',
-                            style: TextStyle(color: subtitleColor, fontSize: Sizing.sp(10), fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                                color: subtitleColor,
+                                fontSize: Sizing.sp(10),
+                                fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -392,7 +417,9 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(
-                    color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.05),
                   ),
                 ),
               ),
@@ -408,7 +435,9 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                     ),
                   ),
                   SizedBox(width: Sizing.w(4)),
-                  Icon(Icons.chevron_right_rounded, color: isDark ? Colors.white : const Color(0xFF38BDF8), size: Sizing.sp(16)),
+                  Icon(Icons.chevron_right_rounded,
+                      color: isDark ? Colors.white : const Color(0xFF38BDF8),
+                      size: Sizing.sp(16)),
                 ],
               ),
             ),
@@ -421,23 +450,23 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
   List<Map<String, dynamic>> _getGroupedSections() {
     final Map<String, Map<String, dynamic>> sectionMap = {};
     if (_schedules.isEmpty) return [];
-    
+
     for (var s in _schedules) {
       final id = (s.section?['id'] ?? s.sectionId)?.toString();
       if (id == null || id.isEmpty) continue;
-      
+
       final sectionName = s.sectionName;
-      
+
       if (!sectionMap.containsKey(id)) {
         sectionMap[id] = {
           'id': id,
           'name': sectionName,
           'course': _getCourseName(s),
           'classCount': 0,
-          'subjects': <String>{}, 
+          'subjects': <String>{},
         };
       }
-      
+
       final subjectId = s.subjectId;
       if (subjectId != null && subjectId.isNotEmpty) {
         final Set<String> subjects = sectionMap[id]!['subjects'] as Set<String>;
@@ -451,7 +480,7 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
   String _getCourseName(Schedule s) {
     try {
       final section = s.section;
-      if (section != null && section is Map) {
+      if (section != null) {
         final course = section['course'];
         if (course != null && course is Map) {
           final name = course['name'];

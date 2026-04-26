@@ -128,7 +128,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return MainScaffold(
       title: 'Attendance Management',
       currentIndex: 1,
-      isAdmin: false,
       body: Column(
         children: [
           _buildHeader(),
@@ -206,9 +205,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Text(
         label,
@@ -222,18 +221,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: TextField(
         controller: _searchController,
         style: const TextStyle(color: Colors.white, fontSize: 14),
         decoration: InputDecoration(
           hintText: 'Search sessions...',
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
           prefixIcon: Icon(Icons.search,
-              color: Colors.white.withOpacity(0.3), size: 20),
+              color: Colors.white.withValues(alpha: 0.3), size: 20),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
@@ -269,14 +268,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
             Icon(Icons.calendar_today,
-                color: Colors.white.withOpacity(0.3), size: 18),
+                color: Colors.white.withValues(alpha: 0.3), size: 18),
             const SizedBox(width: 8),
             Text(
               DateFormat('MM/dd/yyyy').format(_selectedDate),
@@ -293,16 +292,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _statusFilter,
           dropdownColor: const Color(0xFF1E293B),
           icon: Icon(Icons.filter_list,
-              color: Colors.white.withOpacity(0.3), size: 18),
+              color: Colors.white.withValues(alpha: 0.3), size: 18),
           style: const TextStyle(color: Colors.white70, fontSize: 13),
           items: ['All', 'Active', 'Pending', 'Ended'].map((String value) {
             return DropdownMenuItem<String>(
@@ -403,7 +402,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                   const Spacer(),
                   Icon(Icons.chevron_right_rounded,
-                      color: Colors.white.withOpacity(0.2)),
+                      color: Colors.white.withValues(alpha: 0.2)),
                 ],
               ),
             ],
@@ -418,11 +417,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Icon(icon, size: 14, color: Colors.white.withOpacity(0.3)),
+          Icon(icon, size: 14, color: Colors.white.withValues(alpha: 0.3)),
           const SizedBox(width: 8),
           Text(label,
               style: TextStyle(
-                  color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                  color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
         ],
       ),
     );
@@ -463,10 +462,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.event_busy_rounded,
-                size: 48, color: Colors.white.withOpacity(0.2)),
+                size: 48, color: Colors.white.withValues(alpha: 0.2)),
             const SizedBox(height: 12),
             Text('No sessions found for this filters.',
-                style: TextStyle(color: Colors.white.withOpacity(0.5))),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
           ],
         ),
       ),
@@ -490,9 +489,9 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
           ),
           child: child,
         ),

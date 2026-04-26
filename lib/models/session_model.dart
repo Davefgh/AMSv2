@@ -67,12 +67,6 @@ class ClassSession {
       }
     }
 
-    int? parseInt(dynamic v) {
-      if (v is int) return v;
-      if (v is String) return int.tryParse(v);
-      return null;
-    }
-
     String? parseString(dynamic v) {
       if (v == null) return null;
       return v.toString();

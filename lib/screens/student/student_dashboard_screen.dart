@@ -50,7 +50,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     return MainScaffold(
       title: 'Student Dashboard',
       currentIndex: 0,
-      isAdmin: false,
       isStudent: true,
       actions: [
         IconButton(
@@ -146,17 +145,17 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       child: Container(
         padding: EdgeInsets.all(Sizing.w(16)),
         decoration: BoxDecoration(
-          color: const Color(0xFF38BDF8).withOpacity(0.08),
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(Sizing.r(16)),
           border: Border.all(
-              color: const Color(0xFF38BDF8).withOpacity(0.25)),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
             Container(
               padding: EdgeInsets.all(Sizing.w(10)),
               decoration: BoxDecoration(
-                color: const Color(0xFF38BDF8).withOpacity(0.15),
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(Sizing.r(12)),
               ),
               child: Icon(Icons.fingerprint_rounded,
@@ -178,7 +177,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   Text(
                     'View your enrolled fingerprint records',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontSize: Sizing.sp(12),
                     ),
                   ),
@@ -186,7 +185,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               ),
             ),
             Icon(Icons.arrow_forward_ios_rounded,
-                color: Colors.white.withOpacity(0.3), size: 14),
+                color: Colors.white.withValues(alpha: 0.3), size: 14),
           ],
         ),
       ),
@@ -200,7 +199,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         Text(
           'Welcome back,',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontSize: Sizing.sp(16),
           ),
         ),
@@ -235,7 +234,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             Text(
               '${_subjects.length} Subjects',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 fontSize: Sizing.sp(13),
               ),
             ),
@@ -256,9 +255,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       width: double.infinity,
       padding: EdgeInsets.all(Sizing.w(20)),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(Sizing.r(24)),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,7 +267,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               Container(
                 padding: EdgeInsets.all(Sizing.w(10)),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withOpacity(0.1),
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(Sizing.r(12)),
                 ),
                 child: Icon(Icons.book_rounded,
@@ -290,7 +289,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     Text(
                       detail.subject.code,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: Sizing.sp(12),
                       ),
                     ),
@@ -301,7 +300,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 padding: EdgeInsets.symmetric(
                     horizontal: Sizing.w(10), vertical: Sizing.h(4)),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withOpacity(0.1),
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(Sizing.r(8)),
                 ),
                 child: Text(
@@ -337,7 +336,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.person_outline_rounded,
@@ -348,7 +347,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 child: Text(
                   'Instructor: ${detail.instructor.fullName}',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 13,
                   ),
                 ),
@@ -365,14 +364,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       padding:
           EdgeInsets.symmetric(horizontal: Sizing.w(10), vertical: Sizing.h(6)),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(Sizing.r(10)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon,
-              size: Sizing.sp(14), color: Colors.white.withOpacity(0.4)),
+              size: Sizing.sp(14), color: Colors.white.withValues(alpha: 0.4)),
           SizedBox(width: Sizing.w(6)),
           Flexible(
             child: Text(
@@ -380,7 +379,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: Sizing.sp(12),
               ),
             ),
@@ -395,16 +394,16 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
           Icon(
             Icons.calendar_today_rounded,
             size: 48,
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -419,7 +418,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           Text(
             'Your upcoming classes will appear here.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               fontSize: 13,
             ),
           ),
@@ -471,9 +470,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     return Container(
       padding: EdgeInsets.all(Sizing.w(20)),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(Sizing.r(24)),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,7 +480,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           Container(
             padding: EdgeInsets.all(Sizing.w(8)),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: Sizing.sp(20)),
@@ -498,7 +497,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: Sizing.sp(13),
             ),
           ),
