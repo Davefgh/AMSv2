@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../widgets/main_scaffold.dart';
 import '../../config/routes/app_routes.dart';
 import '../../services/api_service.dart';
 import '../../utils/sizing_utils.dart';
@@ -47,64 +46,32 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainScaffold(
-      title: 'Student Dashboard',
-      currentIndex: 0,
-      isStudent: true,
-      actions: [
-        IconButton(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Notifications coming soon!')),
-            );
-          },
-          icon: const Icon(Icons.notifications_none_rounded,
-              color: Colors.white70),
-          splashRadius: 20,
-        ),
-        const SizedBox(width: 4),
-        IconButton(
-          onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
-          icon: Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white24, width: 1),
-            ),
-            child:
-                const Icon(Icons.person_rounded, color: Colors.white, size: 20),
-          ),
-          splashRadius: 20,
-        ),
-        const SizedBox(width: 12),
-      ],
-      body: _isLoading
-          ? const SkeletonDashboard()
-          : _errorMessage != null
-              ? _buildErrorState()
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  color: const Color(0xFF38BDF8),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics()),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: Sizing.w(24), vertical: Sizing.h(20)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildWelcomeHeader(),
-                        SizedBox(height: Sizing.h(32)),
-                        _buildFingerprintBanner(),
-                        SizedBox(height: Sizing.h(20)),
-                        _buildAttendanceStats(),
-                        SizedBox(height: Sizing.h(32)),
-                        _buildUpcomingSessions(),
-                      ],
-                    ),
+    return _isLoading
+        ? const SkeletonDashboard()
+        : _errorMessage != null
+            ? _buildErrorState()
+            : RefreshIndicator(
+                onRefresh: _loadData,
+                color: const Color(0xFF38BDF8),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics()),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: Sizing.w(24), vertical: Sizing.h(20)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildWelcomeHeader(),
+                      SizedBox(height: Sizing.h(32)),
+                      _buildFingerprintBanner(),
+                      SizedBox(height: Sizing.h(20)),
+                      _buildAttendanceStats(),
+                      SizedBox(height: Sizing.h(32)),
+                      _buildUpcomingSessions(),
+                    ],
                   ),
                 ),
-    );
+              );
   }
 
   Widget _buildErrorState() {

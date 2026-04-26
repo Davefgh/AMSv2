@@ -5,7 +5,6 @@ import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/session_model.dart';
 import 'session_details_screen.dart';
-import '../../widgets/main_scaffold.dart';
 import '../../widgets/skeleton_loader.dart';
 
 class SessionDashboardScreen extends StatefulWidget {
@@ -404,42 +403,57 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainScaffold(
-      title: 'Sessions',
-      currentIndex: 2, // Sessions tab
-      actions: [
+    return Column(
+      children: [
+        // Add create session button at the top
         Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: IconButton(
-            onPressed: _onCreateSession,
-            icon: const Icon(Icons.add_circle_outline, color: primaryBlue),
-            tooltip: 'Create Session',
-          ),
-        ),
-      ],
-      body: _isLoading
-          ? const SkeletonSessionList()
-          : _errorMessage != null
-              ? _buildErrorState()
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  color: primaryBlue,
-                  backgroundColor: surfaceColor,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildTabContainer(),
-                          const SizedBox(height: 24),
-                          _buildTableContainer(),
-                        ],
-                      ),
-                    ),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              ElevatedButton.icon(
+                onPressed: _onCreateSession,
+                icon: const Icon(Icons.add_circle_outline, size: 18),
+                label: const Text('Create Session'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryBlue,
+                  foregroundColor: Colors.black,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _isLoading
+              ? const SkeletonSessionList()
+              : _errorMessage != null
+                  ? _buildErrorState()
+                  : RefreshIndicator(
+                      onRefresh: _loadData,
+                      color: primaryBlue,
+                      backgroundColor: surfaceColor,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildTabContainer(),
+                              const SizedBox(height: 24),
+                              _buildTableContainer(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+        ),
+      ],
     );
   }
 

@@ -8,6 +8,7 @@ import 'screens/shared/auth/login_screen.dart';
 import 'services/storage_service.dart';
 import 'services/api_service.dart';
 import 'utils/constants.dart';
+import 'widgets/navigation_shell.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -76,8 +77,10 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Initialize user role once on widget initialization
-    ref.read(appProvider.notifier).setUserRole(widget.initialRole);
+    // Initialize user role after first frame to avoid modifying provider during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(appProvider.notifier).setUserRole(widget.initialRole);
+    });
   }
 
   @override
@@ -91,7 +94,24 @@ class _MyAppState extends ConsumerState<MyApp> {
       initialRoute: widget.initialRoute,
       routes: {
         '/': (context) => const LoginScreen(),
-        ...AppRoutes.routes,
+        // Use NavigationShell for main dashboards
+        AppRoutes.teacherDashboard: (context) =>
+            const NavigationShell(isStudent: false),
+        AppRoutes.studentDashboard: (context) =>
+            const NavigationShell(isStudent: true),
+        // Keep standalone routes that are not part of bottom navigation
+        AppRoutes.editProfile: (context) =>
+            AppRoutes.routes[AppRoutes.editProfile]!(context),
+        AppRoutes.settings: (context) =>
+            AppRoutes.routes[AppRoutes.settings]!(context),
+        AppRoutes.notifications: (context) =>
+            AppRoutes.routes[AppRoutes.notifications]!(context),
+        AppRoutes.teacherProfileEdit: (context) =>
+            AppRoutes.routes[AppRoutes.teacherProfileEdit]!(context),
+        AppRoutes.teacherNotifications: (context) =>
+            AppRoutes.routes[AppRoutes.teacherNotifications]!(context),
+        AppRoutes.studentFingerprint: (context) =>
+            AppRoutes.routes[AppRoutes.studentFingerprint]!(context),
       },
       debugShowCheckedModeBanner: false,
     );

@@ -37,26 +37,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final isStudent = _userRole == 'student';
 
+    // For students, this is part of the NavigationShell (no scaffold needed)
+    // For teachers, this is a standalone screen (needs MainScaffold)
+    final content = FutureBuilder<dynamic>(
+      future: _profileFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SkeletonProfile();
+        } else if (snapshot.hasError) {
+          return _buildErrorState(snapshot.error.toString());
+        } else if (!snapshot.hasData) {
+          return _buildErrorState('No profile data found');
+        }
+
+        final profileData = snapshot.data!;
+        return _buildProfileContent(profileData);
+      },
+    );
+
+    // Students see this as a tab (no scaffold wrapper)
+    if (isStudent) {
+      return content;
+    }
+
+    // Teachers see this as a standalone screen (with scaffold)
     return MainScaffold(
       title: 'Profile',
-      currentIndex: isStudent ? 2 : -1,
+      currentIndex: -1,
       showBackButton: true,
-      isStudent: isStudent,
-      body: FutureBuilder<dynamic>(
-        future: _profileFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SkeletonProfile();
-          } else if (snapshot.hasError) {
-            return _buildErrorState(snapshot.error.toString());
-          } else if (!snapshot.hasData) {
-            return _buildErrorState('No profile data found');
-          }
-
-          final profileData = snapshot.data!;
-          return _buildProfileContent(profileData);
-        },
-      ),
+      isStudent: false,
+      body: content,
     );
   }
 
