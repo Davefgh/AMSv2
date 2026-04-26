@@ -9,6 +9,7 @@ import '../../widgets/main_scaffold.dart';
 import '../../models/instructor_model.dart';
 import '../../services/storage_service.dart';
 import '../shared/auth/login_screen.dart';
+import '../../models/user_profile.dart';
 import '../../widgets/skeleton_loader.dart';
 
 class SessionDashboardScreen extends StatefulWidget {
@@ -28,7 +29,19 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   List<Schedule> _instructorSchedules = [];
   int _activeTabIndex =
       0; // 0: All, 1: Not Started, 2: Active, 3: Completed, 4: Cancelled
-  Instructor? _profile;
+  InstructorProfileInfo? _profile;
+
+  // Premium Dark Theme Colors
+  static const Color primaryBlue = Color(0xFF38BDF8);
+  static const Color bgColor = Color(0xFF0F172A);
+  static const Color surfaceColor = Color(0xFF1E293B);
+  static const Color headerTextColor = Colors.white;
+  static const Color subtitleTextColor = Color(0xFF94A3B8);
+  static const Color colHeaderColor = Color(0xFF64748B);
+  static const Color successGreen = Color(0xFF10B981);
+  static const Color dangerRed = Color(0xFFEF4444);
+  static const Color pendingBlue = Color(0xFF3B82F6);
+  static const Color dividerColor = Colors.white10;
 
   @override
   void initState() {
@@ -44,19 +57,21 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     try {
       final mySessions = await _apiService.getMySessions();
       final schedules = await _apiService.getMySchedules();
-      final profile = await _apiService.getInstructorProfile();
+      final profile = await _apiService.getMe();
       setState(() {
         _allSessions = mySessions;
         _instructorSchedules = schedules;
-        _profile = profile;
+        _profile = profile.instructorProfile;
         _applyFilter();
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -155,13 +170,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     final TextEditingController dateController = TextEditingController(
         text: DateFormat('MM/dd/yyyy').format(selectedDate));
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
-          // Off-schedule detection: only true if we HAVE a schedule, it HAS a dayOfWeek, and they DON'T match.
           bool isOffSchedule = false;
           if (selectedSchedule != null && selectedSchedule!.dayOfWeek != null) {
             isOffSchedule = selectedDate.weekday != selectedSchedule!.dayOfWeek;
@@ -170,308 +182,191 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
           final isReasonValid =
               !isOffSchedule || reasonController.text.trim().length >= 5;
 
-          return _GlassModal(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Create New Session',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded,
-                          color: Colors.white38),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Schedule Input
-                const Text('Schedule *',
-                    style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
-                    border:
-                        Border.all(color: Colors.white.withOpacity(0.1)),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<Schedule>(
-                      value: selectedSchedule,
-                      isExpanded: true,
-                      dropdownColor: const Color(0xFF1E293B),
-                      icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                          color: Colors.white38),
-                      items: _instructorSchedules.map((Schedule s) {
-                        return DropdownMenuItem<Schedule>(
-                          value: s,
-                          child: Text(
-                            'Section ${s.sectionName} - ${s.classroomName} - ${s.dayName} ${_formatTime(s.timeIn)} - ${_formatTime(s.timeOut)}',
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (val) =>
-                          setModalState(() => selectedSchedule = val),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Date Input
-                const Text('Session Date *',
-                    style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () async {
-                    final DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: selectedDate,
-                      firstDate: DateTime.now().subtract(const Duration(days: 365)), // Allow past 1 year
-                      lastDate: DateTime.now().add(const Duration(days: 365)), // Allow future 1 year
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: const ColorScheme.dark(
-                              primary: Color(0xFF38BDF8),
-                              onPrimary: Colors.black,
-                              surface: Color(0xFF1E293B),
-                            ),
-                          ),
-                          child: child!,
-                        );
-                      },
-                    );
-                    if (picked != null) {
-                      setModalState(() {
-                        selectedDate = picked;
-                        dateController.text =
-                            DateFormat('MM/dd/yyyy').format(picked);
-                      });
-                    }
-                  },
-                  child: AbsorbPointer(
-                    child: TextField(
-                      controller: dateController,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white.withOpacity(0.05),
-                        hintText: 'mm/dd/yyyy',
-                        hintStyle: const TextStyle(color: Colors.white24),
-                        suffixIcon: const Icon(Icons.calendar_today_rounded,
-                            size: 18, color: Colors.white38),
-                        helperText: selectedSchedule?.dayOfWeek != null 
-                            ? 'Selected day: ${DateFormat('EEEE').format(selectedDate)}. (Scheduled: ${selectedSchedule?.dayName ?? ""})'
-                            : null,
-                        helperStyle: const TextStyle(color: Colors.white38, fontSize: 10),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none),
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.1))),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Off-Schedule Reason Input
-                if (isOffSchedule) ...[
-                  const Text('Reason for Off-Schedule Session *',
-                      style: TextStyle(
-                          color: Colors.white54,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: reasonController,
-                    maxLines: 3,
-                    onChanged: (val) => setModalState(() {}),
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.05),
-                      hintText:
-                          'Explain why this class is being held on a different day',
-                      hintStyle: const TextStyle(color: Colors.white24),
-                      errorText: (reasonController.text.isEmpty)
-                          ? null
-                          : (reasonController.text.length < 5
-                              ? 'Minimum 5 characters required'
-                              : null),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none),
-                      enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                              color: Colors.white.withOpacity(0.1))),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Row(
+          return Dialog(
+            backgroundColor: surfaceColor,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Theme(
+              data: ThemeData.dark().copyWith(
+                primaryColor: primaryBlue,
+                colorScheme: const ColorScheme.dark(primary: primaryBlue),
+              ),
+              child: Container(
+                width: 500,
+                padding: const EdgeInsets.all(24),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.info_outline_rounded,
-                          size: 12, color: Colors.white38),
-                      SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          'This session date does not match the schedule day. A reason is required.',
-                          style: TextStyle(color: Colors.white38, fontSize: 11),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Create New Session',
+                            style: TextStyle(
+                                color: headerTextColor,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, color: subtitleTextColor),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                      const Divider(color: dividerColor),
+                      const SizedBox(height: 16),
+                      _buildLabel('Schedule *'),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          border: Border.all(color: dividerColor),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<Schedule>(
+                            value: selectedSchedule,
+                            isExpanded: true,
+                            dropdownColor: surfaceColor,
+                            items: _instructorSchedules.map((s) => DropdownMenuItem(
+                              value: s,
+                              child: Text(
+                                '${s.subjectCode} - Section ${s.sectionName} (${s.dayName})',
+                                style: const TextStyle(fontSize: 14, color: Colors.white),
+                              ),
+                            )).toList(),
+                            onChanged: (val) => setModalState(() => selectedSchedule = val),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                ],
-
-                // Notes Input
-                const Text('Description (Optional)',
-                    style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: notesController,
-                  maxLines: 2,
-                  maxLength: 500,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.05),
-                    hintText: 'Enter session description or notes...',
-                    hintStyle: const TextStyle(color: Colors.white24),
-                    counterStyle:
-                        const TextStyle(color: Colors.white24, fontSize: 10),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none),
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            color: Colors.white.withOpacity(0.1))),
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Actions
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: (!isReasonValid || _isLoading)
-                            ? null
-                            : () async {
-                                if (selectedSchedule == null) return;
-
+                      const SizedBox(height: 16),
+                      _buildLabel('Session Date *'),
+                      GestureDetector(
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDate,
+                            firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                            builder: (context, child) => Theme(
+                              data: ThemeData.dark().copyWith(
+                                colorScheme: const ColorScheme.dark(
+                                  primary: primaryBlue,
+                                  surface: surfaceColor,
+                                ),
+                              ),
+                              child: child!,
+                            ),
+                          );
+                          if (picked != null) {
+                            setModalState(() {
+                              selectedDate = picked;
+                              dateController.text = DateFormat('MM/dd/yyyy').format(picked);
+                            });
+                          }
+                        },
+                        child: AbsorbPointer(
+                          child: TextField(
+                            controller: dateController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: 'mm/dd/yyyy',
+                              hintStyle: const TextStyle(color: Colors.white24),
+                              suffixIcon: const Icon(Icons.calendar_today, size: 18, color: primaryBlue),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: dividerColor)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: dividerColor)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (isOffSchedule) ...[
+                        const SizedBox(height: 16),
+                        _buildLabel('Reason for Off-Schedule Session *'),
+                        TextField(
+                          controller: reasonController,
+                          maxLines: 2,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            hintText: 'Required: Why this day?',
+                            hintStyle: const TextStyle(color: Colors.white24),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: dividerColor)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: dividerColor)),
+                          ),
+                          onChanged: (_) => setModalState(() {}),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      _buildLabel('Description (Optional)'),
+                      TextField(
+                        controller: notesController,
+                        maxLines: 2,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Notes...',
+                          hintStyle: const TextStyle(color: Colors.white24),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: dividerColor)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: dividerColor)),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: (!isReasonValid || _isLoading) ? null : () async {
                                 setModalState(() => _isLoading = true);
-
                                 try {
                                   await _apiService.createSession({
                                     'scheduleId': selectedSchedule!.id,
-                                    'sessionDate':
-                                        selectedDate.toIso8601String(),
-                                    'description': notesController.text.trim().isEmpty 
-                                        ? null 
-                                        : notesController.text.trim(),
+                                    'sessionDate': selectedDate.toIso8601String(),
+                                    'description': notesController.text.trim().isEmpty ? null : notesController.text.trim(),
                                     if (isOffSchedule) ...{
                                       'allowOffScheduleDate': true,
-                                      if (reasonController.text.trim().isNotEmpty)
-                                        'offScheduleReason': reasonController.text.trim(),
+                                      'offScheduleReason': reasonController.text.trim(),
                                     },
                                   });
-
-                                  if (!context.mounted) return;
-                                  Navigator.pop(
-                                      context); // Close modal only on success
-
-                                  _loadData();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Session created successfully!'),
-                                          backgroundColor: Color(0xFF34D399)));
-                                } catch (e) {
-                                  setModalState(() => _isLoading = false);
-
-                                  String errorMsg = e.toString();
-                                  if (e is ApiException) {
-                                    errorMsg = e.message;
-                                    
-                                    // Provide more helpful error messages
-                                    if (errorMsg.contains('already exists')) {
-                                      errorMsg = 'A session already exists for this schedule on the selected date. Please choose a different date or delete the existing session first.';
-                                    } else if (errorMsg.contains('does not match')) {
-                                      errorMsg = 'The selected date does not match the schedule\'s day of week. The backend requires sessions to be created on the correct day. Please select a ${selectedSchedule?.dayName ?? "matching"} date.';
-                                    }
+                                  if (mounted) {
+                                    Navigator.pop(context);
+                                    _loadData();
                                   }
-
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(SnackBar(
-                                      content: Text(errorMsg),
-                                      backgroundColor: Colors.redAccent,
-                                      behavior: SnackBarBehavior.floating,
-                                      duration: const Duration(seconds: 5),
-                                    ));
+                                } catch (e) {
+                                  if (mounted) {
+                                    setModalState(() => _isLoading = false);
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
                                   }
                                 }
                               },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF38BDF8),
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          disabledBackgroundColor:
-                              const Color(0xFF38BDF8).withOpacity(0.3),
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.black))
-                            : const Text('Create Session',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryBlue,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              child: const Text('Create Session', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel', style: TextStyle(color: subtitleTextColor)),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    TextButton(
-                      onPressed:
-                          _isLoading ? null : () => Navigator.pop(context),
-                      child: const Text('Cancel',
-                          style: TextStyle(color: Colors.white38)),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
           );
-        },
+        }
       ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white70)),
     );
   }
 
@@ -479,90 +374,47 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   Widget build(BuildContext context) {
     return MainScaffold(
       title: 'Sessions',
-      currentIndex: 2, // Sessions tab
+      currentIndex: 2,
       isAdmin: false,
       actions: [
-        _buildProfileAvatar(),
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: IconButton(
+            onPressed: _onCreateSession,
+            icon: const Icon(Icons.add_circle_outline, color: primaryBlue),
+            tooltip: 'Create Session',
+          ),
+        ),
       ],
       body: _isLoading
           ? const SkeletonSessionList()
           : _errorMessage != null
-              ? _buildErrorState()
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  color: const Color(0xFF38BDF8),
-                  child: Column(
-                    children: [
-                      _buildHeader(),
-                      _buildTabs(),
-                      Expanded(
-                        child: _filteredSessions.isEmpty
-                            ? _buildEmptyState()
-                            : ListView.builder(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 20),
-                                itemCount: _filteredSessions.length,
-                                itemBuilder: (context, index) =>
-                                    _buildSessionCard(_filteredSessions[index]),
-                              ),
+               ? _buildErrorState()
+               : RefreshIndicator(
+                    onRefresh: _loadData,
+                    color: primaryBlue,
+                    backgroundColor: surfaceColor,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildTabContainer(),
+                            const SizedBox(height: 24),
+                            _buildTableContainer(),
+                          ],
+                        ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Session Management',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5),
-                ),
-                Text(
-                  'Manage your class sessions...',
-                  style: TextStyle(color: Colors.white38, fontSize: 11),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          ElevatedButton.icon(
-            onPressed: _onCreateSession,
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text('Create',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF38BDF8),
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabs() {
+  Widget _buildTabContainer() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         children: [
           _buildTab('All', 0),
@@ -578,7 +430,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   Widget _buildTab(String label, int index) {
     bool active = _activeTabIndex == index;
     int count = _getCount(index);
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         setState(() {
           _activeTabIndex = index;
@@ -586,40 +438,40 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         });
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        margin: const EdgeInsets.only(right: 20),
+        padding: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: active
-              ? const Color(0xFF38BDF8).withOpacity(0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: active
-                  ? const Color(0xFF38BDF8).withOpacity(0.3)
-                  : Colors.transparent),
+          border: Border(
+            bottom: BorderSide(
+              color: active ? primaryBlue : Colors.transparent,
+              width: 2,
+            ),
+          ),
         ),
         child: Row(
           children: [
             Text(
               label,
               style: TextStyle(
-                  color: active ? const Color(0xFF38BDF8) : Colors.white38,
-                  fontWeight: active ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 13),
+                color: active ? headerTextColor : subtitleTextColor,
+                fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
+              ),
             ),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: active ? const Color(0xFF38BDF8) : Colors.white10,
-                borderRadius: BorderRadius.circular(6),
+                color: active ? primaryBlue.withOpacity(0.2) : Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 '$count',
                 style: TextStyle(
-                    color: active ? Colors.black : Colors.white38,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold),
+                  color: active ? primaryBlue : subtitleTextColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -628,231 +480,432 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     );
   }
 
+  Widget _buildTableContainer() {
+    if (_filteredSessions.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _filteredSessions.length,
+      itemBuilder: (context, index) {
+        final s = _filteredSessions[index];
+        return _buildSessionCard(s);
+      },
+    );
+  }
+
   Widget _buildSessionCard(ClassSession s) {
     final status = s.status.toLowerCase();
-    final isActive = status == 'active' || status == 'started';
-
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(10), // More square-ish as requested
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        color: surfaceColor.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: dividerColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildDateBadge(s.sessionDate),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
+          // Top Section: Info & Status
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '${s.subjectCode} - ${s.subjectName}',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.location_on_outlined,
-                            size: 10,
-                            color: Colors.white.withOpacity(0.3)),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            s.actualRoomName ?? s.scheduledRoomName,
-                            style: TextStyle(
-                                color: Colors.white.withOpacity(0.4),
-                                fontSize: 11),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              _buildStatusPill(status),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const Divider(color: Colors.white10, height: 1),
-          const SizedBox(height: 12),
-          // Bottom Row with Overflow Protection
-          Row(
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Icon(Icons.access_time_rounded,
-                        size: 12, color: Colors.white.withOpacity(0.3)),
-                    const SizedBox(width: 6),
                     Expanded(
-                      child: Text(
-                        s.actualStartTime != null
-                            ? '${DateFormat('h:mm a').format(s.actualStartTime!)} - ${s.actualEndTime != null ? DateFormat('h:mm a').format(s.actualEndTime!) : 'Progress'}'
-                            : '${_formatTime(s.scheduledTimeIn)} - ${_formatTime(s.scheduledTimeOut)}',
-                        style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
-                            fontSize: 10),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            s.subjectCode,
+                            style: const TextStyle(
+                              color: primaryBlue,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            s.subjectName,
+                            style: const TextStyle(
+                              color: headerTextColor,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    _buildStatusPill(status),
                   ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              if (isActive)
-                _buildActiveActions(s)
-              else
-                TextButton(
-                  onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              SessionDetailsScreen(session: s))),
-                  style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                  child: const Text('View Only',
-                      style: TextStyle(
-                          color: Colors.white38,
-                          fontSize: 10,
-                          decoration: TextDecoration.underline)),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    _buildInfoItem(Icons.calendar_today, DateFormat('MMM d').format(s.sessionDate ?? DateTime.now())),
+                    const SizedBox(width: 16),
+                    _buildInfoItem(Icons.door_front_door_outlined, s.actualRoomName ?? s.scheduledRoomName),
+                    const SizedBox(width: 16),
+                    _buildInfoItem(Icons.access_time, s.actualStartTime != null ? DateFormat('h:mm a').format(s.actualStartTime!) : _formatTime(s.scheduledTimeIn)),
+                  ],
                 ),
-            ],
+                const SizedBox(height: 12),
+                Text(
+                  'Section: ${s.sectionName}',
+                  style: const TextStyle(color: subtitleTextColor, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+          
+          // Bottom Section: Actions
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.03),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+              border: const Border(top: BorderSide(color: dividerColor)),
+            ),
+            child: Row(
+              children: [
+                _buildActionButtons(s, status),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDateBadge(DateTime? date) {
-    if (date == null) return const SizedBox.shrink();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8), // Aligned with square-ish theme
-      ),
-      child: Column(
-        children: [
-          Text(DateFormat('MMM').format(date).toUpperCase(),
-              style: const TextStyle(
-                  color: Color(0xFF38BDF8),
-                  fontSize: 9,
-                  fontWeight: FontWeight.w900)),
-          Text(DateFormat('dd').format(date),
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold)),
-        ],
-      ),
+  Widget _buildInfoItem(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: subtitleTextColor),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: const TextStyle(color: subtitleTextColor, fontSize: 13),
+        ),
+      ],
     );
   }
 
   Widget _buildStatusPill(String status) {
     Color color;
-    String label = status.toUpperCase();
+    String label;
 
     if (status == 'active' || status == 'started') {
-      color = const Color(0xFF34D399);
+      color = successGreen;
       label = 'ACTIVE';
-    } else if (status == 'cancelled' || status == 'deleted') {
-      color = Colors.redAccent;
-      label = 'CANCELLED';
+    } else if (status == 'pending' || status == 'not_started') {
+      color = primaryBlue;
+      label = 'SCHEDULED';
     } else if (status == 'ended' || status == 'completed') {
-      color = Colors.white24;
+      color = subtitleTextColor;
       label = 'ENDED';
     } else {
-      color = const Color(0xFF38BDF8);
-      label = 'PENDING';
+      color = dangerRed;
+      label = 'CANCELLED';
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withOpacity(0.2)),
       ),
-      child: Text(label,
-          style: TextStyle(
-              color: color, fontSize: 8, fontWeight: FontWeight.w900)),
+      child: Text(
+        label,
+        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+      ),
     );
   }
 
-  Widget _buildActiveActions(ClassSession s) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildSmallAction(
-            Icons.qr_code_rounded,
-            'QR',
-            () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SessionDetailsScreen(session: s)))),
-        const SizedBox(width: 4),
-        _buildSmallAction(
-            Icons.visibility_outlined,
-            'View',
-            () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SessionDetailsScreen(session: s)))),
-        const SizedBox(width: 4),
-        _buildSmallAction(
-            Icons.stop_circle_outlined,
-            'End',
-            () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SessionDetailsScreen(session: s))),
-            color: Colors.redAccent.withOpacity(0.2),
-            iconColor: Colors.redAccent),
-      ],
-    );
-  }
-
-  Widget _buildSmallAction(IconData icon, String label, VoidCallback onTap,
-      {Color? color, Color? iconColor}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-        decoration: BoxDecoration(
-          color: color ?? Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-        ),
+  Widget _buildActionButtons(ClassSession s, String status) {
+    if (status == 'active' || status == 'started') {
+      return Expanded(
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 12, color: iconColor ?? Colors.white70),
-            const SizedBox(width: 4),
-            Text(label,
-                style: TextStyle(
-                    color: iconColor ?? Colors.white70,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold)),
+            Expanded(
+              child: _buildSecondaryButton('Attendances', Icons.people_outline, () => _openDetails(s)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildPrimaryButton('End Now', Icons.stop_circle_outlined, dangerRed, () => _openDetails(s)),
+            ),
           ],
         ),
+      );
+    } else if (status == 'pending' || status == 'not_started') {
+      return Expanded(
+        child: Row(
+          children: [
+            Expanded(
+              child: _buildPrimaryButton('Start Session', Icons.play_arrow_rounded, successGreen, () => _showStartSessionDialog(s)),
+            ),
+            const SizedBox(width: 12),
+            _buildIconButton(Icons.delete_outline, dangerRed, () => _confirmDelete(s)),
+          ],
+        ),
+      );
+    } else {
+      return Expanded(
+        child: _buildSecondaryButton('View Details', Icons.visibility_outlined, () => _openDetails(s)),
+      );
+    }
+  }
+
+  Widget _buildPrimaryButton(String label, IconData icon, Color color, VoidCallback onTap) {
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 18),
+      label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color.withOpacity(0.15),
+        foregroundColor: color,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: color.withOpacity(0.3)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSecondaryButton(String label, IconData icon, VoidCallback onTap) {
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 18),
+      label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.white70,
+        side: const BorderSide(color: Colors.white10),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  Widget _buildIconButton(IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Icon(icon, color: color, size: 20),
+      ),
+    );
+  }
+
+  void _openDetails(ClassSession s) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => SessionDetailsScreen(session: s)));
+  }
+
+  void _showStartSessionDialog(ClassSession s) {
+    int attendanceCutoff = 15;
+    
+    final sourceSchedule = _instructorSchedules.cast<Schedule?>().firstWhere(
+      (sch) => sch?.id == s.scheduleId,
+      orElse: () => null,
+    );
+    String? selectedRoomId = sourceSchedule?.classroomId;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => Dialog(
+          backgroundColor: surfaceColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Theme(
+            data: ThemeData.dark(),
+            child: Container(
+              width: 450,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Start Session', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: headerTextColor)),
+                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text('${s.subjectCode} - ${s.subjectName}', style: const TextStyle(color: subtitleTextColor, fontSize: 14)),
+                    const SizedBox(height: 24),
+                    _buildLabel('Actual Room'),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.05),
+                        border: Border.all(color: dividerColor), 
+                        borderRadius: BorderRadius.circular(12)
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectedRoomId,
+                          isExpanded: true,
+                          dropdownColor: surfaceColor,
+                          items: [
+                            if (selectedRoomId != null)
+                              DropdownMenuItem(value: selectedRoomId, child: Text('Use scheduled room (${s.scheduledRoomName})')),
+                          ],
+                          onChanged: (val) => setDialogState(() => selectedRoomId = val),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildLabel('Attendance Cutoff'),
+                    TextField(
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        suffixText: 'minutes',
+                        hintText: '15',
+                        suffixStyle: const TextStyle(color: subtitleTextColor),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: dividerColor)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: dividerColor)),
+                      ),
+                      onChanged: (val) => attendanceCutoff = int.tryParse(val) ?? 15,
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          setDialogState(() => _isLoading = true);
+                          try {
+                            await _apiService.startSession(
+                              s.id,
+                              actualRoomId: selectedRoomId,
+                              attendanceCutoffMinutes: attendanceCutoff,
+                              rowVersion: s.rowVersion ?? '',
+                            );
+                            if (mounted) {
+                              Navigator.pop(context);
+                              _loadData();
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              setDialogState(() => _isLoading = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: successGreen,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Confirm & Start Session', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          SizedBox(width: 120, child: Text(label, style: const TextStyle(color: subtitleTextColor, fontSize: 13))),
+          Expanded(child: Text(value, style: const TextStyle(color: headerTextColor, fontWeight: FontWeight.bold, fontSize: 13))),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDelete(ClassSession s) {
+    final TextEditingController reasonController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => Theme(
+        data: ThemeData.dark(),
+        child: AlertDialog(
+          backgroundColor: surfaceColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Cancel Session'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Are you sure you want to cancel this session? This action cannot be undone.', style: TextStyle(color: Colors.white70)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: reasonController,
+                decoration: InputDecoration(
+                  labelText: 'Reason',
+                  labelStyle: const TextStyle(color: subtitleTextColor),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Go Back', style: TextStyle(color: subtitleTextColor))),
+            TextButton(
+              onPressed: () async {
+                if (reasonController.text.trim().isEmpty) return;
+                try {
+                  await _apiService.deleteSession(s.id, reason: reasonController.text.trim(), rowVersion: s.rowVersion ?? '');
+                  if (mounted) {
+                    Navigator.pop(context);
+                    _loadData();
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                  }
+                }
+              },
+              child: const Text('Cancel Session', style: TextStyle(color: dangerRed, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, color: dangerRed, size: 48),
+          const SizedBox(height: 16),
+          Text(_errorMessage ?? 'An error occurred', style: const TextStyle(color: headerTextColor)),
+          TextButton(onPressed: _loadData, child: const Text('Retry', style: TextStyle(color: primaryBlue))),
+        ],
       ),
     );
   }
@@ -860,251 +913,16 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   Widget _buildEmptyState() {
     return Center(
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.event_busy_rounded,
-              size: 48, color: Colors.white.withOpacity(0.1)),
+          const SizedBox(height: 100),
+          Icon(Icons.inbox_outlined, size: 64, color: Colors.white.withOpacity(0.1)),
           const SizedBox(height: 16),
-          const Text('No sessions found in this category',
-              style: TextStyle(color: Colors.white24)),
+          const Text('No sessions found for this category', style: TextStyle(color: subtitleTextColor, fontSize: 16)),
         ],
       ),
     );
   }
 
-  Widget _buildErrorState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage ?? 'An error occurred',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _loadData,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileAvatar() {
-    return GestureDetector(
-      onTap: _showProfileModal,
-      child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-              color: const Color(0xFF38BDF8).withOpacity(0.3),
-              width: 1.5),
-        ),
-        child: CircleAvatar(
-          radius: 16,
-          backgroundColor: const Color(0xFF38BDF8).withOpacity(0.1),
-          backgroundImage: NetworkImage(
-              'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_profile?.fullName ?? "Instructor")}&background=38BDF8&color=0F172A'),
-        ),
-      ),
-    );
-  }
-
-  void _showProfileModal() {
-    if (_profile == null) return;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => _GlassModal(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF38BDF8), width: 2),
-                boxShadow: [
-                  BoxShadow(
-                      color: const Color(0xFF38BDF8).withOpacity(0.2),
-                      blurRadius: 20)
-                ],
-              ),
-              child: CircleAvatar(
-                backgroundImage: NetworkImage(
-                    'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_profile!.fullName)}&background=38BDF8&color=0F172A'),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              _profile!.fullName,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900),
-            ),
-            Text(
-              'Subject Instructor',
-              style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 32),
-            _buildProfileInfoRow(
-                Icons.badge_outlined, 'Instructor ID', _profile!.id.toString()),
-            _buildProfileInfoRow(Icons.calendar_today_outlined, 'Joined',
-                DateFormat('MMMM dd, yyyy').format(_profile!.createdAt)),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/teacher-profile-edit');
-                },
-                icon: const Icon(Icons.edit_rounded, size: 18),
-                label: const Text('Edit Profile',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF38BDF8).withOpacity(0.1),
-                  foregroundColor: const Color(0xFF38BDF8),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: const BorderSide(color: Color(0xFF38BDF8), width: 0.5),
-                  ),
-                  elevation: 0,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _handleLogout,
-                icon: const Icon(Icons.logout_rounded, size: 18),
-                label: const Text('Logout',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent.withOpacity(0.1),
-                  foregroundColor: Colors.redAccent,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: const BorderSide(color: Colors.redAccent, width: 0.5),
-                  ),
-                  elevation: 0,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileInfoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: Colors.white24),
-          const SizedBox(width: 16),
-          Text(label,
-              style: const TextStyle(color: Colors.white38, fontSize: 14)),
-          const Spacer(),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _handleLogout() async {
-    final bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Logout', style: TextStyle(color: Colors.white)),
-        content: const Text('Are you sure you want to log out?',
-            style: TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child:
-                const Text('Cancel', style: TextStyle(color: Colors.white38)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child:
-                const Text('Logout', style: TextStyle(color: Colors.redAccent)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      await StorageService.clear();
-      if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (route) => false,
-      );
-    }
-  }
-}
-
-class _GlassModal extends StatelessWidget {
-  final Widget child;
-  const _GlassModal({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        top: 24,
-        left: 24,
-        right: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1E293B),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-        border: Border(top: BorderSide(color: Colors.white10)),
-      ),
-      child: child,
-    );
-  }
+  Widget _buildTableHeader() => const SizedBox.shrink(); // Not used in card view
 }

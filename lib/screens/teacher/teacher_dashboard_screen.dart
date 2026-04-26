@@ -296,7 +296,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     final secondaryTextColor = isDark ? Colors.white.withOpacity(0.5) : Colors.black.withOpacity(0.6);
     
     return Container(
-      padding: EdgeInsets.all(Sizing.w(20)),
+      padding: EdgeInsets.all(Sizing.w(16)), // Reduced from 20
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(Sizing.r(24)),
@@ -314,45 +314,46 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: EdgeInsets.all(Sizing.w(10)),
+            padding: EdgeInsets.all(Sizing.w(8)), // Reduced from 10
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: Sizing.sp(20)),
+            child: Icon(icon, color: color, size: Sizing.sp(18)), // Reduced from 20
           ),
-          SizedBox(height: Sizing.h(16)),
+          SizedBox(height: Sizing.h(12)), // Reduced from 16
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               value,
               style: TextStyle(
                 color: textColor,
-                fontSize: Sizing.sp(24),
+                fontSize: Sizing.sp(22), // Reduced from 24
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          SizedBox(height: Sizing.h(4)),
+          SizedBox(height: Sizing.h(2)), // Reduced from 4
           Text(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: secondaryTextColor,
-              fontSize: Sizing.sp(13),
+              fontSize: Sizing.sp(11), // Reduced from 13
               fontWeight: FontWeight.w500,
             ),
           ),
           if (subtitle != null) ...[
-            SizedBox(height: Sizing.h(4)),
+            SizedBox(height: Sizing.h(2)),
             Text(
               subtitle,
               style: TextStyle(
                 color: color,
-                fontSize: Sizing.sp(11),
+                fontSize: Sizing.sp(9), // Reduced from 11
                 fontWeight: FontWeight.bold,
               ),
             ),

@@ -49,9 +49,9 @@ class _SkeletonBoxState extends State<SkeletonBox>
           borderRadius: BorderRadius.circular(widget.radius),
           gradient: LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.05),
-              Colors.white.withOpacity(0.12 + _anim.value * 0.08),
-              Colors.white.withOpacity(0.05),
+              Colors.white.withOpacity(0.08),
+              Colors.white.withOpacity(0.18 + _anim.value * 0.1),
+              Colors.white.withOpacity(0.08),
             ],
             stops: const [0.0, 0.5, 1.0],
           ),
