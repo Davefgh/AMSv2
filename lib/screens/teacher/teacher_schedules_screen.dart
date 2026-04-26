@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
+import '../../models/user_profile.dart';
 import '../../widgets/main_scaffold.dart';
 import '../../utils/sizing_utils.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../providers/app_provider.dart';
+import 'section_students_screen.dart';
 
 class TeacherSchedulesScreen extends StatefulWidget {
   const TeacherSchedulesScreen({super.key});
@@ -16,133 +18,204 @@ class TeacherSchedulesScreen extends StatefulWidget {
 
 class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
   final ApiService _apiService = ApiService();
-
   bool _isLoading = true;
   String? _errorMessage;
+  UserProfile? _profile;
   List<Schedule> _schedules = [];
-  String _selectedDay = 'All';
-
-  final List<String> _days = [
-    'All',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday'
-  ];
+  final Map<String, int> _sectionStudentCounts = {};
+  int _totalUniqueStudents = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadSchedules();
+    _loadData();
   }
 
-  Future<void> _loadSchedules() async {
+  Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
-    try {
-      final schedules = await _apiService.getMySchedules();
-      setState(() {
-        _schedules = schedules;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
 
-  Map<String, List<Schedule>> get _groupedSchedules {
-    final Map<String, List<Schedule>> grouped = {
-      'Monday': [],
-      'Tuesday': [],
-      'Wednesday': [],
-      'Thursday': [],
-      'Friday': [],
-      'Saturday': [],
-      'Sunday': [],
-    };
-    for (var s in _schedules) {
-      if (s.displayDay.isNotEmpty && grouped.containsKey(s.displayDay)) {
-        grouped[s.displayDay]!.add(s);
+    try {
+      // 1. Get Profile
+      final profile = await _apiService.getMe();
+      
+      // 2. Get Schedules
+      final schedules = await _apiService.getMySchedules();
+      
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          _schedules = schedules;
+          _isLoading = false;
+        });
+      }
+
+      // 3. Extract unique sections like in TeacherSectionsScreen
+      final Map<String, dynamic> sectionMap = {};
+      for (var s in schedules) {
+        final section = s.section;
+        final sectionId = (section?['id'] ?? s.sectionId)?.toString();
+
+        if (sectionId != null && sectionId.isNotEmpty) {
+          sectionMap[sectionId] = section ?? {
+            'id': sectionId,
+            'name': s.sectionName.isNotEmpty ? s.sectionName : 'Section $sectionId',
+          };
+        }
+      }
+
+      final sectionIds = sectionMap.keys.toList();
+      
+      // Fetch student counts in background
+      for (var id in sectionIds) {
+        _apiService.getStudentsBySection(id).then((students) {
+          if (mounted) {
+            setState(() {
+              _sectionStudentCounts[id] = students.length;
+            });
+          }
+        }).catchError((_) {});
+      }
+      
+      // Calculate total unique students
+      _fetchTotalUniqueStudents(sectionIds);
+
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
       }
     }
-    // Sort each day by time
-    grouped.forEach((day, list) {
-      list.sort((a, b) => a.timeIn.compareTo(b.timeIn));
-    });
-    return grouped;
   }
 
-  List<Schedule> get _filteredSchedules {
-    if (_selectedDay == 'All') {
-      return _schedules;
-    }
-    return _groupedSchedules[_selectedDay] ?? [];
+  Future<void> _fetchTotalUniqueStudents(List<String> sectionIds) async {
+    final Set<String> uniqueIds = {};
+    try {
+      for (var id in sectionIds) {
+        final students = await _apiService.getStudentsBySection(id);
+        for (var s in students) {
+          uniqueIds.add(s.id);
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _totalUniqueStudents = uniqueIds.length;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
-      title: 'My Schedules',
+      title: 'My Classes',
       currentIndex: 3,
       isAdmin: false,
       body: _isLoading
           ? const SkeletonDashboard()
           : _errorMessage != null
-              ? _buildErrorState()
-              : _buildSchedulesList(),
+               ? _buildErrorState()
+               : _buildContent(),
     );
   }
 
-  Widget _buildSchedulesList() {
+  Widget _buildContent() {
     return Consumer<AppProvider>(
       builder: (context, appProvider, _) {
         final isDark = appProvider.isDarkMode;
-        final cardColor =
-            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
-        final textColor = isDark ? Colors.white : Colors.black;
-        final secondaryTextColor = isDark
-            ? Colors.white.withValues(alpha: 0.5)
-            : Colors.black.withValues(alpha: 0.6);
+        final sections = _getGroupedSections();
+        
+        final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+        final subtitleColor = isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B);
+        final bgColor = isDark ? Colors.transparent : const Color(0xFFF8FAFC);
 
-        if (_schedules.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.calendar_today_rounded,
-                    size: 64, color: secondaryTextColor),
-                SizedBox(height: Sizing.h(16)),
-                Text(
-                  'No schedules assigned',
-                  style: TextStyle(
-                      color: secondaryTextColor, fontSize: Sizing.sp(16)),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return RefreshIndicator(
-          onRefresh: _loadSchedules,
-          color: const Color(0xFF38BDF8),
+        return Container(
+          color: bgColor,
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(Sizing.w(24)),
+            padding: EdgeInsets.symmetric(horizontal: Sizing.w(24), vertical: Sizing.h(20)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSummary(isDark, textColor, secondaryTextColor),
-                SizedBox(height: Sizing.h(24)),
-                _buildDayFilter(isDark, textColor, secondaryTextColor),
-                SizedBox(height: Sizing.h(24)),
-                _buildFilteredSchedules(
-                    isDark, cardColor, textColor, secondaryTextColor),
+                // Welcome Header
+                Text(
+                  'My Classes',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: Sizing.sp(28),
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                Text(
+                  'Welcome, ${_profile?.fullName ?? "Instructor"}',
+                  style: TextStyle(
+                    color: subtitleColor,
+                    fontSize: Sizing.sp(14),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: Sizing.h(32)),
+
+                // Stats Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        'Total Sections',
+                        '${sections.length}',
+                        Icons.book_outlined,
+                        const Color(0xFF38BDF8),
+                        isDark,
+                      ),
+                    ),
+                    SizedBox(width: Sizing.w(16)),
+                    Expanded(
+                      child: _buildStatCard(
+                        'Total Unique Students',
+                        '$_totalUniqueStudents',
+                        Icons.people_outline,
+                        const Color(0xFF2DD4BF),
+                        isDark,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Sizing.h(32)),
+
+                // Sections Grid
+                if (sections.isEmpty)
+                  Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: Sizing.h(60)),
+                      child: Text(
+                        'No classes found',
+                        style: TextStyle(color: subtitleColor, fontSize: Sizing.sp(16)),
+                      ),
+                    ),
+                  )
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: MediaQuery.of(context).size.width > 900 
+                          ? 4 
+                          : (MediaQuery.of(context).size.width > 600 ? 3 : 2),
+                      crossAxisSpacing: Sizing.w(16),
+                      mainAxisSpacing: Sizing.h(16),
+                      childAspectRatio: 0.82,
+                    ),
+                    itemCount: sections.length,
+                    itemBuilder: (context, index) {
+                      final section = sections[index];
+                      return _buildSectionCard(section, isDark);
+                    },
+                  ),
               ],
             ),
           ),
@@ -151,320 +224,242 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
     );
   }
 
-  Widget _buildSummary(bool isDark, Color textColor, Color secondaryTextColor) {
-    final grouped = _groupedSchedules;
-    final daysWithSchedules =
-        grouped.values.where((list) => list.isNotEmpty).length;
-
+  Widget _buildStatCard(String label, String value, IconData icon, Color iconColor, bool isDark) {
     return Container(
-      padding: EdgeInsets.all(Sizing.w(16)),
+      padding: EdgeInsets.symmetric(horizontal: Sizing.w(12), vertical: Sizing.h(16)),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
-        borderRadius: BorderRadius.circular(Sizing.r(16)),
+        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.black.withValues(alpha: 0.1),
+          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.2)
-                : Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildSummaryItem(
-            icon: Icons.calendar_today_rounded,
-            label: 'Total Schedules',
-            value: '${_schedules.length}',
-            color: const Color(0xFF38BDF8),
-            isDark: isDark,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
+          Container(
+            padding: EdgeInsets.all(Sizing.w(8)),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: Sizing.sp(18)),
           ),
-          _buildSummaryItem(
-            icon: Icons.event_available_rounded,
-            label: 'Days',
-            value: '$daysWithSchedules',
-            color: const Color(0xFF34D399),
-            isDark: isDark,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
+          SizedBox(width: Sizing.w(10)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B),
+                    fontSize: Sizing.sp(10),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: Sizing.h(2)),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
+                    fontSize: Sizing.sp(18),
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryItem({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-    required bool isDark,
-    required Color textColor,
-    required Color secondaryTextColor,
-  }) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(Sizing.w(12)),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color, size: Sizing.sp(24)),
-        ),
-        SizedBox(height: Sizing.h(8)),
-        Text(
-          value,
-          style: TextStyle(
-            color: textColor,
-            fontSize: Sizing.sp(20),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: Sizing.h(4)),
-        Text(
-          label,
-          style: TextStyle(
-            color: secondaryTextColor,
-            fontSize: Sizing.sp(12),
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _buildSectionCard(Map<String, dynamic> section, bool isDark) {
+    final String sectionId = section['id']?.toString() ?? '';
+    final int studentCount = _sectionStudentCounts[sectionId] ?? 0;
+    final int classCount = section['classCount'] ?? 0;
 
-  Widget _buildDayFilter(
-      bool isDark, Color textColor, Color secondaryTextColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Filter by Day',
-          style: TextStyle(
-            color: textColor,
-            fontSize: Sizing.sp(14),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: Sizing.h(12)),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: _days.map((day) {
-              final isSelected = _selectedDay == day;
-              return Padding(
-                padding: EdgeInsets.only(right: Sizing.w(8)),
-                child: FilterChip(
-                  label: Text(day),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      _selectedDay = day;
-                    });
-                  },
-                  backgroundColor: isDark
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : Colors.white,
-                  selectedColor: const Color(0xFF38BDF8),
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : textColor,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  side: BorderSide(
-                    color: isSelected
-                        ? const Color(0xFF38BDF8)
-                        : (isDark
-                            ? Colors.white.withValues(alpha: 0.1)
-                            : Colors.black.withValues(alpha: 0.1)),
-                  ),
-                  showCheckmark: false,
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final subtitleColor = isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B);
+    final cardColor = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
 
-  Widget _buildFilteredSchedules(
-      bool isDark, Color cardColor, Color textColor, Color secondaryTextColor) {
-    final filteredSchedules = _filteredSchedules;
-
-    if (filteredSchedules.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: Sizing.h(40)),
-          child: Column(
-            children: [
-              Icon(Icons.event_busy_rounded,
-                  size: 48, color: secondaryTextColor),
-              SizedBox(height: Sizing.h(12)),
-              Text(
-                'No schedules for $_selectedDay',
-                style: TextStyle(
-                    color: secondaryTextColor, fontSize: Sizing.sp(14)),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Schedules for $_selectedDay',
-          style: TextStyle(
-            color: textColor,
-            fontSize: Sizing.sp(16),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: Sizing.h(12)),
-        ...filteredSchedules.map((schedule) => _buildScheduleCard(
-              schedule,
-              isDark,
-              cardColor,
-              textColor,
-              secondaryTextColor,
-            )),
-      ],
-    );
-  }
-
-  Widget _buildScheduleCard(
-    Schedule schedule,
-    bool isDark,
-    Color cardColor,
-    Color textColor,
-    Color secondaryTextColor,
-  ) {
     return Container(
-      margin: EdgeInsets.only(bottom: Sizing.h(12)),
-      padding: EdgeInsets.all(Sizing.w(16)),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(Sizing.r(12)),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.05)
-              : Colors.black.withValues(alpha: 0.1),
+          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.2)
-                : Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      schedule.subjectCode,
-                      style: TextStyle(
-                        color: const Color(0xFF38BDF8),
-                        fontSize: Sizing.sp(12),
-                        fontWeight: FontWeight.bold,
-                      ),
+      child: InkWell(
+        onTap: () {
+          if (sectionId.isNotEmpty) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SectionStudentsScreen(
+                  sectionId: sectionId,
+                  sectionName: section['name']?.toString() ?? 'Section',
+                ),
+              ),
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.all(Sizing.w(16)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    section['name']?.toString() ?? 'Unknown Section',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: Sizing.sp(15),
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.2,
                     ),
-                    SizedBox(height: Sizing.h(4)),
-                    Text(
-                      schedule.subjectName,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: Sizing.sp(14),
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: Sizing.h(4)),
+                  Text(
+                    section['course']?.toString() ?? 'General Education',
+                    style: TextStyle(
+                      color: subtitleColor,
+                      fontSize: Sizing.sp(10),
+                      height: 1.4,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
-                ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: Sizing.h(12)),
+                  Wrap(
+                    spacing: Sizing.w(10),
+                    runSpacing: Sizing.h(4),
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.book_outlined, size: Sizing.sp(12), color: subtitleColor.withOpacity(0.6)),
+                          SizedBox(width: Sizing.w(4)),
+                          Text(
+                            '$classCount Class${classCount > 1 ? 'es' : ''}',
+                            style: TextStyle(color: subtitleColor, fontSize: Sizing.sp(10), fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.people_outline, size: Sizing.sp(12), color: subtitleColor.withOpacity(0.6)),
+                          SizedBox(width: Sizing.w(4)),
+                          Text(
+                            '$studentCount Student${studentCount > 1 ? 's' : ''}',
+                            style: TextStyle(color: subtitleColor, fontSize: Sizing.sp(10), fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: Sizing.w(8),
-                  vertical: Sizing.h(4),
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF34D399).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  '${schedule.timeIn} - ${schedule.timeOut}',
-                  style: const TextStyle(
-                    color: Color(0xFF34D399),
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
+            ),
+            const Spacer(),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: Sizing.h(12)),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
                   ),
                 ),
               ),
-            ],
-          ),
-          SizedBox(height: Sizing.h(12)),
-          Row(
-            children: [
-              Icon(Icons.location_on_outlined,
-                  size: Sizing.sp(14), color: secondaryTextColor),
-              SizedBox(width: Sizing.w(6)),
-              Expanded(
-                child: Text(
-                  schedule.classroomName,
-                  style: TextStyle(
-                    color: secondaryTextColor,
-                    fontSize: Sizing.sp(12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'View Section',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : const Color(0xFF38BDF8),
+                      fontSize: Sizing.sp(12),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  SizedBox(width: Sizing.w(4)),
+                  Icon(Icons.chevron_right_rounded, color: isDark ? Colors.white : const Color(0xFF38BDF8), size: Sizing.sp(16)),
+                ],
               ),
-            ],
-          ),
-          SizedBox(height: Sizing.h(8)),
-          Row(
-            children: [
-              Icon(Icons.people_outline_rounded,
-                  size: Sizing.sp(14), color: secondaryTextColor),
-              SizedBox(width: Sizing.w(6)),
-              Expanded(
-                child: Text(
-                  schedule.sectionName,
-                  style: TextStyle(
-                    color: secondaryTextColor,
-                    fontSize: Sizing.sp(12),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  List<Map<String, dynamic>> _getGroupedSections() {
+    final Map<String, Map<String, dynamic>> sectionMap = {};
+    if (_schedules.isEmpty) return [];
+    
+    for (var s in _schedules) {
+      final id = (s.section?['id'] ?? s.sectionId)?.toString();
+      if (id == null || id.isEmpty) continue;
+      
+      final sectionName = s.sectionName;
+      
+      if (!sectionMap.containsKey(id)) {
+        sectionMap[id] = {
+          'id': id,
+          'name': sectionName,
+          'course': _getCourseName(s),
+          'classCount': 0,
+          'subjects': <String>{}, 
+        };
+      }
+      
+      final subjectId = s.subjectId;
+      if (subjectId != null && subjectId.isNotEmpty) {
+        final Set<String> subjects = sectionMap[id]!['subjects'] as Set<String>;
+        subjects.add(subjectId);
+        sectionMap[id]!['classCount'] = subjects.length;
+      }
+    }
+    return sectionMap.values.toList();
+  }
+
+  String _getCourseName(Schedule s) {
+    try {
+      final section = s.section;
+      if (section != null && section is Map) {
+        final course = section['course'];
+        if (course != null && course is Map) {
+          final name = course['name'];
+          if (name != null) return name.toString();
+        }
+      }
+    } catch (_) {}
+    return 'Bachelor of Science in Computer Science';
   }
 
   Widget _buildErrorState() {
@@ -477,7 +472,7 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
           Text(_errorMessage!, style: const TextStyle(color: Colors.white70)),
           SizedBox(height: Sizing.h(24)),
           ElevatedButton(
-            onPressed: _loadSchedules,
+            onPressed: _loadData,
             child: const Text('Retry'),
           ),
         ],

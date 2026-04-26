@@ -170,7 +170,7 @@ class _FingerprintEnrollmentScreenState
     return Text(
       label,
       style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.6),
+        color: Colors.white.withOpacity(0.6),
         fontSize: Sizing.sp(13),
         fontWeight: FontWeight.w600,
         letterSpacing: 0.8,
@@ -185,16 +185,16 @@ class _FingerprintEnrollmentScreenState
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: TextField(
         controller: controller,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
           prefixIcon: Icon(icon, color: Colors.white38, size: 20),
           border: InputBorder.none,
           contentPadding:
@@ -209,9 +209,9 @@ class _FingerprintEnrollmentScreenState
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
           ),
           child: TextField(
             controller: _studentSearchCtrl,
@@ -219,7 +219,7 @@ class _FingerprintEnrollmentScreenState
             onChanged: _searchStudents,
             decoration: InputDecoration(
               hintText: 'Search student by name…',
-              hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
               prefixIcon:
                   const Icon(Icons.search_rounded, color: Colors.white38, size: 20),
               suffixIcon: _isSearching
@@ -244,20 +244,20 @@ class _FingerprintEnrollmentScreenState
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
             ),
             child: ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _searchResults.length,
               separatorBuilder: (_, __) => Divider(
-                  height: 1, color: Colors.white.withValues(alpha: 0.07)),
+                  height: 1, color: Colors.white.withOpacity(0.07)),
               itemBuilder: (context, i) {
                 final s = _searchResults[i];
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundColor:
-                        const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                        const Color(0xFF38BDF8).withOpacity(0.15),
                     child: Text(
                       s.firstname.isNotEmpty ? s.firstname[0].toUpperCase() : '?',
                       style: const TextStyle(
@@ -268,7 +268,7 @@ class _FingerprintEnrollmentScreenState
                       style: const TextStyle(color: Colors.white, fontSize: 14)),
                   subtitle: Text('ID: ${s.id}',
                       style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.4),
+                          color: Colors.white.withOpacity(0.4),
                           fontSize: 12)),
                   onTap: () {
                     setState(() {
@@ -289,9 +289,9 @@ class _FingerprintEnrollmentScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+        color: const Color(0xFF38BDF8).withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+        border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.3)),
       ),
       child: Row(
         children: [
@@ -308,7 +308,7 @@ class _FingerprintEnrollmentScreenState
                         fontSize: 14)),
                 Text('Student ID: ${_selectedStudent!.id}',
                     style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: Colors.white.withOpacity(0.5),
                         fontSize: 12)),
               ],
             ),
@@ -316,7 +316,7 @@ class _FingerprintEnrollmentScreenState
           GestureDetector(
             onTap: () => setState(() => _selectedStudent = null),
             child: Icon(Icons.close_rounded,
-                color: Colors.white.withValues(alpha: 0.4), size: 18),
+                color: Colors.white.withOpacity(0.4), size: 18),
           ),
         ],
       ),
@@ -327,9 +327,9 @@ class _FingerprintEnrollmentScreenState
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.redAccent.withValues(alpha: 0.1),
+        color: Colors.redAccent.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
       ),
       child: Row(
         children: [
@@ -381,7 +381,7 @@ class _FingerprintEnrollmentScreenState
                 label: const Text('Check Device Session'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white70,
-                  side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                  side: BorderSide(color: Colors.white.withOpacity(0.2)),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
@@ -393,7 +393,7 @@ class _FingerprintEnrollmentScreenState
               onPressed: _reset,
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white38,
-                side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                side: BorderSide(color: Colors.white.withOpacity(0.1)),
                 padding:
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 shape: RoundedRectangleBorder(
@@ -415,9 +415,9 @@ class _FingerprintEnrollmentScreenState
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.07),
+        color: color.withOpacity(0.07),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
+        border: Border.all(color: color.withOpacity(0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -475,7 +475,7 @@ class _FingerprintEnrollmentScreenState
             child: Text(
               label,
               style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.45),
+                  color: Colors.white.withOpacity(0.45),
                   fontSize: 13),
             ),
           ),

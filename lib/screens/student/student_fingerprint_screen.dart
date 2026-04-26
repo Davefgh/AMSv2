@@ -114,13 +114,13 @@ class _StudentFingerprintScreenState extends State<StudentFingerprintScreen> {
               Container(
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: Colors.white.withOpacity(0.05),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.fingerprint_rounded,
                   size: 80,
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2),
                 ),
               ),
               const SizedBox(height: 24),
@@ -137,7 +137,7 @@ class _StudentFingerprintScreenState extends State<StudentFingerprintScreen> {
                 'Contact your administrator to enroll your fingerprint.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: Colors.white.withOpacity(0.5),
                   fontSize: 14,
                 ),
               ),
@@ -169,9 +169,9 @@ class _StudentFingerprintScreenState extends State<StudentFingerprintScreen> {
       margin: EdgeInsets.only(bottom: Sizing.h(16)),
       padding: EdgeInsets.all(Sizing.w(20)),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(Sizing.r(20)),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +181,7 @@ class _StudentFingerprintScreenState extends State<StudentFingerprintScreen> {
               Container(
                 padding: EdgeInsets.all(Sizing.w(10)),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                  color: const Color(0xFF38BDF8).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(Sizing.r(12)),
                 ),
                 child: Icon(Icons.fingerprint_rounded,
@@ -204,7 +204,7 @@ class _StudentFingerprintScreenState extends State<StudentFingerprintScreen> {
                       Text(
                         'Device: ${fp.deviceId}',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
+                          color: Colors.white.withOpacity(0.5),
                           fontSize: Sizing.sp(12),
                         ),
                       ),
@@ -216,7 +216,7 @@ class _StudentFingerprintScreenState extends State<StudentFingerprintScreen> {
                   padding: EdgeInsets.symmetric(
                       horizontal: Sizing.w(10), vertical: Sizing.h(4)),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
+                    color: statusColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(Sizing.r(8)),
                   ),
                   child: Text(
@@ -236,12 +236,12 @@ class _StudentFingerprintScreenState extends State<StudentFingerprintScreen> {
               children: [
                 Icon(Icons.access_time_rounded,
                     size: Sizing.sp(14),
-                    color: Colors.white.withValues(alpha: 0.4)),
+                    color: Colors.white.withOpacity(0.4)),
                 SizedBox(width: Sizing.w(6)),
                 Text(
                   'Enrolled: ${fp.createdAt!.toLocal().toString().substring(0, 16)}',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: Colors.white.withOpacity(0.6),
                     fontSize: Sizing.sp(12),
                   ),
                 ),

@@ -49,9 +49,9 @@ class _SkeletonBoxState extends State<SkeletonBox>
           borderRadius: BorderRadius.circular(widget.radius),
           gradient: LinearGradient(
             colors: [
-              Colors.white.withValues(alpha: 0.05),
-              Colors.white.withValues(alpha: 0.12 + _anim.value * 0.08),
-              Colors.white.withValues(alpha: 0.05),
+              Colors.white.withOpacity(0.05),
+              Colors.white.withOpacity(0.12 + _anim.value * 0.08),
+              Colors.white.withOpacity(0.05),
             ],
             stops: const [0.0, 0.5, 1.0],
           ),
@@ -73,9 +73,9 @@ class SkeletonListItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
+        color: Colors.white.withOpacity(0.04),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+        border: Border.all(color: Colors.white.withOpacity(0.07)),
       ),
       child: Row(
         children: [
@@ -123,9 +123,9 @@ class _SkeletonStatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
+        color: Colors.white.withOpacity(0.04),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+        border: Border.all(color: Colors.white.withOpacity(0.07)),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,9 +202,9 @@ class _SkeletonWideCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
+        color: Colors.white.withOpacity(0.04),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+        border: Border.all(color: Colors.white.withOpacity(0.07)),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,9 +240,9 @@ class SkeletonProfile extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.04),
+              color: Colors.white.withOpacity(0.04),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+              border: Border.all(color: Colors.white.withOpacity(0.07)),
             ),
             child: const Column(
               children: [
@@ -258,9 +258,9 @@ class SkeletonProfile extends StatelessWidget {
           // Detail rows
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.04),
+              color: Colors.white.withOpacity(0.04),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+              border: Border.all(color: Colors.white.withOpacity(0.07)),
             ),
             child: Column(
               children: List.generate(
@@ -308,9 +308,9 @@ class SkeletonSessionList extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.04),
+          color: Colors.white.withOpacity(0.04),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+          border: Border.all(color: Colors.white.withOpacity(0.07)),
         ),
         child: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,

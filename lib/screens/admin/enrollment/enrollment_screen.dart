@@ -85,7 +85,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
       actions: [
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+            color: const Color(0xFF38BDF8).withOpacity(0.2),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -114,10 +114,10 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
+          color: Colors.white.withOpacity(0.06),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.15),
+            color: Colors.white.withOpacity(0.15),
             width: 1.0,
           ),
         ),
@@ -128,11 +128,11 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: 'Search class code...',
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
             prefixIcon:
-                Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
+                Icon(Icons.search, color: Colors.white.withOpacity(0.5)),
             suffixIcon: Icon(Icons.filter_list,
-                color: Colors.white.withValues(alpha: 0.5)),
+                color: Colors.white.withOpacity(0.5)),
             border: InputBorder.none,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -150,7 +150,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
           Icon(
             Icons.assignment,
             size: 80,
-            color: Colors.white.withValues(alpha: 0.1),
+            color: Colors.white.withOpacity(0.1),
           ),
           const SizedBox(height: 16),
           Text(
@@ -158,7 +158,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white.withValues(alpha: 0.8),
+              color: Colors.white.withOpacity(0.8),
             ),
           ),
           const SizedBox(height: 8),
@@ -166,7 +166,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
             'Tap the + button to enroll a student',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withValues(alpha: 0.5),
+              color: Colors.white.withOpacity(0.5),
             ),
           ),
         ],
@@ -202,10 +202,10 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                  color: const Color(0xFF38BDF8).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                    color: const Color(0xFF38BDF8).withOpacity(0.3),
                   ),
                 ),
                 child:
@@ -227,7 +227,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                     Text(
                       '${enrollment.sectionName ?? "Section ID: ${enrollment.sectionId}"} • ${enrollment.subjectName ?? "Subject ID: ${enrollment.subjectId}"}',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: Colors.white.withOpacity(0.6),
                         fontSize: 13,
                       ),
                     ),
@@ -235,7 +235,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                     Text(
                       '${enrollment.academicYear} | ${enrollment.semester}',
                       style: TextStyle(
-                        color: const Color(0xFF38BDF8).withValues(alpha: 0.8),
+                        color: const Color(0xFF38BDF8).withOpacity(0.8),
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
@@ -248,7 +248,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
                 icon: Icon(Icons.more_vert,
-                    color: Colors.white.withValues(alpha: 0.6)),
+                    color: Colors.white.withOpacity(0.6)),
                 onSelected: (value) async {
                   if (value == 'drop') {
                     _handleDrop(enrollment);
@@ -376,7 +376,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
-                                  color: Colors.white.withValues(alpha: 0.5)),
+                                  color: Colors.white.withOpacity(0.5)),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
@@ -448,14 +448,14 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
       children: [
         Text(label,
             style: TextStyle(
-                fontSize: 14, color: Colors.white.withValues(alpha: 0.8))),
+                fontSize: 14, color: Colors.white.withOpacity(0.8))),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
+            color: Colors.white.withOpacity(0.06),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+            border: Border.all(color: Colors.white.withOpacity(0.15)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<T>(
@@ -463,7 +463,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
               dropdownColor: const Color(0xFF1E293B),
               icon: const Icon(Icons.arrow_drop_down, color: Colors.white60),
               hint: Text(hint,
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
+                  style: TextStyle(color: Colors.white.withOpacity(0.5))),
               value: items.contains(value) ? value : null,
               items: items
                   .map((item) => DropdownMenuItem(
@@ -490,14 +490,14 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
       children: [
         Text(label,
             style: TextStyle(
-                fontSize: 12, color: Colors.white.withValues(alpha: 0.5))),
+                fontSize: 12, color: Colors.white.withOpacity(0.5))),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
+            color: Colors.white.withOpacity(0.06),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
@@ -538,10 +538,10 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
+            color: Colors.white.withOpacity(0.06),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white.withOpacity(0.15),
               width: 1.0,
             ),
           ),

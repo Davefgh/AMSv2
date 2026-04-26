@@ -191,7 +191,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(28)),
                   border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      Border.all(color: Colors.white.withOpacity(0.1)),
                 ),
                 padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
                 child: Column(
@@ -203,7 +203,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -395,7 +395,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+              style: TextStyle(color: Colors.white.withOpacity(0.6)),
             ),
           ),
           ElevatedButton(
@@ -461,7 +461,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(28)),
                   border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      Border.all(color: Colors.white.withOpacity(0.1)),
                 ),
                 padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
                 child: Column(
@@ -473,7 +473,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -597,7 +597,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
+            color: Colors.white.withOpacity(0.7),
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -610,20 +610,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
             errorText: errorText,
             prefixIcon: Icon(icon, color: const Color(0xFF38BDF8), size: 20),
             filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.07),
+            fillColor: Colors.white.withOpacity(0.07),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide:
-                  BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                  BorderSide(color: Colors.white.withOpacity(0.15)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide:
-                  BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                  BorderSide(color: Colors.white.withOpacity(0.15)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -650,7 +650,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
+            color: Colors.white.withOpacity(0.7),
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -664,20 +664,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
             errorText: errorText,
             prefixIcon: Icon(icon, color: const Color(0xFF38BDF8), size: 20),
             filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.07),
+            fillColor: Colors.white.withOpacity(0.07),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide:
-                  BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                  BorderSide(color: Colors.white.withOpacity(0.15)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide:
-                  BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                  BorderSide(color: Colors.white.withOpacity(0.15)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -765,7 +765,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         style: TextStyle(
                           color: isSel
                               ? Colors.white
-                              : Colors.white.withValues(alpha: 0.25),
+                              : Colors.white.withOpacity(0.25),
                           fontSize: isSel ? 46 : 30,
                           fontWeight: isSel ? FontWeight.bold : FontWeight.w300,
                         ),
@@ -970,7 +970,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+              style: TextStyle(color: Colors.white.withOpacity(0.6)),
             ),
           ),
           ElevatedButton(
@@ -1035,7 +1035,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(28)),
                   border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      Border.all(color: Colors.white.withOpacity(0.1)),
                 ),
                 padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
                 child: Column(
@@ -1047,7 +1047,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -1214,7 +1214,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+              style: TextStyle(color: Colors.white.withOpacity(0.6)),
             ),
           ),
           ElevatedButton(
@@ -1279,7 +1279,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(28)),
                   border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      Border.all(color: Colors.white.withOpacity(0.1)),
                 ),
                 padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
                 child: Column(
@@ -1291,7 +1291,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -1319,7 +1319,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       '2–100 characters (required by server).',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.45),
+                        color: Colors.white.withOpacity(0.45),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -1467,7 +1467,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+              style: TextStyle(color: Colors.white.withOpacity(0.6)),
             ),
           ),
           ElevatedButton(
@@ -1554,7 +1554,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(28)),
                   border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      Border.all(color: Colors.white.withOpacity(0.1)),
                 ),
                 padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
                 child: SingleChildScrollView(
@@ -1567,7 +1567,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                           width: 40,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -1865,7 +1865,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+              style: TextStyle(color: Colors.white.withOpacity(0.6)),
             ),
           ),
           ElevatedButton(
@@ -1915,7 +1915,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
       actions: [
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+            color: const Color(0xFF38BDF8).withOpacity(0.2),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -1981,10 +1981,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
+        color: Colors.white.withOpacity(0.06),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
+          color: Colors.white.withOpacity(0.15),
           width: 1.0,
         ),
       ),
@@ -2007,13 +2007,13 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF38BDF8).withValues(alpha: 0.2)
+                        ? const Color(0xFF38BDF8).withOpacity(0.2)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     border: isSelected
                         ? Border.all(
                             color:
-                                const Color(0xFF38BDF8).withValues(alpha: 0.5))
+                                const Color(0xFF38BDF8).withOpacity(0.5))
                         : null,
                   ),
                   child: Text(
@@ -2021,7 +2021,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     style: TextStyle(
                       color: isSelected
                           ? Colors.white
-                          : Colors.white.withValues(alpha: 0.5),
+                          : Colors.white.withOpacity(0.5),
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.w500,
                       fontSize: 14,
@@ -2054,9 +2054,9 @@ class _ClassesScreenState extends State<ClassesScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
+                  color: color.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: color.withValues(alpha: 0.3)),
+                  border: Border.all(color: color.withOpacity(0.3)),
                 ),
                 child: Icon(icon, color: color, size: 24),
               ),
@@ -2085,7 +2085,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: 0.7),
+              color: Colors.white.withOpacity(0.7),
             ),
           ),
           const SizedBox(height: 16),
@@ -2094,7 +2094,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             child: LinearProgressIndicator(
               value: percentage / 100,
               minHeight: 6,
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              backgroundColor: Colors.white.withOpacity(0.1),
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),
@@ -2324,7 +2324,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
           child: Column(
             children: [
               Icon(Icons.meeting_room_outlined,
-                  size: 64, color: Colors.white.withValues(alpha: 0.2)),
+                  size: 64, color: Colors.white.withOpacity(0.2)),
               const SizedBox(height: 16),
               const Text(
                 'No classrooms found',
@@ -2370,10 +2370,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF60A5FA).withValues(alpha: 0.2),
+                color: const Color(0xFF60A5FA).withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: const Color(0xFF60A5FA).withValues(alpha: 0.3)),
+                    color: const Color(0xFF60A5FA).withOpacity(0.3)),
               ),
               child: const Icon(
                 Icons.meeting_room,
@@ -2399,7 +2399,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     'ID: ${classroom.id}',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: Colors.white.withOpacity(0.6),
                     ),
                   ),
                 ],
@@ -2407,7 +2407,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             ),
             PopupMenuButton<String>(
               icon: Icon(Icons.more_vert,
-                  color: Colors.white.withValues(alpha: 0.5)),
+                  color: Colors.white.withOpacity(0.5)),
               color: const Color(0xFF1E293B),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -2459,7 +2459,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
           child: Column(
             children: [
               Icon(Icons.book_outlined,
-                  size: 64, color: Colors.white.withValues(alpha: 0.2)),
+                  size: 64, color: Colors.white.withOpacity(0.2)),
               const SizedBox(height: 16),
               const Text(
                 'No courses found',
@@ -2505,10 +2505,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFA78BFA).withValues(alpha: 0.2),
+                color: const Color(0xFFA78BFA).withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: const Color(0xFFA78BFA).withValues(alpha: 0.3)),
+                    color: const Color(0xFFA78BFA).withOpacity(0.3)),
               ),
               child: const Icon(
                 Icons.book,
@@ -2534,7 +2534,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     'ID: ${course.id}',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: Colors.white.withOpacity(0.6),
                     ),
                   ),
                 ],
@@ -2542,7 +2542,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             ),
             PopupMenuButton<String>(
               icon: Icon(Icons.more_vert,
-                  color: Colors.white.withValues(alpha: 0.5)),
+                  color: Colors.white.withOpacity(0.5)),
               color: const Color(0xFF1E293B),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -2594,7 +2594,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
           child: Column(
             children: [
               Icon(Icons.layers_outlined,
-                  size: 64, color: Colors.white.withValues(alpha: 0.2)),
+                  size: 64, color: Colors.white.withOpacity(0.2)),
               const SizedBox(height: 16),
               const Text(
                 'No sections found',
@@ -2640,10 +2640,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFFBBF24).withValues(alpha: 0.2),
+                color: const Color(0xFFFBBF24).withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: const Color(0xFFFBBF24).withValues(alpha: 0.3)),
+                    color: const Color(0xFFFBBF24).withOpacity(0.3)),
               ),
               child: const Icon(
                 Icons.layers,
@@ -2671,7 +2671,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         : 'ID: ${section.id}',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: Colors.white.withOpacity(0.6),
                     ),
                   ),
                 ],
@@ -2679,7 +2679,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             ),
             PopupMenuButton<String>(
               icon: Icon(Icons.more_vert,
-                  color: Colors.white.withValues(alpha: 0.5)),
+                  color: Colors.white.withOpacity(0.5)),
               color: const Color(0xFF1E293B),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -2731,7 +2731,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
           child: Column(
             children: [
               Icon(Icons.subject_outlined,
-                  size: 64, color: Colors.white.withValues(alpha: 0.2)),
+                  size: 64, color: Colors.white.withOpacity(0.2)),
               const SizedBox(height: 16),
               const Text(
                 'No subjects found',
@@ -2777,10 +2777,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF87171).withValues(alpha: 0.2),
+                color: const Color(0xFFF87171).withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: const Color(0xFFF87171).withValues(alpha: 0.3)),
+                    color: const Color(0xFFF87171).withOpacity(0.3)),
               ),
               child: const Icon(
                 Icons.subject,
@@ -2806,7 +2806,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     'Code: ${subject.code}',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: Colors.white.withOpacity(0.6),
                     ),
                   ),
                 ],
@@ -2814,7 +2814,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             ),
             PopupMenuButton<String>(
               icon: Icon(Icons.more_vert,
-                  color: Colors.white.withValues(alpha: 0.5)),
+                  color: Colors.white.withOpacity(0.5)),
               color: const Color(0xFF1E293B),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -2866,7 +2866,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
           child: Column(
             children: [
               Icon(Icons.schedule_outlined,
-                  size: 64, color: Colors.white.withValues(alpha: 0.2)),
+                  size: 64, color: Colors.white.withOpacity(0.2)),
               const SizedBox(height: 16),
               const Text(
                 'No schedules found',
@@ -2921,10 +2921,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF14B8A6).withValues(alpha: 0.2),
+                color: const Color(0xFF14B8A6).withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: const Color(0xFF14B8A6).withValues(alpha: 0.3)),
+                    color: const Color(0xFF14B8A6).withOpacity(0.3)),
               ),
               child: const Icon(
                 Icons.schedule,
@@ -2957,7 +2957,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                     ].join('\n'),
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: Colors.white.withOpacity(0.6),
                     ),
                   ),
                 ],
@@ -2965,7 +2965,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
             ),
             PopupMenuButton<String>(
               icon: Icon(Icons.more_vert,
-                  color: Colors.white.withValues(alpha: 0.5)),
+                  color: Colors.white.withOpacity(0.5)),
               color: const Color(0xFF1E293B),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -3024,10 +3024,10 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
+            color: Colors.white.withOpacity(0.06),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white.withOpacity(0.15),
               width: 1.0,
             ),
           ),

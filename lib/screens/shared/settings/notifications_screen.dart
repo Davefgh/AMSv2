@@ -27,16 +27,16 @@ class NotificationsScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                      color: const Color(0xFF38BDF8).withOpacity(0.12),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                        color: const Color(0xFF38BDF8).withOpacity(0.25),
                       ),
                     ),
                     child: Icon(
                       Icons.notifications_none_rounded,
                       size: 56,
-                      color: Colors.white.withValues(alpha: 0.45),
+                      color: Colors.white.withOpacity(0.45),
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -57,7 +57,7 @@ class NotificationsScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 15,
                       height: 1.45,
-                      color: Colors.white.withValues(alpha: 0.55),
+                      color: Colors.white.withOpacity(0.55),
                     ),
                   ),
                 ],

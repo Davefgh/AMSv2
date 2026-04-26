@@ -21,6 +21,14 @@ class SoftDeleteInconsistencies {
       admins: n('admins'),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'students': students,
+      'instructors': instructors,
+      'admins': admins,
+    };
+  }
 }
 
 class DataIntegrityHealth {
@@ -53,6 +61,17 @@ class DataIntegrityHealth {
       status: json['status'] as String? ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'orphanedUserCount': orphanedUserCount,
+      'totalSoftDeleteInconsistencies': totalSoftDeleteInconsistencies,
+      'softDeleteInconsistencies': softDeleteInconsistencies.toJson(),
+      if (checkedAt != null) 'checkedAt': checkedAt,
+      'isHealthy': isHealthy,
+      'status': status,
+    };
+  }
 }
 
 class DatabaseHealth {
@@ -66,6 +85,13 @@ class DatabaseHealth {
       status: json['status'] as String? ?? '',
       connected: json['connected'] as bool? ?? false,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'connected': connected,
+    };
   }
 }
 
@@ -112,5 +138,15 @@ class HealthStatusResponse {
     if (database != null && !database!.connected) return false;
     if (dataIntegrity != null && !dataIntegrity!.isHealthy) return false;
     return true;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      if (timestamp != null) 'timestamp': timestamp,
+      if (service != null) 'service': service,
+      if (database != null) 'database': database!.toJson(),
+      if (dataIntegrity != null) 'dataIntegrity': dataIntegrity!.toJson(),
+    };
   }
 }

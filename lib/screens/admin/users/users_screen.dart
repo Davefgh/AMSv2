@@ -84,7 +84,7 @@ class _UsersScreenState extends State<UsersScreen> {
                     )
                   : Icon(
                       Icons.swap_vert_rounded,
-                      color: Colors.white.withValues(alpha: 0.75),
+                      color: Colors.white.withOpacity(0.75),
                     ),
               onSelected: (value) {
                 if (value == 'export') {
@@ -241,16 +241,16 @@ class _UsersScreenState extends State<UsersScreen> {
             filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.65),
+                color: const Color(0xFF0F172A).withOpacity(0.65),
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(32)),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
+                  color: Colors.white.withOpacity(0.15),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity(0.3),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -268,7 +268,7 @@ class _UsersScreenState extends State<UsersScreen> {
                         height: 6,
                         margin: const EdgeInsets.only(bottom: 24),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
@@ -293,11 +293,11 @@ class _UsersScreenState extends State<UsersScreen> {
                             icon: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.1),
+                                color: Colors.white.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Icons.close_rounded,
-                                  color: Colors.white.withValues(alpha: 0.8),
+                                  color: Colors.white.withOpacity(0.8),
                                   size: 18),
                             ),
                           ),
@@ -323,17 +323,17 @@ class _UsersScreenState extends State<UsersScreen> {
                               onTap: () => Navigator.pop(ctx, e),
                               borderRadius: BorderRadius.circular(16),
                               splashColor: const Color(0xFF38BDF8)
-                                  .withValues(alpha: 0.3),
+                                  .withOpacity(0.3),
                               highlightColor: const Color(0xFF38BDF8)
-                                  .withValues(alpha: 0.1),
+                                  .withOpacity(0.1),
                               child: Container(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 16),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.05),
+                                  color: Colors.white.withOpacity(0.05),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.1),
+                                    color: Colors.white.withOpacity(0.1),
                                   ),
                                 ),
                                 child: Row(
@@ -341,7 +341,7 @@ class _UsersScreenState extends State<UsersScreen> {
                                     Icon(
                                       _getIconForEntity(e),
                                       color: const Color(0xFF38BDF8)
-                                          .withValues(alpha: 0.8),
+                                          .withOpacity(0.8),
                                       size: 22,
                                     ),
                                     const SizedBox(width: 12),
@@ -399,7 +399,7 @@ class _UsersScreenState extends State<UsersScreen> {
               child: SelectableText(
                 pretty,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.75),
+                  color: Colors.white.withOpacity(0.75),
                   fontSize: 12,
                   height: 1.35,
                 ),
@@ -499,7 +499,7 @@ class _UsersScreenState extends State<UsersScreen> {
                       child: SelectableText(
                         pretty,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.75),
+                          color: Colors.white.withOpacity(0.75),
                           fontSize: 12,
                         ),
                       ),
@@ -594,7 +594,7 @@ class _UsersScreenState extends State<UsersScreen> {
                 color: const Color(0xFF1E293B),
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(22)),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
               ),
               padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
               child: Column(
@@ -616,14 +616,14 @@ class _UsersScreenState extends State<UsersScreen> {
                       IconButton(
                         onPressed: isBusy ? null : () => Navigator.pop(ctx),
                         icon: Icon(Icons.close_rounded,
-                            color: Colors.white.withValues(alpha: 0.7)),
+                            color: Colors.white.withOpacity(0.7)),
                       ),
                     ],
                   ),
                   Text(
                     'Paste JSON then Preview or Import. Tip: load Template to get the expected shape.',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.55),
+                      color: Colors.white.withOpacity(0.55),
                       fontSize: 12,
                     ),
                   ),
@@ -636,18 +636,18 @@ class _UsersScreenState extends State<UsersScreen> {
                     decoration: InputDecoration(
                       hintText: 'Paste JSON here…',
                       hintStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.35)),
+                          color: Colors.white.withOpacity(0.35)),
                       filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.06),
+                      fillColor: Colors.white.withOpacity(0.06),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.15)),
+                            color: Colors.white.withOpacity(0.15)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.15)),
+                            color: Colors.white.withOpacity(0.15)),
                       ),
                     ),
                   ),
@@ -678,7 +678,7 @@ class _UsersScreenState extends State<UsersScreen> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white,
                           side: BorderSide(
-                              color: Colors.white.withValues(alpha: 0.5)),
+                              color: Colors.white.withOpacity(0.5)),
                         ),
                         child: const Text('Preview'),
                       ),
@@ -733,15 +733,15 @@ class _UsersScreenState extends State<UsersScreen> {
           );
         },
         borderRadius: BorderRadius.circular(12),
-        hoverColor: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-        splashColor: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+        hoverColor: const Color(0xFF38BDF8).withOpacity(0.1),
+        splashColor: const Color(0xFF38BDF8).withOpacity(0.2),
         child: Container(
           padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
-            color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+            color: const Color(0xFF38BDF8).withOpacity(0.15),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                color: const Color(0xFF38BDF8).withOpacity(0.4)),
           ),
           child: const Icon(
             Icons.add_rounded,
@@ -788,10 +788,10 @@ class _UsersScreenState extends State<UsersScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.greenAccent.withValues(alpha: 0.2),
+                  color: Colors.greenAccent.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: Colors.greenAccent.withValues(alpha: 0.5)),
+                      color: Colors.greenAccent.withOpacity(0.5)),
                 ),
                 child: const Row(
                   children: [
@@ -839,7 +839,7 @@ class _UsersScreenState extends State<UsersScreen> {
                         children: List.generate(
                           3,
                           (index) => Divider(
-                              color: Colors.white.withValues(alpha: 0.1),
+                              color: Colors.white.withOpacity(0.1),
                               height: 1),
                         ),
                       ),
@@ -914,9 +914,9 @@ class _UsersScreenState extends State<UsersScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
+              color: color.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withValues(alpha: 0.3)),
+              border: Border.all(color: color.withOpacity(0.3)),
             ),
             child: Icon(icon, color: color, size: 24),
           ),
@@ -933,7 +933,7 @@ class _UsersScreenState extends State<UsersScreen> {
           Text(
             title,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: Colors.white.withOpacity(0.7),
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
@@ -952,9 +952,9 @@ class _UsersScreenState extends State<UsersScreen> {
           height: 32,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
@@ -992,9 +992,9 @@ class _UsersScreenState extends State<UsersScreen> {
           height: 32,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<int>(
@@ -1052,7 +1052,7 @@ class _UsersScreenState extends State<UsersScreen> {
         child: Center(
           child: Text(
             'No matching users found',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+            style: TextStyle(color: Colors.white.withOpacity(0.5)),
           ),
         ),
       );
@@ -1065,7 +1065,7 @@ class _UsersScreenState extends State<UsersScreen> {
         physics: const NeverScrollableScrollPhysics(),
         itemCount: filteredUsers.length,
         separatorBuilder: (context, index) => Divider(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: Colors.white.withOpacity(0.1),
           height: 1,
         ),
         itemBuilder: (context, index) {
@@ -1079,9 +1079,9 @@ class _UsersScreenState extends State<UsersScreen> {
               height: 44,
               width: 44,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
+                color: color.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color.withValues(alpha: 0.3)),
+                border: Border.all(color: color.withOpacity(0.3)),
               ),
               child: Icon(_getRoleIcon(user.role), color: color, size: 24),
             ),
@@ -1095,14 +1095,14 @@ class _UsersScreenState extends State<UsersScreen> {
             subtitle: Text(
               user.role,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
+                color: Colors.white.withOpacity(0.6),
                 fontSize: 13,
               ),
             ),
             trailing: Text(
               'Active',
               style: TextStyle(
-                color: Colors.greenAccent.withValues(alpha: 0.7),
+                color: Colors.greenAccent.withOpacity(0.7),
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -1165,10 +1165,10 @@ class _GlassCard extends StatelessWidget {
           height: height,
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
+            color: Colors.white.withOpacity(0.06),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white.withOpacity(0.15),
               width: 1.0,
             ),
           ),
@@ -1226,8 +1226,8 @@ class _CurvedChartPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          const Color(0xFF38BDF8).withValues(alpha: 0.4),
-          const Color(0xFF38BDF8).withValues(alpha: 0.0),
+          const Color(0xFF38BDF8).withOpacity(0.4),
+          const Color(0xFF38BDF8).withOpacity(0.0),
         ],
       ).createShader(Rect.fromLTRB(0, 0, size.width, size.height))
       ..style = PaintingStyle.fill;

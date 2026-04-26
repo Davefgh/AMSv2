@@ -249,7 +249,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                    color: const Color(0xFF38BDF8).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -280,22 +280,22 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
             Row(
               children: [
                 Icon(Icons.calendar_today_rounded,
-                    size: 14, color: Colors.white.withValues(alpha: 0.3)),
+                    size: 14, color: Colors.white.withOpacity(0.3)),
                 const SizedBox(width: 6),
                 Text(
                   DateFormat('EEEE, MMMM d, yyyy')
                       .format(widget.session.sessionDate ?? DateTime.now()),
                   style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
+                      color: Colors.white.withOpacity(0.4), fontSize: 12),
                 ),
                 const SizedBox(width: 16),
                 Icon(Icons.people_rounded,
-                    size: 14, color: Colors.white.withValues(alpha: 0.3)),
+                    size: 14, color: Colors.white.withOpacity(0.3)),
                 const SizedBox(width: 6),
                 Text(
                   '${_students.length} Students',
                   style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
+                      color: Colors.white.withOpacity(0.4), fontSize: 12),
                 ),
               ],
             ),
@@ -330,7 +330,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(16),
         border: Border(left: BorderSide(color: color, width: 3)),
       ),
@@ -343,7 +343,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                   fontWeight: FontWeight.w900)),
           Text(label,
               style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4), fontSize: 11)),
+                  color: Colors.white.withOpacity(0.4), fontSize: 11)),
         ],
       ),
     );
@@ -360,7 +360,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                 child: Container(
                   height: 48,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: Colors.white.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: TextField(
@@ -369,7 +369,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                     decoration: InputDecoration(
                       hintText: 'Search students...',
                       hintStyle:
-                          TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                          TextStyle(color: Colors.white.withOpacity(0.3)),
                       prefixIcon: const Icon(Icons.search,
                           color: Colors.white24, size: 20),
                       border: InputBorder.none,
@@ -437,7 +437,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
           style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
       style: OutlinedButton.styleFrom(
         foregroundColor: color,
-        side: BorderSide(color: color.withValues(alpha: 0.3)),
+        side: BorderSide(color: color.withOpacity(0.3)),
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -456,15 +456,15 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.02),
+            color: Colors.white.withOpacity(0.02),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
           ),
           child: Row(
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                backgroundColor: const Color(0xFF38BDF8).withOpacity(0.1),
                 child: Text(
                   s.firstname[0],
                   style: const TextStyle(
@@ -486,7 +486,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                     Text(
                       'ID: ${s.id}',
                       style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: Colors.white.withOpacity(0.3),
                           fontSize: 12),
                     ),
                   ],
@@ -504,7 +504,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButtonHideUnderline(
@@ -576,9 +576,9 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            border: Border.all(color: Colors.white.withOpacity(0.08)),
           ),
           child: child,
         ),

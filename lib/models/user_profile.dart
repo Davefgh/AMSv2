@@ -7,6 +7,12 @@ class UserProfile {
   final DateTime updatedAt;
   final StudentProfileInfo? studentProfile;
   final InstructorProfileInfo? instructorProfile;
+  
+  String get fullName {
+    if (instructorProfile != null) return instructorProfile!.fullName;
+    if (studentProfile != null) return studentProfile!.fullName;
+    return username;
+  }
 
   UserProfile({
     required this.userId,
@@ -61,6 +67,8 @@ class StudentProfileInfo {
   final String courseName;
   final DateTime createdAt;
   final DateTime updatedAt;
+  
+  String get fullName => '${firstname ?? ""} ${lastname ?? ""}'.trim();
 
   StudentProfileInfo({
     this.id = '',
@@ -112,6 +120,8 @@ class InstructorProfileInfo {
   final String? lastname;
   final DateTime createdAt;
   final DateTime updatedAt;
+  
+  String get fullName => '${firstname ?? ""} ${lastname ?? ""}'.trim();
 
   InstructorProfileInfo({
     this.id = '',

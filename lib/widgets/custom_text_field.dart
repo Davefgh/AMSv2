@@ -50,21 +50,21 @@ class _CustomTextFieldState extends State<CustomTextField> {
       style: const TextStyle(color: Colors.white, fontSize: 15),
       decoration: InputDecoration(
         labelText: widget.label,
-        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+        labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
         hintText: widget.hint,
-        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide:
-              BorderSide(color: Colors.redAccent.withValues(alpha: 0.5)),
+              BorderSide(color: Colors.redAccent.withOpacity(0.5)),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

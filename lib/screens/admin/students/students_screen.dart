@@ -201,7 +201,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                color: const Color(0xFF38BDF8).withOpacity(0.2),
               ),
             ),
           ),
@@ -242,7 +242,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded,
                 color: Colors.white),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withValues(alpha: 0.05),
+              backgroundColor: Colors.white.withOpacity(0.05),
             ),
           ),
           const SizedBox(width: 20),
@@ -282,8 +282,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
             ),
             style: IconButton.styleFrom(
               backgroundColor: _showDeleted
-                  ? const Color(0xFFFACC15).withValues(alpha: 0.1)
-                  : Colors.white.withValues(alpha: 0.05),
+                  ? const Color(0xFFFACC15).withOpacity(0.1)
+                  : Colors.white.withOpacity(0.05),
             ),
             tooltip: _showDeleted ? 'Showing All' : 'Show Trash',
           ),
@@ -297,18 +297,18 @@ class _StudentsScreenState extends State<StudentsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          color: Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
         ),
         child: TextField(
           onChanged: _onSearchChanged,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: 'Search students...',
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
             prefixIcon: Icon(Icons.search_rounded,
-                color: Colors.white.withValues(alpha: 0.4)),
+                color: Colors.white.withOpacity(0.4)),
             border: InputBorder.none,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -388,13 +388,13 @@ class _StudentsScreenState extends State<StudentsScreen> {
     return Container(
       decoration: BoxDecoration(
         color: student.isDeleted
-            ? Colors.orangeAccent.withValues(alpha: 0.05)
-            : Colors.white.withValues(alpha: 0.05),
+            ? Colors.orangeAccent.withOpacity(0.05)
+            : Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
             color: student.isDeleted
-                ? Colors.orangeAccent.withValues(alpha: 0.1)
-                : Colors.white.withValues(alpha: 0.08)),
+                ? Colors.orangeAccent.withOpacity(0.1)
+                : Colors.white.withOpacity(0.08)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
@@ -406,10 +406,10 @@ class _StudentsScreenState extends State<StudentsScreen> {
               height: 48,
               width: 48,
               decoration: BoxDecoration(
-                color: const Color(0xFF34D399).withValues(alpha: 0.2),
+                color: const Color(0xFF34D399).withOpacity(0.2),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                    color: const Color(0xFF34D399).withValues(alpha: 0.3)),
+                    color: const Color(0xFF34D399).withOpacity(0.3)),
               ),
               child: const Icon(Icons.school_rounded, color: Color(0xFF34D399)),
             ),
@@ -428,13 +428,13 @@ class _StudentsScreenState extends State<StudentsScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       'Section ${student.sectionId}',
                       style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
+                          color: Colors.white.withOpacity(0.6),
                           fontSize: 12),
                     ),
                   ),
@@ -453,7 +453,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
               ),
             ),
             trailing: Icon(Icons.arrow_forward_ios_rounded,
-                color: Colors.white.withValues(alpha: 0.2), size: 16),
+                color: Colors.white.withOpacity(0.2), size: 16),
           ),
         ),
       ),
@@ -466,14 +466,14 @@ class _StudentsScreenState extends State<StudentsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.person_search_rounded,
-              size: 64, color: Colors.white.withValues(alpha: 0.1)),
+              size: 64, color: Colors.white.withOpacity(0.1)),
           const SizedBox(height: 16),
           Text(
             _searchQuery.isEmpty
                 ? 'No students found'
                 : 'No results for "$_searchQuery"',
             style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.4), fontSize: 16),
+                color: Colors.white.withOpacity(0.4), fontSize: 16),
           ),
         ],
       ),
@@ -603,7 +603,7 @@ class _StudentEditModalState extends State<_StudentEditModal> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
           ),
           child: TextField(

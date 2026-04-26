@@ -38,4 +38,8 @@ class StorageService {
   static Future<void> clear() async {
     await _prefs.clear();
   }
+
+  static Set<String> getAllKeys() {
+    return _prefs.getKeys();
+  }
 }
