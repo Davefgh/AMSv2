@@ -74,13 +74,21 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } else {
         setState(() {
-          _errorMessage = 'Incorrect Username or Password.';
+          _errorMessage = 'Incorrect Username or Password. Please try again.';
         });
       }
     } catch (e) {
       debugPrint('Login Error: $e');
       setState(() {
-        _errorMessage = 'Incorrect Username or Password.';
+        if (e is ApiException) {
+          if (e.statusCode == 401 || e.statusCode == 400) {
+            _errorMessage = 'Incorrect Username or Password. Please try again.';
+          } else {
+            _errorMessage = 'Server Error (${e.statusCode}): Failed to connect to server.';
+          }
+        } else {
+          _errorMessage = 'Failed to connect to server. Please check your connection or .env configuration.';
+        }
       });
     } finally {
       if (mounted) {
