@@ -245,9 +245,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     final DateTime? picked = await showDatePicker(
                       context: context,
                       initialDate: selectedDate,
-                      firstDate: DateTime.now()
-                          .subtract(const Duration(minutes: 1)), // Allow today
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                      firstDate: DateTime.now().subtract(const Duration(days: 365)), // Allow past 1 year
+                      lastDate: DateTime.now().add(const Duration(days: 365)), // Allow future 1 year
                       builder: (context, child) {
                         return Theme(
                           data: Theme.of(context).copyWith(
@@ -280,6 +279,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                         hintStyle: const TextStyle(color: Colors.white24),
                         suffixIcon: const Icon(Icons.calendar_today_rounded,
                             size: 18, color: Colors.white38),
+                        helperText: selectedSchedule?.dayOfWeek != null 
+                            ? 'Selected day: ${DateFormat('EEEE').format(selectedDate)}. (Scheduled: ${selectedSchedule?.dayName ?? ""})'
+                            : null,
+                        helperStyle: const TextStyle(color: Colors.white38, fontSize: 10),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none),
@@ -390,10 +393,14 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                                     'scheduleId': selectedSchedule!.id,
                                     'sessionDate':
                                         selectedDate.toIso8601String(),
-                                    'description': notesController.text,
-                                    if (isOffSchedule)
-                                      'offScheduleReason':
-                                          reasonController.text,
+                                    'description': notesController.text.trim().isEmpty 
+                                        ? null 
+                                        : notesController.text.trim(),
+                                    if (isOffSchedule) ...{
+                                      'allowOffScheduleDate': true,
+                                      if (reasonController.text.trim().isNotEmpty)
+                                        'offScheduleReason': reasonController.text.trim(),
+                                    },
                                   });
 
                                   if (!context.mounted) return;
@@ -412,6 +419,13 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                                   String errorMsg = e.toString();
                                   if (e is ApiException) {
                                     errorMsg = e.message;
+                                    
+                                    // Provide more helpful error messages
+                                    if (errorMsg.contains('already exists')) {
+                                      errorMsg = 'A session already exists for this schedule on the selected date. Please choose a different date or delete the existing session first.';
+                                    } else if (errorMsg.contains('does not match')) {
+                                      errorMsg = 'The selected date does not match the schedule\'s day of week. The backend requires sessions to be created on the correct day. Please select a ${selectedSchedule?.dayName ?? "matching"} date.';
+                                    }
                                   }
 
                                   if (context.mounted) {
@@ -420,6 +434,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                                       content: Text(errorMsg),
                                       backgroundColor: Colors.redAccent,
                                       behavior: SnackBarBehavior.floating,
+                                      duration: const Duration(seconds: 5),
                                     ));
                                   }
                                 }
