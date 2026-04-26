@@ -541,44 +541,6 @@ class ApiService {
     }
   }
 
-  Future<dynamic> getAdminDataTemplate(String entity) async {
-    try {
-      return await get('/api/admin-data/$entity/template');
-    } catch (e) {
-      _logger.e('getAdminDataTemplate Error: $e');
-      rethrow;
-    }
-  }
-
-  Future<dynamic> getAdminDataExport(String entity) async {
-    try {
-      return await get('/api/admin-data/$entity/export');
-    } catch (e) {
-      _logger.e('getAdminDataExport Error: $e');
-      rethrow;
-    }
-  }
-
-  Future<dynamic> postAdminDataImportPreview(
-      String entity, Map<String, dynamic> body) async {
-    try {
-      return await post('/api/admin-data/$entity/import-preview', body);
-    } catch (e) {
-      _logger.e('postAdminDataImportPreview Error: $e');
-      rethrow;
-    }
-  }
-
-  Future<dynamic> postAdminDataImport(
-      String entity, Map<String, dynamic> body) async {
-    try {
-      return await post('/api/admin-data/$entity/import', body);
-    } catch (e) {
-      _logger.e('postAdminDataImport Error: $e');
-      rethrow;
-    }
-  }
-
   Future<List<Schedule>> getSchedules() async {
     try {
       final response = await get('/api/schedules');
@@ -1254,11 +1216,12 @@ class ApiService {
     if (response.statusCode == 401) {
       final urlStr = response.request?.url.toString().toLowerCase() ?? '';
       _logger.w('401 Unauthorized detected for: $urlStr');
-      
+
       // Don't logout if we're actually trying to login or refresh
       // Logout will be handled by _withRefresh after refresh attempt fails
       if (!urlStr.contains('login') && !urlStr.contains('refresh')) {
-        _logger.i('401 on non-auth endpoint - will attempt refresh then logout if fails');
+        _logger.i(
+            '401 on non-auth endpoint - will attempt refresh then logout if fails');
         throw ApiException(401, 'Session expired. Please log in again.');
       }
     }

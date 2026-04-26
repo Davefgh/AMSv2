@@ -12,7 +12,6 @@ class MainScaffold extends StatelessWidget {
   final int currentIndex;
   final List<Widget>? actions;
   final Widget? floatingActionButton;
-  final bool isAdmin;
   final bool isStudent;
   final bool showBackButton;
 
@@ -23,7 +22,6 @@ class MainScaffold extends StatelessWidget {
     required this.currentIndex,
     this.actions,
     this.floatingActionButton,
-    this.isAdmin = true,
     this.isStudent = false,
     this.showBackButton = false,
   });
@@ -219,9 +217,7 @@ class MainScaffold extends StatelessWidget {
   Widget _buildNavigationRail(BuildContext context, bool isDark,
       {required bool extended}) {
     List<_NavDestination> destinations;
-    if (isAdmin) {
-      destinations = _adminDestinations;
-    } else if (isStudent) {
+    if (isStudent) {
       destinations = _studentDestinations;
     } else {
       destinations = _teacherDestinations;
@@ -310,15 +306,6 @@ class MainScaffold extends StatelessWidget {
     );
   }
 
-  List<_NavDestination> get _adminDestinations => const [
-        _NavDestination(
-            Icons.dashboard_rounded, 'Dashboard', AppRoutes.dashboard),
-        _NavDestination(
-            Icons.person_add_rounded, 'Enrollment', AppRoutes.enrollment),
-        _NavDestination(Icons.class_rounded, 'Classes', AppRoutes.classes),
-        _NavDestination(Icons.people_rounded, 'Users', AppRoutes.users),
-      ];
-
   List<_NavDestination> get _teacherDestinations => const [
         _NavDestination(Icons.home_rounded, 'Home', AppRoutes.teacherDashboard),
         _NavDestination(
@@ -339,9 +326,7 @@ class MainScaffold extends StatelessWidget {
 
   Widget _buildBottomNavBar(BuildContext context, bool isDark) {
     List<_NavDestination> destinations;
-    if (isAdmin) {
-      destinations = _adminDestinations;
-    } else if (isStudent) {
+    if (isStudent) {
       destinations = _studentDestinations;
     } else {
       destinations = _teacherDestinations;
@@ -388,9 +373,7 @@ class MainScaffold extends StatelessWidget {
     if (index == currentIndex) return;
 
     List<_NavDestination> destinations;
-    if (isAdmin) {
-      destinations = _adminDestinations;
-    } else if (isStudent) {
+    if (isStudent) {
       destinations = _studentDestinations;
     } else {
       destinations = _teacherDestinations;

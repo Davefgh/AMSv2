@@ -115,7 +115,6 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
     return MainScaffold(
       title: 'My Classes',
       currentIndex: 3,
-      isAdmin: false,
       body: _isLoading
           ? const SkeletonDashboard()
           : _errorMessage != null

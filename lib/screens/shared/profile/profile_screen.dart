@@ -29,19 +29,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _userRole = context.read<AppProvider>().userRole;
     final isTeacher = _userRole == 'instructor' || _userRole == 'teacher';
-    _profileFuture = isTeacher ? _apiService.getInstructorProfile() : _apiService.getMe();
+    _profileFuture =
+        isTeacher ? _apiService.getInstructorProfile() : _apiService.getMe();
   }
 
   @override
   Widget build(BuildContext context) {
-    final isAdmin = _userRole == 'admin';
     final isStudent = _userRole == 'student';
 
     return MainScaffold(
       title: 'Profile',
       currentIndex: isStudent ? 2 : -1,
       showBackButton: true,
-      isAdmin: isAdmin,
       isStudent: isStudent,
       body: FutureBuilder<dynamic>(
         future: _profileFuture,
@@ -64,7 +63,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _reloadProfile() {
     final isTeacher = _userRole == 'instructor' || _userRole == 'teacher';
     setState(() {
-      _profileFuture = isTeacher ? _apiService.getInstructorProfile() : _apiService.getMe();
+      _profileFuture =
+          isTeacher ? _apiService.getInstructorProfile() : _apiService.getMe();
     });
   }
 
@@ -114,7 +114,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-
   Widget _buildErrorState(String error) {
     return Center(
       child: Padding(
@@ -122,17 +121,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: Sizing.sp(64)),
+            Icon(Icons.error_outline_rounded,
+                color: Colors.redAccent, size: Sizing.sp(64)),
             SizedBox(height: Sizing.h(16)),
             Text(
               'Failed to load profile',
-              style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: Sizing.sp(18), fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: Sizing.sp(18),
+                  fontWeight: FontWeight.bold),
             ),
             SizedBox(height: Sizing.h(8)),
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: Sizing.sp(14)),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: Sizing.sp(14)),
             ),
             SizedBox(height: Sizing.h(24)),
             ElevatedButton(
@@ -140,8 +145,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: Sizing.w(32), vertical: Sizing.h(12)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Sizing.r(12))),
+                padding: EdgeInsets.symmetric(
+                    horizontal: Sizing.w(32), vertical: Sizing.h(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(Sizing.r(12))),
               ),
               child: const Text('Try Again'),
             ),
@@ -154,7 +161,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileContent(dynamic profile) {
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.symmetric(horizontal: Sizing.w(24), vertical: Sizing.h(12)),
+      padding: EdgeInsets.symmetric(
+          horizontal: Sizing.w(24), vertical: Sizing.h(12)),
       children: [
         _buildUserCard(profile),
         SizedBox(height: Sizing.h(24)),
@@ -245,11 +253,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: CircleAvatar(
               radius: Sizing.r(50),
               backgroundColor: const Color(0xFF1E293B),
-              backgroundImage: NetworkImage(
-                profile is Instructor 
-                  ? 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(profile.fullName)}&background=38BDF8&color=0F172A&size=150' 
-                  : 'https://ui-avatars.com/api/?name=${Uri.encodeComponent((profile as UserProfile).username)}&background=34D399&color=0F172A&size=150'
-              ),
+              backgroundImage: NetworkImage(profile is Instructor
+                  ? 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(profile.fullName)}&background=38BDF8&color=0F172A&size=150'
+                  : 'https://ui-avatars.com/api/?name=${Uri.encodeComponent((profile as UserProfile).username)}&background=34D399&color=0F172A&size=150'),
             ),
           ),
           SizedBox(height: Sizing.h(16)),
@@ -263,11 +269,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           SizedBox(height: Sizing.h(4)),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: Sizing.w(12), vertical: Sizing.h(4)),
+            padding: EdgeInsets.symmetric(
+                horizontal: Sizing.w(12), vertical: Sizing.h(4)),
             decoration: BoxDecoration(
               color: const Color(0xFF38BDF8).withOpacity(0.1),
               borderRadius: BorderRadius.circular(Sizing.r(20)),
-              border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.3)),
+              border: Border.all(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
             ),
             child: Text(
               roleName,
@@ -286,29 +294,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildDetailSection(dynamic profile) {
     final dateFormat = DateFormat('MMMM dd, yyyy');
-    
+
     return _GlassCard(
       padding: EdgeInsets.zero,
       child: Column(
         children: [
           if (profile is Instructor) ...[
-            _buildDetailTile(Icons.perm_identity_rounded, 'Instructor ID', profile.id.toString()),
+            _buildDetailTile(Icons.perm_identity_rounded, 'Instructor ID',
+                profile.id.toString()),
             _buildDivider(),
-            _buildDetailTile(Icons.person_outline_rounded, 'First Name', profile.firstname),
+            _buildDetailTile(
+                Icons.person_outline_rounded, 'First Name', profile.firstname),
             _buildDivider(),
-            _buildDetailTile(Icons.person_outline_rounded, 'Last Name', profile.lastname),
+            _buildDetailTile(
+                Icons.person_outline_rounded, 'Last Name', profile.lastname),
             _buildDivider(),
-            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since', dateFormat.format(profile.createdAt)),
+            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since',
+                dateFormat.format(profile.createdAt)),
             _buildDivider(),
-            _buildDetailTile(Icons.update_rounded, 'Last Updated', dateFormat.format(profile.updatedAt)),
+            _buildDetailTile(Icons.update_rounded, 'Last Updated',
+                dateFormat.format(profile.updatedAt)),
           ] else if (profile is UserProfile) ...[
-            _buildDetailTile(Icons.perm_identity_rounded, 'User ID', profile.userId),
+            _buildDetailTile(
+                Icons.perm_identity_rounded, 'User ID', profile.userId),
             _buildDivider(),
-            _buildDetailTile(Icons.email_outlined, 'Email Address', profile.email),
+            _buildDetailTile(
+                Icons.email_outlined, 'Email Address', profile.email),
             _buildDivider(),
-            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since', dateFormat.format(profile.createdAt)),
+            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since',
+                dateFormat.format(profile.createdAt)),
             _buildDivider(),
-            _buildDetailTile(Icons.update_rounded, 'Last Updated', dateFormat.format(profile.updatedAt)),
+            _buildDetailTile(Icons.update_rounded, 'Last Updated',
+                dateFormat.format(profile.updatedAt)),
           ],
         ],
       ),
@@ -317,7 +334,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildDetailTile(IconData icon, String label, String value) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: Sizing.w(20), vertical: Sizing.h(16)),
+      padding: EdgeInsets.symmetric(
+          horizontal: Sizing.w(20), vertical: Sizing.h(16)),
       child: Row(
         children: [
           Container(
@@ -326,7 +344,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: Colors.white.withOpacity(0.05),
               borderRadius: BorderRadius.circular(Sizing.r(12)),
             ),
-            child: Icon(icon, color: Colors.white.withOpacity(0.7), size: Sizing.sp(20)),
+            child: Icon(icon,
+                color: Colors.white.withValues(alpha: 0.7),
+                size: Sizing.sp(20)),
           ),
           SizedBox(width: Sizing.w(16)),
           Expanded(
@@ -335,12 +355,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Text(
                   label,
-                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: Sizing.sp(13)),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: Sizing.sp(13)),
                 ),
                 SizedBox(height: Sizing.h(2)),
                 Text(
                   value,
-                  style: TextStyle(color: Colors.white, fontSize: Sizing.sp(15), fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: Sizing.sp(15),
+                      fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -353,7 +378,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildDivider() {
     return Divider(height: 1, color: Colors.white.withOpacity(0.05));
   }
-
 }
 
 class _GlassCard extends StatelessWidget {

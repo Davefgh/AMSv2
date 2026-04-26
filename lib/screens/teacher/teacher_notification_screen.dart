@@ -53,7 +53,6 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
       title: 'Notifications',
       currentIndex: -1,
       showBackButton: true,
-      isAdmin: false,
       body: Stack(
         children: [
           _buildBackground(),
