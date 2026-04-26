@@ -165,19 +165,22 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
             ),
             // Student list
             if (filteredStudents.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Column(
-                  children: [
-                    Icon(Icons.person_search_rounded,
-                        size: 48, color: Colors.white.withValues(alpha: 0.2)),
-                    const SizedBox(height: 12),
-                    Text(
-                      'No $_selectedStatus students',
-                      style:
-                          TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                    ),
-                  ],
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.5,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.person_search_rounded,
+                          size: 48, color: Colors.white.withValues(alpha: 0.2)),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No $_selectedStatus students',
+                        style:
+                            TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                      ),
+                    ],
+                  ),
                 ),
               )
             else
