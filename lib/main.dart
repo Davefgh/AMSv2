@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'config/theme/app_theme.dart';
 import 'config/routes/app_routes.dart';
@@ -54,10 +54,14 @@ void main() async {
     }
   }
 
-  runApp(MyApp(initialRoute: initialRoute, initialRole: role));
+  runApp(
+    ProviderScope(
+      child: MyApp(initialRoute: initialRoute, initialRole: role),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   final String initialRoute;
   final String initialRole;
 
@@ -65,28 +69,22 @@ class MyApp extends StatelessWidget {
       {super.key, required this.initialRoute, required this.initialRole});
 
   @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) {
-          final provider = AppProvider();
-          provider.setUserRole(initialRole);
-          return provider;
-        }),
-      ],
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        title: 'AMSv2',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        initialRoute: initialRoute,
-        routes: {
-          '/': (context) => const LoginScreen(),
-          ...AppRoutes.routes,
-        },
-        debugShowCheckedModeBanner: false,
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize user role on first build
+    ref.read(appProvider.notifier).setUserRole(initialRole);
+
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      title: 'AMSv2',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      initialRoute: initialRoute,
+      routes: {
+        '/': (context) => const LoginScreen(),
+        ...AppRoutes.routes,
+      },
+      debugShowCheckedModeBanner: false,
     );
   }
 }

@@ -11,7 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.9
-  provider: ^6.0.0
+  # Riverpod state management
+  flutter_riverpod: ^3.2.1
+  riverpod_annotation: ^4.0.2
+  # Other dependencies
   http: ^1.1.0
   shared_preferences: ^2.2.0
   intl: ^0.20.2
@@ -22,12 +25,16 @@ dependencies:
   qr_flutter: ^4.1.0
   mobile_scanner: ^7.2.0
   flutter_dotenv: ^6.0.1
-  riverpod: ^3.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  # Riverpod code generation
+  build_runner: ^2.4.0
+  riverpod_generator: ^4.0.3
+  # Riverpod linting (uses analysis_server_plugin, not custom_lint)
+  riverpod_lint: ^3.1.3
 
 flutter:
   uses-material-design: true

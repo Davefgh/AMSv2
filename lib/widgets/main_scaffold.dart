@@ -1,12 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../utils/responsive.dart';
 import '../utils/sizing_utils.dart';
 import '../config/routes/app_routes.dart';
 import '../providers/app_provider.dart';
 
-class MainScaffold extends StatelessWidget {
+class MainScaffold extends ConsumerWidget {
   final Widget body;
   final String title;
   final int currentIndex;
@@ -27,27 +27,23 @@ class MainScaffold extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     Sizing.init(context);
-    return Consumer<AppProvider>(
-      builder: (context, appProvider, _) {
-        final isDark = appProvider.isDarkMode;
-        final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final appState = ref.watch(appProvider);
+    final isDark = appState.isDarkMode;
+    final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
 
-        return Scaffold(
-          backgroundColor: bgColor,
-          body: Responsive(
-            mobile: _buildMobileLayout(context, isDark),
-            tablet: _buildTabletLayout(context, isDark),
-            desktop: _buildTabletLayout(context, isDark),
-          ),
-          bottomNavigationBar:
-              (currentIndex >= 0 && Responsive.isMobile(context))
-                  ? _buildBottomNavBar(context, isDark)
-                  : null,
-          floatingActionButton: floatingActionButton,
-        );
-      },
+    return Scaffold(
+      backgroundColor: bgColor,
+      body: Responsive(
+        mobile: _buildMobileLayout(context, isDark),
+        tablet: _buildTabletLayout(context, isDark),
+        desktop: _buildTabletLayout(context, isDark),
+      ),
+      bottomNavigationBar: (currentIndex >= 0 && Responsive.isMobile(context))
+          ? _buildBottomNavBar(context, isDark)
+          : null,
+      floatingActionButton: floatingActionButton,
     );
   }
 
@@ -312,8 +308,8 @@ class MainScaffold extends StatelessWidget {
             Icons.library_books_rounded, 'Attendance', AppRoutes.attendance),
         _NavDestination(Icons.qr_code_scanner_rounded, 'Sessions',
             AppRoutes.sessionDashboard),
-        _NavDestination(Icons.school_rounded, 'Classes',
-            AppRoutes.teacherSchedules),
+        _NavDestination(
+            Icons.school_rounded, 'Classes', AppRoutes.teacherSchedules),
       ];
 
   List<_NavDestination> get _studentDestinations => const [

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/user_profile.dart';
@@ -9,14 +9,16 @@ import '../../widgets/skeleton_loader.dart';
 import '../../providers/app_provider.dart';
 import 'section_students_screen.dart';
 
-class TeacherSchedulesScreen extends StatefulWidget {
+class TeacherSchedulesScreen extends ConsumerStatefulWidget {
   const TeacherSchedulesScreen({super.key});
 
   @override
-  State<TeacherSchedulesScreen> createState() => _TeacherSchedulesScreenState();
+  ConsumerState<TeacherSchedulesScreen> createState() =>
+      _TeacherSchedulesScreenState();
 }
 
-class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
+class _TeacherSchedulesScreenState
+    extends ConsumerState<TeacherSchedulesScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
   String? _errorMessage;
@@ -126,106 +128,102 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
   }
 
   Widget _buildContent() {
-    return Consumer<AppProvider>(
-      builder: (context, appProvider, _) {
-        final isDark = appProvider.isDarkMode;
-        final sections = _getGroupedSections();
+    final appState = ref.watch(appProvider);
+    final isDark = appState.isDarkMode;
+    final sections = _getGroupedSections();
 
-        final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
-        final subtitleColor = isDark
-            ? Colors.white.withValues(alpha: 0.5)
-            : const Color(0xFF64748B);
-        final bgColor = isDark ? Colors.transparent : const Color(0xFFF8FAFC);
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final subtitleColor =
+        isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
+    final bgColor = isDark ? Colors.transparent : const Color(0xFFF8FAFC);
 
-        return Container(
-          color: bgColor,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-                horizontal: Sizing.w(24), vertical: Sizing.h(20)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      color: bgColor,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(
+            horizontal: Sizing.w(24), vertical: Sizing.h(20)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Welcome Header
+            Text(
+              'My Classes',
+              style: TextStyle(
+                color: textColor,
+                fontSize: Sizing.sp(28),
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+              ),
+            ),
+            Text(
+              'Welcome, ${_profile?.fullName ?? "Instructor"}',
+              style: TextStyle(
+                color: subtitleColor,
+                fontSize: Sizing.sp(14),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: Sizing.h(32)),
+
+            // Stats Row
+            Row(
               children: [
-                // Welcome Header
-                Text(
-                  'My Classes',
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: Sizing.sp(28),
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
+                Expanded(
+                  child: _buildStatCard(
+                    'Total Sections',
+                    '${sections.length}',
+                    Icons.book_outlined,
+                    const Color(0xFF38BDF8),
+                    isDark,
                   ),
                 ),
-                Text(
-                  'Welcome, ${_profile?.fullName ?? "Instructor"}',
-                  style: TextStyle(
-                    color: subtitleColor,
-                    fontSize: Sizing.sp(14),
-                    fontWeight: FontWeight.w500,
+                SizedBox(width: Sizing.w(16)),
+                Expanded(
+                  child: _buildStatCard(
+                    'Total Unique Students',
+                    '$_totalUniqueStudents',
+                    Icons.people_outline,
+                    const Color(0xFF2DD4BF),
+                    isDark,
                   ),
                 ),
-                SizedBox(height: Sizing.h(32)),
-
-                // Stats Row
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildStatCard(
-                        'Total Sections',
-                        '${sections.length}',
-                        Icons.book_outlined,
-                        const Color(0xFF38BDF8),
-                        isDark,
-                      ),
-                    ),
-                    SizedBox(width: Sizing.w(16)),
-                    Expanded(
-                      child: _buildStatCard(
-                        'Total Unique Students',
-                        '$_totalUniqueStudents',
-                        Icons.people_outline,
-                        const Color(0xFF2DD4BF),
-                        isDark,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: Sizing.h(32)),
-
-                // Sections Grid
-                if (sections.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: Sizing.h(60)),
-                      child: Text(
-                        'No classes found',
-                        style: TextStyle(
-                            color: subtitleColor, fontSize: Sizing.sp(16)),
-                      ),
-                    ),
-                  )
-                else
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).size.width > 900
-                          ? 4
-                          : (MediaQuery.of(context).size.width > 600 ? 3 : 2),
-                      crossAxisSpacing: Sizing.w(16),
-                      mainAxisSpacing: Sizing.h(16),
-                      childAspectRatio: 0.82,
-                    ),
-                    itemCount: sections.length,
-                    itemBuilder: (context, index) {
-                      final section = sections[index];
-                      return _buildSectionCard(section, isDark);
-                    },
-                  ),
               ],
             ),
-          ),
-        );
-      },
+            SizedBox(height: Sizing.h(32)),
+
+            // Sections Grid
+            if (sections.isEmpty)
+              Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: Sizing.h(60)),
+                  child: Text(
+                    'No classes found',
+                    style: TextStyle(
+                        color: subtitleColor, fontSize: Sizing.sp(16)),
+                  ),
+                ),
+              )
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: MediaQuery.of(context).size.width > 900
+                      ? 4
+                      : (MediaQuery.of(context).size.width > 600 ? 3 : 2),
+                  crossAxisSpacing: Sizing.w(16),
+                  mainAxisSpacing: Sizing.h(16),
+                  childAspectRatio: 0.82,
+                ),
+                itemCount: sections.length,
+                itemBuilder: (context, index) {
+                  final section = sections[index];
+                  return _buildSectionCard(section, isDark);
+                },
+              ),
+          ],
+        ),
+      ),
     );
   }
 

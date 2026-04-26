@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/api_service.dart';
 import '../../models/student_model.dart';
 import '../../models/schedule_model.dart';
@@ -9,7 +9,7 @@ import '../../widgets/skeleton_loader.dart';
 import '../../utils/sizing_utils.dart';
 import '../../providers/app_provider.dart';
 
-class SectionStudentsScreen extends StatefulWidget {
+class SectionStudentsScreen extends ConsumerStatefulWidget {
   final String sectionId;
   final String sectionName;
 
@@ -20,10 +20,11 @@ class SectionStudentsScreen extends StatefulWidget {
   });
 
   @override
-  State<SectionStudentsScreen> createState() => _SectionStudentsScreenState();
+  ConsumerState<SectionStudentsScreen> createState() =>
+      _SectionStudentsScreenState();
 }
 
-class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
+class _SectionStudentsScreenState extends ConsumerState<SectionStudentsScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
   String? _errorMessage;
@@ -102,60 +103,57 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
   }
 
   Widget _buildContent() {
-    return Consumer<AppProvider>(
-      builder: (context, appProvider, _) {
-        final isDark = appProvider.isDarkMode;
-        final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
-        final subtitleColor =
-            isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
+    final appState = ref.watch(appProvider);
+    final isDark = appState.isDarkMode;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final subtitleColor =
+        isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
 
-        return RefreshIndicator(
-          onRefresh: _loadData,
-          color: const Color(0xFF38BDF8),
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics()),
-            padding: EdgeInsets.symmetric(
-                horizontal: Sizing.w(24), vertical: Sizing.h(20)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header (Course Name only)
-                _buildHeader(subtitleColor),
-                SizedBox(height: Sizing.h(32)),
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      color: const Color(0xFF38BDF8),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics()),
+        padding: EdgeInsets.symmetric(
+            horizontal: Sizing.w(24), vertical: Sizing.h(20)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header (Course Name only)
+            _buildHeader(subtitleColor),
+            SizedBox(height: Sizing.h(32)),
 
-                // Stat Cards
-                _buildStatsGrid(isDark),
-                SizedBox(height: Sizing.h(32)),
+            // Stat Cards
+            _buildStatsGrid(isDark),
+            SizedBox(height: Sizing.h(32)),
 
-                // Filter Chips
-                _buildFilterChips(isDark),
-                SizedBox(height: Sizing.h(24)),
+            // Filter Chips
+            _buildFilterChips(isDark),
+            SizedBox(height: Sizing.h(24)),
 
-                // Handled Classes Section
-                _buildSectionLabel('Handled Classes', isDark, textColor),
-                SizedBox(height: Sizing.h(16)),
-                if (_schedules.isEmpty)
-                  _buildEmptyState('No classes handled in this section.')
-                else
-                  ..._schedules.map((s) => _buildScheduleCard(s, isDark)),
+            // Handled Classes Section
+            _buildSectionLabel('Handled Classes', isDark, textColor),
+            SizedBox(height: Sizing.h(16)),
+            if (_schedules.isEmpty)
+              _buildEmptyState('No classes handled in this section.')
+            else
+              ..._schedules.map((s) => _buildScheduleCard(s, isDark)),
 
-                SizedBox(height: Sizing.h(32)),
+            SizedBox(height: Sizing.h(32)),
 
-                // Students Section
-                _buildSectionLabel('Home Section Students', isDark, textColor),
-                SizedBox(height: Sizing.h(16)),
-                if (_filteredStudents.isEmpty)
-                  _buildEmptyState('No students found for this filter.')
-                else
-                  ..._filteredStudents.map((s) => _buildStudentCard(s, isDark)),
+            // Students Section
+            _buildSectionLabel('Home Section Students', isDark, textColor),
+            SizedBox(height: Sizing.h(16)),
+            if (_filteredStudents.isEmpty)
+              _buildEmptyState('No students found for this filter.')
+            else
+              ..._filteredStudents.map((s) => _buildStudentCard(s, isDark)),
 
-                SizedBox(height: Sizing.h(40)),
-              ],
-            ),
-          ),
-        );
-      },
+            SizedBox(height: Sizing.h(40)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -320,7 +318,8 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
   }
 
   Widget _buildScheduleCard(Schedule schedule, bool isDark) {
-    final cardColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
+    final cardColor =
+        isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
     final secondaryTextColor =
         isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
@@ -411,7 +410,8 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFF6366F1).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -609,8 +609,8 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(14),
-                border:
-                    Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.2)),
+                border: Border.all(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.2)),
               ),
               child: Center(
                 child: Text(
