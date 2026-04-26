@@ -997,11 +997,18 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
           Text(label,
               style: const TextStyle(color: Colors.white38, fontSize: 14)),
           const Spacer(),
-          Text(value,
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
-                  fontWeight: FontWeight.bold)),
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
         ],
       ),
     );
