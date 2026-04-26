@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/session_model.dart';
@@ -11,14 +11,16 @@ import 'dart:async';
 import '../../widgets/skeleton_loader.dart';
 import '../../providers/app_provider.dart';
 
-class TeacherDashboardScreen extends StatefulWidget {
+class TeacherDashboardScreen extends ConsumerStatefulWidget {
   const TeacherDashboardScreen({super.key});
 
   @override
-  State<TeacherDashboardScreen> createState() => _TeacherDashboardScreenState();
+  ConsumerState<TeacherDashboardScreen> createState() =>
+      _TeacherDashboardScreenState();
 }
 
-class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
+class _TeacherDashboardScreenState
+    extends ConsumerState<TeacherDashboardScreen> {
   final ApiService _apiService = ApiService();
 
   bool _isLoading = true;
@@ -131,23 +133,21 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appState = ref.watch(appProvider);
+
     return MainScaffold(
       title: 'Dashboard',
       currentIndex: 0,
       actions: [
-        Consumer<AppProvider>(
-          builder: (context, appProvider, _) {
-            return IconButton(
-              icon: Icon(
-                appProvider.isDarkMode
-                    ? Icons.light_mode_rounded
-                    : Icons.dark_mode_rounded,
-                color: appProvider.isDarkMode ? Colors.white : Colors.black,
-              ),
-              onPressed: () => appProvider.toggleDarkMode(),
-              tooltip: appProvider.isDarkMode ? 'Light Mode' : 'Dark Mode',
-            );
-          },
+        IconButton(
+          icon: Icon(
+            appState.isDarkMode
+                ? Icons.light_mode_rounded
+                : Icons.dark_mode_rounded,
+            color: appState.isDarkMode ? Colors.white : Colors.black,
+          ),
+          onPressed: () => ref.read(appProvider.notifier).toggleDarkMode(),
+          tooltip: appState.isDarkMode ? 'Light Mode' : 'Dark Mode',
         ),
       ],
       body: _isLoading
@@ -159,35 +159,31 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   }
 
   Widget _buildDashboard() {
-    return Consumer<AppProvider>(
-      builder: (context, appProvider, _) {
-        final isDark = appProvider.isDarkMode;
-        final cardColor =
-            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
-        final textColor = isDark ? Colors.white : Colors.black;
-        final secondaryTextColor = isDark
-            ? Colors.white.withValues(alpha: 0.5)
-            : Colors.black.withValues(alpha: 0.6);
+    final appState = ref.watch(appProvider);
+    final isDark = appState.isDarkMode;
+    final cardColor =
+        isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final secondaryTextColor = isDark
+        ? Colors.white.withValues(alpha: 0.5)
+        : Colors.black.withValues(alpha: 0.6);
 
-        return RefreshIndicator(
-          onRefresh: _loadData,
-          color: const Color(0xFF38BDF8),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(Sizing.w(24)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(isDark, textColor, secondaryTextColor),
-                SizedBox(height: Sizing.h(24)),
-                _buildStatsGrid(isDark, cardColor),
-                SizedBox(height: Sizing.h(24)),
-                _buildTabLayout(
-                    isDark, cardColor, textColor, secondaryTextColor),
-              ],
-            ),
-          ),
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      color: const Color(0xFF38BDF8),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(Sizing.w(24)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(isDark, textColor, secondaryTextColor),
+            SizedBox(height: Sizing.h(24)),
+            _buildStatsGrid(isDark, cardColor),
+            SizedBox(height: Sizing.h(24)),
+            _buildTabLayout(isDark, cardColor, textColor, secondaryTextColor),
+          ],
+        ),
+      ),
     );
   }
 

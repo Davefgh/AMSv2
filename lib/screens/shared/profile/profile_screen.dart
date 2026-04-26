@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/api_service.dart';
 import '../../../services/storage_service.dart';
 import '../../../models/user_profile.dart';
@@ -12,14 +12,14 @@ import '../../../utils/sizing_utils.dart';
 import '../../../utils/constants.dart';
 import '../../../widgets/skeleton_loader.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final ApiService _apiService = ApiService();
   late Future<dynamic> _profileFuture;
   late String _userRole;
@@ -27,7 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _userRole = context.read<AppProvider>().userRole;
+    _userRole = ref.read(appProvider).userRole;
     final isTeacher = _userRole == 'instructor' || _userRole == 'teacher';
     _profileFuture =
         isTeacher ? _apiService.getInstructorProfile() : _apiService.getMe();

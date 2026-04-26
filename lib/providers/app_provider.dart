@@ -1,42 +1,67 @@
-import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../services/storage_service.dart';
 import '../utils/constants.dart';
 
-class AppProvider extends ChangeNotifier {
-  bool _isDarkMode = true;
-  String _userRole = 'user';
-  bool _isLoading = false;
+part 'app_provider.g.dart';
 
-  bool get isDarkMode => _isDarkMode;
-  String get userRole => _userRole;
-  bool get isLoading => _isLoading;
+/// App state model containing theme and user information
+class AppState {
+  final bool isDarkMode;
+  final String userRole;
+  final bool isLoading;
 
-  AppProvider() {
-    _loadThemePreference();
+  const AppState({
+    required this.isDarkMode,
+    required this.userRole,
+    required this.isLoading,
+  });
+
+  AppState copyWith({
+    bool? isDarkMode,
+    String? userRole,
+    bool? isLoading,
+  }) {
+    return AppState(
+      isDarkMode: isDarkMode ?? this.isDarkMode,
+      userRole: userRole ?? this.userRole,
+      isLoading: isLoading ?? this.isLoading,
+    );
   }
+}
 
-  Future<void> _loadThemePreference() async {
+/// Main app provider managing theme and user state
+@Riverpod(keepAlive: true)
+class App extends _$App {
+  @override
+  AppState build() {
+    // Load theme preference synchronously
     final savedTheme = StorageService.getString(AppConstants.storageKeyTheme);
-    _isDarkMode = savedTheme != 'light';
-    notifyListeners();
+    final isDark = savedTheme != 'light';
+
+    // Return initial state with loaded theme preference
+    return AppState(
+      isDarkMode: isDark,
+      userRole: 'user',
+      isLoading: false,
+    );
   }
 
   Future<void> toggleDarkMode() async {
-    _isDarkMode = !_isDarkMode;
+    final newDarkMode = !state.isDarkMode;
+
     await StorageService.setString(
       AppConstants.storageKeyTheme,
-      _isDarkMode ? 'dark' : 'light',
+      newDarkMode ? 'dark' : 'light',
     );
-    notifyListeners();
+
+    state = state.copyWith(isDarkMode: newDarkMode);
   }
 
   void setUserRole(String role) {
-    _userRole = role;
-    notifyListeners();
+    state = state.copyWith(userRole: role);
   }
 
   void setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
+    state = state.copyWith(isLoading: loading);
   }
 }

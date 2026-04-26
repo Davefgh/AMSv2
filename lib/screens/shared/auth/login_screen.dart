@@ -1,20 +1,20 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/routes/app_routes.dart';
 import '../../../services/api_service.dart';
 import '../../../services/storage_service.dart';
 import '../../../providers/app_provider.dart';
 import '../../../utils/constants.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -58,13 +58,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
         await StorageService.setString(
             AppConstants.storageKeyToken, response['accessToken'] ?? '');
+        await StorageService.setString(AppConstants.storageKeyRefreshToken,
+            response['refreshToken'] ?? '');
         await StorageService.setString(
-            AppConstants.storageKeyRefreshToken, response['refreshToken'] ?? '');
-        await StorageService.setString(AppConstants.storageKeyUser, response['user'] ?? '');
+            AppConstants.storageKeyUser, response['user'] ?? '');
         await StorageService.setString(AppConstants.storageKeyRole, role);
 
         if (mounted) {
-          context.read<AppProvider>().setUserRole(role);
+          ref.read(appProvider.notifier).setUserRole(role);
 
           if (role == 'instructor' || role == 'teacher') {
             Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);
@@ -84,10 +85,12 @@ class _LoginScreenState extends State<LoginScreen> {
           if (e.statusCode == 401 || e.statusCode == 400) {
             _errorMessage = 'Incorrect Username or Password. Please try again.';
           } else {
-            _errorMessage = 'Server Error (${e.statusCode}): Failed to connect to server.';
+            _errorMessage =
+                'Server Error (${e.statusCode}): Failed to connect to server.';
           }
         } else {
-          _errorMessage = 'Failed to connect to server. Please check your connection or .env configuration.';
+          _errorMessage =
+              'Failed to connect to server. Please check your connection or .env configuration.';
         }
       });
     } finally {
