@@ -30,36 +30,30 @@ class AppState {
 }
 
 /// Main app provider managing theme and user state
-@riverpod
+@Riverpod(keepAlive: true)
 class App extends _$App {
   @override
   AppState build() {
-    // Load theme preference asynchronously
-    _loadThemePreference();
-    
-    // Return initial state
-    return const AppState(
-      isDarkMode: true,
+    // Load theme preference synchronously
+    final savedTheme = StorageService.getString(AppConstants.storageKeyTheme);
+    final isDark = savedTheme != 'light';
+
+    // Return initial state with loaded theme preference
+    return AppState(
+      isDarkMode: isDark,
       userRole: 'user',
       isLoading: false,
     );
   }
 
-  Future<void> _loadThemePreference() async {
-    final savedTheme = StorageService.getString(AppConstants.storageKeyTheme);
-    final isDark = savedTheme != 'light';
-    
-    state = state.copyWith(isDarkMode: isDark);
-  }
-
   Future<void> toggleDarkMode() async {
     final newDarkMode = !state.isDarkMode;
-    
+
     await StorageService.setString(
       AppConstants.storageKeyTheme,
       newDarkMode ? 'dark' : 'light',
     );
-    
+
     state = state.copyWith(isDarkMode: newDarkMode);
   }
 

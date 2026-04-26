@@ -22,7 +22,7 @@ final class AppProvider extends $NotifierProvider<App, AppState> {
           argument: null,
           retry: null,
           name: r'appProvider',
-          isAutoDispose: true,
+          isAutoDispose: false,
           dependencies: null,
           $allTransitiveDependencies: null,
         );
@@ -43,7 +43,7 @@ final class AppProvider extends $NotifierProvider<App, AppState> {
   }
 }
 
-String _$appHash() => r'9141d5d46c7169c43e6e70b24e203ab47127b1a5';
+String _$appHash() => r'53fea21aaa412dc87df574e43aba136c659808ca';
 
 /// Main app provider managing theme and user state
 
