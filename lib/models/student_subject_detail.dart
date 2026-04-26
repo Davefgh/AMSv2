@@ -20,8 +20,18 @@ class StudentSubjectDetail {
     return StudentSubjectDetail(
       subject: Subject.fromJson(json['subject'] as Map<String, dynamic>),
       schedule: Schedule.fromJson(json['schedule'] as Map<String, dynamic>),
-      instructor: Instructor.fromJson(json['instructor'] as Map<String, dynamic>),
+      instructor:
+          Instructor.fromJson(json['instructor'] as Map<String, dynamic>),
       classroom: Classroom.fromJson(json['classroom'] as Map<String, dynamic>),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'subject': subject.toJson(),
+      'schedule': schedule.toJson(),
+      'instructor': instructor.toJson(),
+      'classroom': classroom.toJson(),
+    };
   }
 }
