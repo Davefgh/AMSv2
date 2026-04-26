@@ -266,11 +266,14 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'ID: ${student.id}',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          fontSize: 11,
+                      Expanded(
+                        child: Text(
+                          'ID: ${student.id}',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            fontSize: 11,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
