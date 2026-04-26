@@ -185,7 +185,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SizedBox(width: 20),
           const Text(
             'Edit Profile',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ],
       ),
@@ -195,7 +196,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.1),
+      style: const TextStyle(
+          color: Color(0xFF38BDF8),
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          letterSpacing: 1.1),
     );
   }
 
@@ -203,22 +208,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return _GlassCard(
       child: Column(
         children: [
-          CustomTextField(label: 'First Name', controller: _firstNameController),
+          CustomTextField(
+              label: 'First Name', controller: _firstNameController),
           const SizedBox(height: 20),
           CustomTextField(label: 'Last Name', controller: _lastNameController),
           const SizedBox(height: 20),
-          CustomTextField(label: 'Email Address', controller: _emailController, keyboardType: TextInputType.emailAddress),
+          CustomTextField(
+              label: 'Email Address',
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress),
           const SizedBox(height: 20),
-          CustomTextField(label: 'Section ID', controller: _sectionIdController),
+          CustomTextField(
+              label: 'Section ID', controller: _sectionIdController),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Regular Student', style: TextStyle(color: Colors.white, fontSize: 16)),
+              const Text('Regular Student',
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
               Switch.adaptive(
                 value: _isRegular,
                 onChanged: (v) => setState(() => _isRegular = v),
-                activeColor: const Color(0xFF38BDF8),
+                activeTrackColor: const Color(0xFF38BDF8),
               ),
             ],
           ),
@@ -231,16 +242,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return _GlassCard(
       child: Column(
         children: [
-          CustomTextField(label: 'Current Password', controller: _currentPasswordController, obscureText: true),
+          CustomTextField(
+              label: 'Current Password',
+              controller: _currentPasswordController,
+              obscureText: true),
           const SizedBox(height: 20),
-          CustomTextField(label: 'New Password', controller: _newPasswordController, obscureText: true),
+          CustomTextField(
+              label: 'New Password',
+              controller: _newPasswordController,
+              obscureText: true),
           const SizedBox(height: 20),
           CustomTextField(
             label: 'Confirm New Password',
             controller: _confirmPasswordController,
             obscureText: true,
             validator: (v) {
-              if (_newPasswordController.text.isNotEmpty && v != _newPasswordController.text) {
+              if (_newPasswordController.text.isNotEmpty &&
+                  v != _newPasswordController.text) {
                 return 'Passwords do not match';
               }
               return null;
@@ -259,7 +277,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         color: const Color(0xFF38BDF8),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5))
+          BoxShadow(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 5))
         ],
       ),
       child: ElevatedButton(
@@ -268,11 +289,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
           shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
         child: _isLoading
-            ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-            : const Text('Save Changes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ? const SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                    color: Colors.white, strokeWidth: 2.5))
+            : const Text('Save Changes',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ),
     );
   }

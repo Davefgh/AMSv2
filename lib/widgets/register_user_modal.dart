@@ -197,7 +197,7 @@ class _RegisterUserModalState extends State<RegisterUserModal> {
                       ),
                       const SizedBox(height: 20),
                       DropdownButtonFormField<String>(
-                        value: _selectedRole,
+                        initialValue: _selectedRole,
                         dropdownColor: const Color(0xFF1E293B),
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(

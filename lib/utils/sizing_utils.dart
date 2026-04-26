@@ -5,8 +5,6 @@ class Sizing {
   static late MediaQueryData _mediaQueryData;
   static late double screenWidth;
   static late double screenHeight;
-  static late double _blockSizeHorizontal;
-  static late double _blockSizeVertical;
 
   static late double _safeAreaHorizontal;
   static late double _safeAreaVertical;
@@ -25,13 +23,13 @@ class Sizing {
     screenWidth = _mediaQueryData.size.width;
     screenHeight = _mediaQueryData.size.height;
     devicePixelRatio = _mediaQueryData.devicePixelRatio;
-    textScaleFactor = _mediaQueryData.textScaler.scale(1.0); // Simple scale factor
+    textScaleFactor =
+        _mediaQueryData.textScaler.scale(1.0); // Simple scale factor
 
-    _blockSizeHorizontal = screenWidth / 100;
-    _blockSizeVertical = screenHeight / 100;
-
-    _safeAreaHorizontal = _mediaQueryData.padding.left + _mediaQueryData.padding.right;
-    _safeAreaVertical = _mediaQueryData.padding.top + _mediaQueryData.padding.bottom;
+    _safeAreaHorizontal =
+        _mediaQueryData.padding.left + _mediaQueryData.padding.right;
+    _safeAreaVertical =
+        _mediaQueryData.padding.top + _mediaQueryData.padding.bottom;
     safeBlockHorizontal = (screenWidth - _safeAreaHorizontal) / 100;
     safeBlockVertical = (screenHeight - _safeAreaVertical) / 100;
   }

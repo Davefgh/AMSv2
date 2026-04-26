@@ -6,7 +6,6 @@ import '../../../widgets/register_user_modal.dart';
 import '../../../services/api_service.dart';
 import '../../../models/app_user.dart';
 import '../../../widgets/main_scaffold.dart';
-import '../../../utils/responsive.dart';
 import '../../../config/routes/app_routes.dart';
 import '../../../widgets/skeleton_loader.dart';
 
@@ -1142,52 +1141,6 @@ class _UsersScreenState extends State<UsersScreen> {
       default:
         return Icons.people_alt_rounded;
     }
-  }
-
-  Widget _buildBottomNavBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        border: Border(
-          top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1,
-          ),
-        ),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: 3, // Users tab
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
-        showUnselectedLabels: true,
-        selectedLabelStyle:
-            const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-        unselectedLabelStyle:
-            const TextStyle(fontWeight: FontWeight.normal, fontSize: 11),
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_add_rounded), label: 'Enrollment'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.class_rounded), label: 'Classes'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.people_rounded), label: 'Users'),
-        ],
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/dashboard');
-          } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/enrollment');
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/classes');
-          }
-        },
-      ),
-    );
   }
 }
 

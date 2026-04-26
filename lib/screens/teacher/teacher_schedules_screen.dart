@@ -6,7 +6,6 @@ import '../../widgets/main_scaffold.dart';
 import '../../utils/sizing_utils.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../providers/app_provider.dart';
-import 'package:intl/intl.dart';
 
 class TeacherSchedulesScreen extends StatefulWidget {
   const TeacherSchedulesScreen({super.key});
@@ -23,7 +22,15 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
   List<Schedule> _schedules = [];
   String _selectedDay = 'All';
 
-  final List<String> _days = ['All', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  final List<String> _days = [
+    'All',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday'
+  ];
 
   @override
   void initState() {
@@ -72,10 +79,6 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
     return grouped;
   }
 
-  String get _todayName {
-    return DateFormat('EEEE').format(DateTime.now());
-  }
-
   List<Schedule> get _filteredSchedules {
     if (_selectedDay == 'All') {
       return _schedules;
@@ -101,21 +104,25 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
     return Consumer<AppProvider>(
       builder: (context, appProvider, _) {
         final isDark = appProvider.isDarkMode;
-        final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
-        final cardColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
+        final cardColor =
+            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
         final textColor = isDark ? Colors.white : Colors.black;
-        final secondaryTextColor = isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.6);
+        final secondaryTextColor = isDark
+            ? Colors.white.withValues(alpha: 0.5)
+            : Colors.black.withValues(alpha: 0.6);
 
         if (_schedules.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.calendar_today_rounded, size: 64, color: secondaryTextColor),
+                Icon(Icons.calendar_today_rounded,
+                    size: 64, color: secondaryTextColor),
                 SizedBox(height: Sizing.h(16)),
                 Text(
                   'No schedules assigned',
-                  style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(16)),
+                  style: TextStyle(
+                      color: secondaryTextColor, fontSize: Sizing.sp(16)),
                 ),
               ],
             ),
@@ -134,7 +141,8 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                 SizedBox(height: Sizing.h(24)),
                 _buildDayFilter(isDark, textColor, secondaryTextColor),
                 SizedBox(height: Sizing.h(24)),
-                _buildFilteredSchedules(isDark, cardColor, textColor, secondaryTextColor),
+                _buildFilteredSchedules(
+                    isDark, cardColor, textColor, secondaryTextColor),
               ],
             ),
           ),
@@ -145,7 +153,8 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
 
   Widget _buildSummary(bool isDark, Color textColor, Color secondaryTextColor) {
     final grouped = _groupedSchedules;
-    final daysWithSchedules = grouped.values.where((list) => list.isNotEmpty).length;
+    final daysWithSchedules =
+        grouped.values.where((list) => list.isNotEmpty).length;
 
     return Container(
       padding: EdgeInsets.all(Sizing.w(16)),
@@ -153,11 +162,15 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
         color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
         borderRadius: BorderRadius.circular(Sizing.r(16)),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.1),
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.08),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.2)
+                : Colors.black.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -229,7 +242,8 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
     );
   }
 
-  Widget _buildDayFilter(bool isDark, Color textColor, Color secondaryTextColor) {
+  Widget _buildDayFilter(
+      bool isDark, Color textColor, Color secondaryTextColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -257,14 +271,21 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
                       _selectedDay = day;
                     });
                   },
-                  backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+                  backgroundColor: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.white,
                   selectedColor: const Color(0xFF38BDF8),
                   labelStyle: TextStyle(
                     color: isSelected ? Colors.white : textColor,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                   side: BorderSide(
-                    color: isSelected ? const Color(0xFF38BDF8) : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
+                    color: isSelected
+                        ? const Color(0xFF38BDF8)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.1)),
                   ),
                   showCheckmark: false,
                 ),
@@ -276,7 +297,8 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
     );
   }
 
-  Widget _buildFilteredSchedules(bool isDark, Color cardColor, Color textColor, Color secondaryTextColor) {
+  Widget _buildFilteredSchedules(
+      bool isDark, Color cardColor, Color textColor, Color secondaryTextColor) {
     final filteredSchedules = _filteredSchedules;
 
     if (filteredSchedules.isEmpty) {
@@ -285,11 +307,13 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
           padding: EdgeInsets.symmetric(vertical: Sizing.h(40)),
           child: Column(
             children: [
-              Icon(Icons.event_busy_rounded, size: 48, color: secondaryTextColor),
+              Icon(Icons.event_busy_rounded,
+                  size: 48, color: secondaryTextColor),
               SizedBox(height: Sizing.h(12)),
               Text(
                 'No schedules for $_selectedDay',
-                style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(14)),
+                style: TextStyle(
+                    color: secondaryTextColor, fontSize: Sizing.sp(14)),
               ),
             ],
           ),
@@ -310,119 +334,12 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
         ),
         SizedBox(height: Sizing.h(12)),
         ...filteredSchedules.map((schedule) => _buildScheduleCard(
-          schedule,
-          isDark,
-          cardColor,
-          textColor,
-          secondaryTextColor,
-        )),
-      ],
-    );
-  }
-
-  Widget _buildAllSchedulesByDay(bool isDark, Color cardColor, Color textColor, Color secondaryTextColor) {
-    final grouped = _groupedSchedules;
-    final daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Weekly Schedule',
-          style: TextStyle(
-            color: textColor,
-            fontSize: Sizing.sp(18),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: Sizing.h(16)),
-        ...daysOrder.map((day) {
-          final daySchedules = grouped[day]!;
-          if (daySchedules.isEmpty) return const SizedBox.shrink();
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: Sizing.h(12)),
-                child: Text(
-                  day,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: Sizing.sp(16),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Divider(
-                color: isDark ? Colors.white10 : Colors.black12,
-                height: 1,
-              ),
-              SizedBox(height: Sizing.h(12)),
-              ...daySchedules.map((schedule) => _buildScheduleCard(
-                schedule,
-                isDark,
-                cardColor,
-                textColor,
-                secondaryTextColor,
-              )),
-              SizedBox(height: Sizing.h(16)),
-            ],
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildSchedulesByDay(bool isDark, Color cardColor, Color textColor, Color secondaryTextColor) {
-    final grouped = _groupedSchedules;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Weekly Schedule',
-          style: TextStyle(
-            color: textColor,
-            fontSize: Sizing.sp(18),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: Sizing.h(16)),
-        ...grouped.keys.map((day) {
-          final daySchedules = grouped[day]!;
-          if (daySchedules.isEmpty) return const SizedBox.shrink();
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: Sizing.h(12)),
-                child: Text(
-                  day,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: Sizing.sp(16),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Divider(
-                color: isDark ? Colors.white10 : Colors.black12,
-                height: 1,
-              ),
-              SizedBox(height: Sizing.h(12)),
-              ...daySchedules.map((schedule) => _buildScheduleCard(
-                schedule,
-                isDark,
-                cardColor,
-                textColor,
-                secondaryTextColor,
-              )),
-              SizedBox(height: Sizing.h(16)),
-            ],
-          );
-        }),
+              schedule,
+              isDark,
+              cardColor,
+              textColor,
+              secondaryTextColor,
+            )),
       ],
     );
   }
@@ -441,11 +358,15 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
         color: cardColor,
         borderRadius: BorderRadius.circular(Sizing.r(12)),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.1),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.1),
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.08),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.2)
+                : Colors.black.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -506,7 +427,8 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
           SizedBox(height: Sizing.h(12)),
           Row(
             children: [
-              Icon(Icons.location_on_outlined, size: Sizing.sp(14), color: secondaryTextColor),
+              Icon(Icons.location_on_outlined,
+                  size: Sizing.sp(14), color: secondaryTextColor),
               SizedBox(width: Sizing.w(6)),
               Expanded(
                 child: Text(
@@ -524,7 +446,8 @@ class _TeacherSchedulesScreenState extends State<TeacherSchedulesScreen> {
           SizedBox(height: Sizing.h(8)),
           Row(
             children: [
-              Icon(Icons.people_outline_rounded, size: Sizing.sp(14), color: secondaryTextColor),
+              Icon(Icons.people_outline_rounded,
+                  size: Sizing.sp(14), color: secondaryTextColor),
               SizedBox(width: Sizing.w(6)),
               Expanded(
                 child: Text(

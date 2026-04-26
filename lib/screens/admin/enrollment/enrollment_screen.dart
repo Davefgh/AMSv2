@@ -6,8 +6,6 @@ import '../../../models/student_model.dart';
 import '../../../models/section_model.dart';
 import '../../../models/subject_model.dart';
 import '../../../widgets/main_scaffold.dart';
-import '../../../utils/responsive.dart';
-import '../../../config/routes/app_routes.dart';
 import '../../../widgets/skeleton_loader.dart';
 
 class EnrollmentScreen extends StatefulWidget {
@@ -19,7 +17,6 @@ class EnrollmentScreen extends StatefulWidget {
 
 class _EnrollmentScreenState extends State<EnrollmentScreen> {
   final ApiService _apiService = ApiService();
-  final int _selectedIndex = 1;
   String _searchQuery = '';
   List<Enrollment> _enrollments = [];
   List<Student> _students = [];
@@ -88,7 +85,7 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
       actions: [
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF38BDF8).withOpacity(0.2),
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -525,7 +522,6 @@ class _EnrollmentScreenState extends State<EnrollmentScreen> {
 
 class _GlassCard extends StatelessWidget {
   final Widget child;
-  final double? height;
   final EdgeInsetsGeometry padding;
 
   const _GlassCard({
@@ -540,7 +536,6 @@ class _GlassCard extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          height: height,
           padding: padding,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.06),

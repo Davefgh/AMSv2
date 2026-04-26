@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/api_service.dart';
@@ -51,12 +50,14 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
           await _apiService.getSchedulesByInstructorAll(instructor.id);
 
       // 4. Extract unique sections
-      final Map<int, Map<String, dynamic>> sectionMap = {};
+      final Map<String, Map<String, dynamic>> sectionMap = {};
       for (var s in schedules) {
         final section = s.section;
-        final sectionId = (section?['id'] as num?)?.toInt() ?? s.sectionId;
+        final sectionId = section?['id']?.toString() ?? s.sectionId;
 
-        if (sectionId != null && !sectionMap.containsKey(sectionId)) {
+        if (sectionId != null &&
+            sectionId.isNotEmpty &&
+            !sectionMap.containsKey(sectionId)) {
           sectionMap[sectionId] = section ??
               {
                 'id': sectionId,
@@ -114,7 +115,6 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
     return Consumer<AppProvider>(
       builder: (context, appProvider, _) {
         final isDark = appProvider.isDarkMode;
-        final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
         final cardColor =
             isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
         final textColor = isDark ? Colors.white : Colors.black;
@@ -337,8 +337,8 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
 
     return GestureDetector(
       onTap: () {
-        final id = (section['id'] as num?)?.toInt() ?? 0;
-        if (id > 0) {
+        final id = section['id']?.toString() ?? '';
+        if (id.isNotEmpty) {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -415,29 +415,6 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildBackground() {
-    return Stack(
-      children: [
-        Positioned(
-          top: -100,
-          right: -50,
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
-            ),
-          ),
-        ),
-        BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-          child: Container(color: Colors.transparent),
-        ),
-      ],
     );
   }
 

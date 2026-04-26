@@ -51,19 +51,19 @@ class UserProfile {
 }
 
 class StudentProfileInfo {
-  final int id;
+  final String id;
   final String? firstname;
   final String? lastname;
   final bool isRegular;
-  final int sectionId;
+  final String sectionId;
   final String sectionName;
-  final int courseId;
+  final String courseId;
   final String courseName;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   StudentProfileInfo({
-    required this.id,
+    this.id = '',
     this.firstname,
     this.lastname,
     required this.isRegular,
@@ -77,13 +77,13 @@ class StudentProfileInfo {
 
   factory StudentProfileInfo.fromJson(Map<String, dynamic> json) {
     return StudentProfileInfo(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '',
       firstname: json['firstname'],
       lastname: json['lastname'],
       isRegular: json['isRegular'] ?? false,
-      sectionId: json['sectionId'] ?? 0,
+      sectionId: json['sectionId']?.toString() ?? '',
       sectionName: json['sectionName'] ?? '',
-      courseId: json['courseId'] ?? 0,
+      courseId: json['courseId']?.toString() ?? '',
       courseName: json['courseName'] ?? '',
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toString()),
       updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toString()),
@@ -92,7 +92,7 @@ class StudentProfileInfo {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      if (id.isNotEmpty) 'id': id,
       'firstname': firstname,
       'lastname': lastname,
       'isRegular': isRegular,
@@ -107,14 +107,14 @@ class StudentProfileInfo {
 }
 
 class InstructorProfileInfo {
-  final int id;
+  final String id;
   final String? firstname;
   final String? lastname;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   InstructorProfileInfo({
-    required this.id,
+    this.id = '',
     this.firstname,
     this.lastname,
     required this.createdAt,
@@ -123,7 +123,7 @@ class InstructorProfileInfo {
 
   factory InstructorProfileInfo.fromJson(Map<String, dynamic> json) {
     return InstructorProfileInfo(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '',
       firstname: json['firstname'],
       lastname: json['lastname'],
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toString()),
@@ -133,7 +133,7 @@ class InstructorProfileInfo {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      if (id.isNotEmpty) 'id': id,
       'firstname': firstname,
       'lastname': lastname,
       'createdAt': createdAt.toIso8601String(),

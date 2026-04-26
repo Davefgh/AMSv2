@@ -53,7 +53,8 @@ class _StudentScanScreenState extends State<StudentScanScreen>
       duration: const Duration(milliseconds: 400),
     );
 
-    _resultAnim = CurvedAnimation(parent: _resultCtrl, curve: Curves.elasticOut);
+    _resultAnim =
+        CurvedAnimation(parent: _resultCtrl, curve: Curves.elasticOut);
 
     _loadStudentProfile();
   }
@@ -94,19 +95,20 @@ class _StudentScanScreenState extends State<StudentScanScreen>
 
     try {
       // Ensure we have the student profile and a valid ID
-      if (_studentProfile == null || _studentProfile!.id == 0) {
+      if (_studentProfile == null || _studentProfile!.id.isEmpty) {
         _studentProfile = await _apiService.getStudentProfile();
       }
-      
+
       final scanStudentId = _studentProfile!.id;
-      if (scanStudentId == 0) {
+      if (scanStudentId.isEmpty) {
         throw Exception('Invalid Student ID. Please log in again.');
       }
 
       debugPrint('Scanning QR for student ID: $scanStudentId');
 
-      debugPrint('Sending QR scan request: qrHash=$rawValue, studentId=$scanStudentId');
-      
+      debugPrint(
+          'Sending QR scan request: qrHash=$rawValue, studentId=$scanStudentId');
+
       final result = await _apiService.scanQrCode(
         qrHash: rawValue,
         studentId: scanStudentId,
@@ -192,7 +194,8 @@ class _StudentScanScreenState extends State<StudentScanScreen>
             children: [
               _buildScannerView(scanWindow),
               _buildOverlay(constraints, side, frameTop, scanWindow),
-              if (_scanState == _ScanState.success || _scanState == _ScanState.error)
+              if (_scanState == _ScanState.success ||
+                  _scanState == _ScanState.error)
                 _buildResultOverlay(),
             ],
           );
@@ -203,7 +206,8 @@ class _StudentScanScreenState extends State<StudentScanScreen>
 
   // ── Camera preview ───────────────────────────────────────────────────────────
   Widget _buildScannerView(Rect scanWindow) {
-    if (_scanState == _ScanState.idle || _scanState == _ScanState.scanning ||
+    if (_scanState == _ScanState.idle ||
+        _scanState == _ScanState.scanning ||
         _scanState == _ScanState.processing) {
       return MobileScanner(
         controller: _cameraController,
@@ -241,7 +245,8 @@ class _StudentScanScreenState extends State<StudentScanScreen>
   }
 
   // ── Dark vignette + frame + controls ────────────────────────────────────────
-  Widget _buildOverlay(BoxConstraints constraints, double side, double frameTop, Rect scanWindow) {
+  Widget _buildOverlay(BoxConstraints constraints, double side, double frameTop,
+      Rect scanWindow) {
     return Stack(
       children: [
         // ── Vignette cutout ──
@@ -253,59 +258,59 @@ class _StudentScanScreenState extends State<StudentScanScreen>
         ),
 
         // ── Animated scan line ──
-          Positioned(
-            left: (constraints.maxWidth - side) / 2 + 2,
-            top: frameTop,
-            width: side - 4,
-            height: side,
-            child: AnimatedBuilder(
-              animation: _scanLineAnim,
-              builder: (_, __) => Stack(
-                children: [
-                  Positioned(
-                    top: (side - 4) * _scanLineAnim.value,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      height: 3,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [
-                          Colors.transparent,
-                          const Color(0xFF38BDF8).withValues(alpha: 0.9),
-                          Colors.transparent,
-                        ]),
-                        borderRadius: BorderRadius.circular(2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
+        Positioned(
+          left: (constraints.maxWidth - side) / 2 + 2,
+          top: frameTop,
+          width: side - 4,
+          height: side,
+          child: AnimatedBuilder(
+            animation: _scanLineAnim,
+            builder: (_, __) => Stack(
+              children: [
+                Positioned(
+                  top: (side - 4) * _scanLineAnim.value,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: [
+                        Colors.transparent,
+                        const Color(0xFF38BDF8).withValues(alpha: 0.9),
+                        Colors.transparent,
+                      ]),
+                      borderRadius: BorderRadius.circular(2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
+        ),
 
-          // ── Corner brackets (frame) ──
-          Positioned(
-            left: (constraints.maxWidth - side) / 2,
-            top: frameTop,
-            child: _CornerBrackets(size: side),
-          ),
+        // ── Corner brackets (frame) ──
+        Positioned(
+          left: (constraints.maxWidth - side) / 2,
+          top: frameTop,
+          child: _CornerBrackets(size: side),
+        ),
 
-          // ── Status bar at bottom ──
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildStatusBar(frameTop, side, constraints.maxHeight),
-          ),
+        // ── Status bar at bottom ──
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: _buildStatusBar(frameTop, side, constraints.maxHeight),
+        ),
 
-          // ── Torch & flip buttons at top ──
+        // ── Torch & flip buttons at top ──
         Positioned(
           top: 12,
           right: 16,
@@ -429,17 +434,18 @@ class _StudentScanScreenState extends State<StudentScanScreen>
   Widget _buildResultOverlay() {
     final isSuccess = _scanState == _ScanState.success;
     final msg = _statusMessage.toLowerCase();
-    
+
     // Determine if it's a Check-Out based on common keywords
-    final isCheckOut = msg.contains('out') || msg.contains('bye') || msg.contains('depart');
-    
+    final isCheckOut =
+        msg.contains('out') || msg.contains('bye') || msg.contains('depart');
+
     final color = isSuccess ? const Color(0xFF22C55E) : const Color(0xFFEF4444);
-    final icon = isSuccess 
+    final icon = isSuccess
         ? (isCheckOut ? Icons.exit_to_app_rounded : Icons.check_circle_rounded)
         : Icons.cancel_rounded;
-    
-    final title = isSuccess 
-        ? (isCheckOut ? 'Check-Out Recorded!' : 'Attendance Recorded!') 
+
+    final title = isSuccess
+        ? (isCheckOut ? 'Check-Out Recorded!' : 'Attendance Recorded!')
         : 'Scan Failed';
 
     return Center(

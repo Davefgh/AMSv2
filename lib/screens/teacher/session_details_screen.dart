@@ -48,8 +48,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted || _session?.attendanceCutOff == null) {
-        if (_timeRemainingText.isNotEmpty)
+        if (_timeRemainingText.isNotEmpty) {
           setState(() => _timeRemainingText = '');
+        }
         return;
       }
 
@@ -308,7 +309,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
       child: AlertDialog(
-        backgroundColor: const Color(0xFF1E293B).withOpacity(0.9),
+        backgroundColor: const Color(0xFF1E293B).withValues(alpha: 0.9),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
             side: const BorderSide(color: Colors.white10)),
@@ -1166,11 +1167,6 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
         ),
       ),
     );
-  }
-
-  bool get _hasRoomChanged {
-    if (_session?.actualRoomName == null || _schedule == null) return false;
-    return _session!.actualRoomName != _schedule!.classroomName;
   }
 
   String _formatTime(String raw) {

@@ -15,7 +15,6 @@ class StudentsScreen extends StatefulWidget {
 
 class _StudentsScreenState extends State<StudentsScreen> {
   final ApiService _apiService = ApiService();
-  List<Student> _allStudents = [];
   List<Student> _filteredStudents = [];
   bool _isLoading = true;
   String _searchQuery = '';
@@ -34,7 +33,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
           await _apiService.getStudents(includeDeleted: _showDeleted);
       if (mounted) {
         setState(() {
-          _allStudents = students;
           _filteredStudents = students;
           _isLoading = false;
         });

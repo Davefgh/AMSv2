@@ -1,5 +1,7 @@
+import '../utils/id_utils.dart';
+
 class Instructor {
-  final int id;
+  final String id;
   final String firstname;
   final String lastname;
   final String? email;
@@ -9,7 +11,7 @@ class Instructor {
   final bool isDeleted;
 
   Instructor({
-    required this.id,
+    this.id = '',
     required this.firstname,
     required this.lastname,
     this.email,
@@ -21,9 +23,15 @@ class Instructor {
 
   String get fullName => '$firstname $lastname';
 
+  /// Returns true if this instructor has a valid ID
+  bool get hasValidId => isValidId(id);
+
+  /// Returns a display-friendly version of the ID (truncated if too long)
+  String get displayId => id.length > 8 ? '${id.substring(0, 8)}...' : id;
+
   factory Instructor.fromJson(Map<String, dynamic> json) {
     return Instructor(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '',
       firstname: json['firstname'] ?? '',
       lastname: json['lastname'] ?? '',
       email: json['email'] as String?,
@@ -32,5 +40,18 @@ class Instructor {
       updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toString()),
       isDeleted: json['isDeleted'] ?? false,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (id.isNotEmpty) 'id': id,
+      'firstname': firstname,
+      'lastname': lastname,
+      if (email != null) 'email': email,
+      'userId': userId,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'isDeleted': isDeleted,
+    };
   }
 }
