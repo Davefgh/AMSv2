@@ -1218,10 +1218,12 @@ class ApiService {
     }
 
     if (response.statusCode == 401) {
-      // Try refresh in background then logout — callers that need retry
-      // should use the retryWithRefresh wrapper.
-      _handleLogout();
-      throw ApiException(401, 'Session expired. Please log in again.');
+      final path = response.request?.url.path ?? '';
+      // Don't logout if we're actually trying to login or refresh
+      if (!path.contains('/api/account/login') && !path.contains('/api/account/refresh')) {
+        _handleLogout();
+        throw ApiException(401, 'Session expired. Please log in again.');
+      }
     }
 
     String errorMessage = 'Unknown error';
