@@ -35,6 +35,22 @@ class EnrollmentSession {
       success: json['success'] ?? false,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (enrollmentSessionId != null)
+        'enrollmentSessionId': enrollmentSessionId,
+      if (studentId != null) 'studentId': studentId,
+      if (studentName != null) 'studentName': studentName,
+      if (deviceId != null) 'deviceId': deviceId,
+      if (assignedSensorFingerprintId != null)
+        'assignedSensorFingerprintId': assignedSensorFingerprintId,
+      if (status != null) 'status': status,
+      if (expiresAt != null) 'expiresAt': expiresAt!.toIso8601String(),
+      if (message != null) 'message': message,
+      'success': success,
+    };
+  }
 }
 
 class FingerprintInfo {
@@ -64,5 +80,16 @@ class FingerprintInfo {
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (id != null) 'id': id,
+      if (deviceId != null) 'deviceId': deviceId,
+      if (studentId != null) 'studentId': studentId,
+      if (studentName != null) 'studentName': studentName,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
+    };
   }
 }
