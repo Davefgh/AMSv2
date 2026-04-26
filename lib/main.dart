@@ -61,7 +61,7 @@ void main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   final String initialRoute;
   final String initialRole;
 
@@ -69,17 +69,26 @@ class MyApp extends ConsumerWidget {
       {super.key, required this.initialRoute, required this.initialRole});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Initialize user role on first build
-    ref.read(appProvider.notifier).setUserRole(initialRole);
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
 
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize user role once on widget initialization
+    ref.read(appProvider.notifier).setUserRole(widget.initialRole);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'AMSv2',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      initialRoute: initialRoute,
+      initialRoute: widget.initialRoute,
       routes: {
         '/': (context) => const LoginScreen(),
         ...AppRoutes.routes,
