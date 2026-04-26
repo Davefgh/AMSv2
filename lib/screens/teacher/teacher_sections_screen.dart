@@ -37,17 +37,12 @@ class _TeacherSectionsScreenState extends State<TeacherSectionsScreen> {
     try {
       // 1. Get profile
       final profile = await _apiService.getMe();
+      if (profile.instructorProfile == null) {
+        throw Exception('Instructor profile not found.');
+      }
 
-      // 2. Get instructor
-      final instructors = await _apiService.getInstructors();
-      final instructor = instructors.firstWhere(
-        (i) => i.userId == profile.userId,
-        orElse: () => throw Exception('Instructor profile not found.'),
-      );
-
-      // 3. Get schedules
-      final schedules =
-          await _apiService.getSchedulesByInstructorAll(instructor.id);
+      // 2. Get schedules
+      final schedules = await _apiService.getMySchedules();
 
       // 4. Extract unique sections
       final Map<String, Map<String, dynamic>> sectionMap = {};

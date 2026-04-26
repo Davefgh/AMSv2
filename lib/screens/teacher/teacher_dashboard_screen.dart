@@ -60,8 +60,18 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       _errorMessage = null;
     });
     try {
-      final instructor = await _apiService.getInstructorProfile();
-      final schedules = await _apiService.getSchedulesByInstructorAll(instructor.id);
+      final profile = await _apiService.getMe();
+      if (profile.instructorProfile == null) throw Exception('Instructor profile not found.');
+      final instructor = Instructor(
+        id: profile.instructorProfile!.id,
+        firstname: profile.instructorProfile!.firstname ?? 'Instructor',
+        lastname: profile.instructorProfile!.lastname ?? '',
+        userId: profile.userId,
+        email: profile.email,
+        createdAt: profile.instructorProfile!.createdAt,
+        updatedAt: profile.instructorProfile!.updatedAt,
+      );
+      final schedules = await _apiService.getMySchedules();
       final sessions = await _apiService.getMySessions();
 
       setState(() {
