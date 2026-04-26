@@ -99,10 +99,10 @@ class _RegisterUserModalState extends State<RegisterUserModal> {
         height: MediaQuery.of(context).size.height * 0.80,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+          color: const Color(0xFF0F172A).withOpacity(0.8),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: Colors.white.withOpacity(0.1),
             width: 1,
           ),
         ),
@@ -138,10 +138,10 @@ class _RegisterUserModalState extends State<RegisterUserModal> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.redAccent.withValues(alpha: 0.1),
+                            color: Colors.redAccent.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                                color: Colors.redAccent.withValues(alpha: 0.3)),
+                                color: Colors.redAccent.withOpacity(0.3)),
                           ),
                           child: Row(
                             children: [
@@ -203,16 +203,16 @@ class _RegisterUserModalState extends State<RegisterUserModal> {
                         decoration: InputDecoration(
                           labelText: 'Role',
                           labelStyle: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.6)),
+                              color: Colors.white.withOpacity(0.6)),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide(
-                                color: Colors.white.withValues(alpha: 0.2)),
+                                color: Colors.white.withOpacity(0.2)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide(
-                                color: Colors.white.withValues(alpha: 0.5)),
+                                color: Colors.white.withOpacity(0.5)),
                           ),
                         ),
                         items: _roles

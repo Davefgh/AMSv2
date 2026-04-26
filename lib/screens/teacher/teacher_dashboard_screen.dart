@@ -151,9 +151,9 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     return Consumer<AppProvider>(
       builder: (context, appProvider, _) {
         final isDark = appProvider.isDarkMode;
-        final cardColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
+        final cardColor = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
         final textColor = isDark ? Colors.white : Colors.black;
-        final secondaryTextColor = isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.6);
+        final secondaryTextColor = isDark ? Colors.white.withOpacity(0.5) : Colors.black.withOpacity(0.6);
         
         return RefreshIndicator(
           onRefresh: _loadData,
@@ -247,7 +247,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: Sizing.w(8), vertical: Sizing.h(2)),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                        color: const Color(0xFF38BDF8).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text('INSTRUCTOR', style: TextStyle(color: const Color(0xFF38BDF8), fontSize: Sizing.sp(9), fontWeight: FontWeight.bold)),
@@ -293,7 +293,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color, bool isDark, Color cardColor, {String? subtitle}) {
     final textColor = isDark ? Colors.white : Colors.black;
-    final secondaryTextColor = isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.6);
+    final secondaryTextColor = isDark ? Colors.white.withOpacity(0.5) : Colors.black.withOpacity(0.6);
     
     return Container(
       padding: EdgeInsets.all(Sizing.w(20)),
@@ -301,11 +301,11 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         color: cardColor,
         borderRadius: BorderRadius.circular(Sizing.r(24)),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
+          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.08),
+            color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -318,7 +318,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           Container(
             padding: EdgeInsets.all(Sizing.w(10)),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: Sizing.sp(20)),
@@ -384,11 +384,11 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         color: cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.1),
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.1),
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.08),
+            color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -410,7 +410,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF34D399).withValues(alpha: 0.1),
+                  color: const Color(0xFF34D399).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text('ACTIVE', style: TextStyle(color: Color(0xFF34D399), fontSize: 9, fontWeight: FontWeight.w900)),
@@ -441,7 +441,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Weekly Schedule', isDark, textColor),
+        _buildSectionTitle('Weekly Class Schedule', isDark, textColor),
         const SizedBox(height: 16),
         ...grouped.keys.map((day) {
           final daySchedules = grouped[day]!;

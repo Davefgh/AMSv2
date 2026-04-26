@@ -96,7 +96,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.person_off_rounded,
-                size: 64, color: Colors.white.withValues(alpha: 0.1)),
+                size: 64, color: Colors.white.withOpacity(0.1)),
             const SizedBox(height: 16),
             const Text(
               'No students enrolled',
@@ -108,7 +108,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
             const SizedBox(height: 8),
             Text(
               'There are no students in this section yet.',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+              style: TextStyle(color: Colors.white.withOpacity(0.4)),
             ),
           ],
         ),
@@ -144,7 +144,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                             _selectedStatus = status;
                           });
                         },
-                        backgroundColor: Colors.white.withValues(alpha: 0.05),
+                        backgroundColor: Colors.white.withOpacity(0.05),
                         selectedColor: const Color(0xFF38BDF8),
                         labelStyle: TextStyle(
                           color: isSelected ? Colors.white : Colors.white70,
@@ -154,7 +154,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                         side: BorderSide(
                           color: isSelected
                               ? const Color(0xFF38BDF8)
-                              : Colors.white.withValues(alpha: 0.1),
+                              : Colors.white.withOpacity(0.1),
                         ),
                         showCheckmark: false,
                       ),
@@ -172,12 +172,12 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.person_search_rounded,
-                          size: 48, color: Colors.white.withValues(alpha: 0.2)),
+                          size: 48, color: Colors.white.withOpacity(0.2)),
                       const SizedBox(height: 12),
                       Text(
                         'No $_selectedStatus students',
                         style:
-                            TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                            TextStyle(color: Colors.white.withOpacity(0.5)),
                       ),
                     ],
                   ),
@@ -211,10 +211,10 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                color: const Color(0xFF38BDF8).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.2)),
+                    color: const Color(0xFF38BDF8).withOpacity(0.2)),
               ),
               child: Center(
                 child: Text(
@@ -248,13 +248,13 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: student.isRegular
-                              ? Colors.green.withValues(alpha: 0.1)
-                              : Colors.orange.withValues(alpha: 0.1),
+                              ? Colors.green.withOpacity(0.1)
+                              : Colors.orange.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
                             color: student.isRegular
-                                ? Colors.green.withValues(alpha: 0.2)
-                                : Colors.orange.withValues(alpha: 0.2),
+                                ? Colors.green.withOpacity(0.2)
+                                : Colors.orange.withOpacity(0.2),
                           ),
                         ),
                         child: Text(
@@ -273,7 +273,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                         child: Text(
                           'ID: ${student.id}',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.3),
+                            color: Colors.white.withOpacity(0.3),
                             fontSize: 11,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -303,7 +303,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
             height: 300,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.05),
+              color: const Color(0xFF38BDF8).withOpacity(0.05),
             ),
           ),
         ),
@@ -361,10 +361,10 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
+            color: Colors.white.withOpacity(0.06),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: Colors.white.withOpacity(0.1),
             ),
           ),
           child: child,

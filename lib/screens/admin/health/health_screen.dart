@@ -58,10 +58,10 @@ class _HealthScreenState extends State<HealthScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                color: const Color(0xFF38BDF8).withOpacity(0.25),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                    color: const Color(0xFF38BDF8).withOpacity(0.25),
                     blurRadius: 100,
                     spreadRadius: 50,
                   ),
@@ -77,10 +77,10 @@ class _HealthScreenState extends State<HealthScreen> {
               height: 400,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF1E3A8A).withValues(alpha: 0.45),
+                color: const Color(0xFF1E3A8A).withOpacity(0.45),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF1E3A8A).withValues(alpha: 0.45),
+                    color: const Color(0xFF1E3A8A).withOpacity(0.45),
                     blurRadius: 120,
                     spreadRadius: 60,
                   ),
@@ -153,7 +153,7 @@ class _HealthScreenState extends State<HealthScreen> {
                                   maxLines: 4,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.55),
+                                    color: Colors.white.withOpacity(0.55),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -258,9 +258,9 @@ class _HealthScreenState extends State<HealthScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: chipColor.withValues(alpha: 0.2),
+                  color: chipColor.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: chipColor.withValues(alpha: 0.4)),
+                  border: Border.all(color: chipColor.withOpacity(0.4)),
                 ),
                 child: Text(
                   health.status.toUpperCase(),
@@ -278,7 +278,7 @@ class _HealthScreenState extends State<HealthScreen> {
             Text(
               'timestamp: ${health.timestamp}',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.45),
+                color: Colors.white.withOpacity(0.45),
                 fontSize: 12,
               ),
             ),
@@ -315,7 +315,7 @@ class _HealthScreenState extends State<HealthScreen> {
                   'instructors ${health.dataIntegrity!.softDeleteInconsistencies.instructors}, '
                   'admins ${health.dataIntegrity!.softDeleteInconsistencies.admins}',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: Colors.white.withOpacity(0.5),
                     fontSize: 12,
                   ),
                 ),
@@ -331,13 +331,13 @@ class _HealthScreenState extends State<HealthScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: accent.withValues(alpha: 0.9)),
+        Icon(icon, size: 18, color: accent.withOpacity(0.9)),
         const SizedBox(width: 8),
         Expanded(
           child: RichText(
             text: TextSpan(
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.75),
+                color: Colors.white.withOpacity(0.75),
                 fontSize: 13,
                 height: 1.35,
               ),
@@ -376,10 +376,10 @@ class _GlassCard extends StatelessWidget {
           child: Container(
             padding: padding,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.06),
+              color: Colors.white.withOpacity(0.06),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: Colors.white.withOpacity(0.15),
                 width: 1.0,
               ),
             ),

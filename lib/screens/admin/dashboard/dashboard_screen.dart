@@ -55,7 +55,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
           icon: Icon(
             Icons.notifications_active_outlined,
-            color: Colors.white.withValues(alpha: 0.55),
+            color: Colors.white.withOpacity(0.55),
             size: 26,
           ),
         ),
@@ -193,9 +193,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
+                  color: color.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: color.withValues(alpha: 0.3)),
+                  border: Border.all(color: color.withOpacity(0.3)),
                 ),
                 child: Icon(icon, color: color, size: 24),
               ),
@@ -226,7 +226,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Colors.white.withOpacity(0.7),
                 ),
               ),
             ],
@@ -236,7 +236,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: LinearProgressIndicator(
               value: percentage / 100,
               minHeight: 6,
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              backgroundColor: Colors.white.withOpacity(0.1),
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),
@@ -284,7 +284,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
+              color: color.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -302,7 +302,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           Icon(Icons.arrow_forward_ios_rounded,
-              color: Colors.white.withValues(alpha: 0.3), size: 14),
+              color: Colors.white.withOpacity(0.3), size: 14),
         ],
       ),
     );
@@ -323,7 +323,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text(
                     'Average Attendance',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Colors.white.withOpacity(0.7),
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -342,7 +342,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Flexible(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: SingleChildScrollView(
@@ -411,7 +411,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             fontSize: 11,
             fontWeight: FontWeight.bold,
             color:
-                isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                isSelected ? Colors.white : Colors.white.withOpacity(0.6),
           ),
         ),
       ),
@@ -443,7 +443,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        const Color(0xFF1E3A8A).withValues(alpha: 0.6),
+                        const Color(0xFF1E3A8A).withOpacity(0.6),
                         const Color(0xFF38BDF8),
                       ],
                     ),
@@ -489,15 +489,15 @@ class _GlassCard extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            splashColor: Colors.white.withValues(alpha: 0.1),
-            highlightColor: Colors.white.withValues(alpha: 0.05),
+            splashColor: Colors.white.withOpacity(0.1),
+            highlightColor: Colors.white.withOpacity(0.05),
             child: Container(
               padding: padding,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.06),
+                color: Colors.white.withOpacity(0.06),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
+                  color: Colors.white.withOpacity(0.15),
                   width: 1.0,
                 ),
               ),

@@ -1344,7 +1344,7 @@ class ApiService {
     });
   }
 
-  void _handleLogout() async {
+  Future<void> _handleLogout() async {
     await StorageService.remove(AppConstants.storageKeyToken);
     await StorageService.remove(AppConstants.storageKeyRefreshToken);
     await StorageService.remove(AppConstants.storageKeyUser);

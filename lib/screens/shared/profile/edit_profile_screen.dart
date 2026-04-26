@@ -121,7 +121,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                color: const Color(0xFF38BDF8).withOpacity(0.15),
               ),
             ),
           ),
@@ -179,7 +179,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.close_rounded, color: Colors.white),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withValues(alpha: 0.05),
+              backgroundColor: Colors.white.withOpacity(0.05),
             ),
           ),
           const SizedBox(width: 20),
@@ -278,7 +278,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+              color: const Color(0xFF38BDF8).withOpacity(0.3),
               blurRadius: 15,
               offset: const Offset(0, 5))
         ],
@@ -314,9 +314,9 @@ class _GlassCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: child,
     );

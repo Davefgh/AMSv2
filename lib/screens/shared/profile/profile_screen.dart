@@ -87,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+              style: TextStyle(color: Colors.white.withOpacity(0.6)),
             ),
           ),
           ElevatedButton(
@@ -126,13 +126,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(height: Sizing.h(16)),
             Text(
               'Failed to load profile',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: Sizing.sp(18), fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: Sizing.sp(18), fontWeight: FontWeight.bold),
             ),
             SizedBox(height: Sizing.h(8)),
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: Sizing.sp(14)),
+              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: Sizing.sp(14)),
             ),
             SizedBox(height: Sizing.h(24)),
             ElevatedButton(
@@ -174,8 +174,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: InkWell(
           onTap: _logout,
           borderRadius: BorderRadius.circular(Sizing.r(24)),
-          splashColor: Colors.redAccent.withValues(alpha: 0.1),
-          highlightColor: Colors.redAccent.withValues(alpha: 0.05),
+          splashColor: Colors.redAccent.withOpacity(0.1),
+          highlightColor: Colors.redAccent.withOpacity(0.05),
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: Sizing.w(20),
@@ -186,7 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Container(
                   padding: EdgeInsets.all(Sizing.w(10)),
                   decoration: BoxDecoration(
-                    color: Colors.redAccent.withValues(alpha: 0.1),
+                    color: Colors.redAccent.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(Sizing.r(12)),
                   ),
                   child: Icon(
@@ -207,7 +207,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const Spacer(),
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: Colors.redAccent.withValues(alpha: 0.5),
+                  color: Colors.redAccent.withOpacity(0.5),
                   size: Sizing.sp(20),
                 ),
               ],
@@ -265,9 +265,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: Sizing.w(12), vertical: Sizing.h(4)),
             decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+              color: const Color(0xFF38BDF8).withOpacity(0.1),
               borderRadius: BorderRadius.circular(Sizing.r(20)),
-              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+              border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.3)),
             ),
             child: Text(
               roleName,
@@ -323,10 +323,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: EdgeInsets.all(Sizing.w(10)),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: Colors.white.withOpacity(0.05),
               borderRadius: BorderRadius.circular(Sizing.r(12)),
             ),
-            child: Icon(icon, color: Colors.white.withValues(alpha: 0.7), size: Sizing.sp(20)),
+            child: Icon(icon, color: Colors.white.withOpacity(0.7), size: Sizing.sp(20)),
           ),
           SizedBox(width: Sizing.w(16)),
           Expanded(
@@ -335,7 +335,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Text(
                   label,
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: Sizing.sp(13)),
+                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: Sizing.sp(13)),
                 ),
                 SizedBox(height: Sizing.h(2)),
                 Text(
@@ -351,7 +351,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildDivider() {
-    return Divider(height: 1, color: Colors.white.withValues(alpha: 0.05));
+    return Divider(height: 1, color: Colors.white.withOpacity(0.05));
   }
 
 }
@@ -374,10 +374,10 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(Sizing.r(24)),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: Colors.white.withOpacity(0.1),
               width: 1.0,
             ),
           ),

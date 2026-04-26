@@ -200,7 +200,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF60A5FA).withValues(alpha: 0.15),
+                color: const Color(0xFF60A5FA).withOpacity(0.15),
               ),
             ),
           ),
@@ -240,7 +240,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded,
                 color: Colors.white),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withValues(alpha: 0.05),
+              backgroundColor: Colors.white.withOpacity(0.05),
             ),
           ),
           const SizedBox(width: 20),
@@ -280,8 +280,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
             ),
             style: IconButton.styleFrom(
               backgroundColor: _showDeleted
-                  ? const Color(0xFFFACC15).withValues(alpha: 0.1)
-                  : Colors.white.withValues(alpha: 0.05),
+                  ? const Color(0xFFFACC15).withOpacity(0.1)
+                  : Colors.white.withOpacity(0.05),
             ),
             tooltip: _showDeleted ? 'Showing All' : 'Show Trash',
           ),
@@ -295,18 +295,18 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          color: Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
         ),
         child: TextField(
           onChanged: _onSearchChanged,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: 'Search instructors...',
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
             prefixIcon: Icon(Icons.search_rounded,
-                color: Colors.white.withValues(alpha: 0.4)),
+                color: Colors.white.withOpacity(0.4)),
             border: InputBorder.none,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -386,13 +386,13 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: instructor.isDeleted
-            ? Colors.orangeAccent.withValues(alpha: 0.05)
-            : Colors.white.withValues(alpha: 0.05),
+            ? Colors.orangeAccent.withOpacity(0.05)
+            : Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
             color: instructor.isDeleted
-                ? Colors.orangeAccent.withValues(alpha: 0.1)
-                : Colors.white.withValues(alpha: 0.08)),
+                ? Colors.orangeAccent.withOpacity(0.1)
+                : Colors.white.withOpacity(0.08)),
       ),
       child: Row(
         children: [
@@ -400,10 +400,10 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
             height: 48,
             width: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF60A5FA).withValues(alpha: 0.2),
+              color: const Color(0xFF60A5FA).withOpacity(0.2),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                  color: const Color(0xFF60A5FA).withValues(alpha: 0.3)),
+                  color: const Color(0xFF60A5FA).withOpacity(0.3)),
             ),
             child:
                 const Icon(Icons.person_pin_rounded, color: Color(0xFF60A5FA)),
@@ -424,13 +424,13 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                 Text(
                   'Instructor ID: ${instructor.id}',
                   style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5), fontSize: 13),
+                      color: Colors.white.withOpacity(0.5), fontSize: 13),
                 ),
               ],
             ),
           ),
           Icon(Icons.chevron_right_rounded,
-              color: Colors.white.withValues(alpha: 0.2)),
+              color: Colors.white.withOpacity(0.2)),
         ],
       ),
     );
@@ -442,14 +442,14 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.person_off_rounded,
-              size: 64, color: Colors.white.withValues(alpha: 0.1)),
+              size: 64, color: Colors.white.withOpacity(0.1)),
           const SizedBox(height: 16),
           Text(
             _searchQuery.isEmpty
                 ? 'No instructors found'
                 : 'No results for "$_searchQuery"',
             style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.4), fontSize: 16),
+                color: Colors.white.withOpacity(0.4), fontSize: 16),
           ),
         ],
       ),
@@ -564,7 +564,7 @@ class _InstructorEditModalState extends State<_InstructorEditModal> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
           ),
           child: TextField(
