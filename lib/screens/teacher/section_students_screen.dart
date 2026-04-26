@@ -116,8 +116,8 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Text Header
-                _buildHeader(textColor, subtitleColor),
+                // Header (Course Name only)
+                _buildHeader(subtitleColor),
                 SizedBox(height: Sizing.h(32)),
 
                 // Stat Cards
@@ -155,7 +155,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
     );
   }
 
-  Widget _buildHeader(Color textColor, Color subtitleColor) {
+  Widget _buildHeader(Color subtitleColor) {
     String courseName = 'Bachelor of Science in Computer Science';
     if (_schedules.isNotEmpty) {
        try {
@@ -169,15 +169,6 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.sectionName,
-          style: TextStyle(
-            color: textColor,
-            fontSize: Sizing.sp(32),
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.5,
-          ),
-        ),
         Text(
           courseName,
           style: TextStyle(
@@ -358,7 +349,10 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
             ],
           ),
           SizedBox(height: Sizing.h(12)),
-          Row(
+          Wrap(
+            spacing: Sizing.w(12),
+            runSpacing: Sizing.h(8),
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -371,14 +365,28 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                   style: const TextStyle(color: Color(0xFF818CF8), fontSize: 10, fontWeight: FontWeight.w900),
                 ),
               ),
-              SizedBox(width: Sizing.w(12)),
-              Icon(Icons.access_time, size: Sizing.sp(12), color: secondaryTextColor),
-              SizedBox(width: Sizing.w(4)),
-              Text('${schedule.timeIn} - ${schedule.timeOut}', style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11))),
-              SizedBox(width: Sizing.w(16)),
-              Icon(Icons.location_on_outlined, size: Sizing.sp(12), color: secondaryTextColor),
-              SizedBox(width: Sizing.w(4)),
-              Text(schedule.classroomName, style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11))),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.access_time, size: Sizing.sp(12), color: secondaryTextColor),
+                  SizedBox(width: Sizing.w(4)),
+                  Text('${schedule.timeIn} - ${schedule.timeOut}', style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11))),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.location_on_outlined, size: Sizing.sp(12), color: secondaryTextColor),
+                  SizedBox(width: Sizing.w(4)),
+                  Flexible(
+                    child: Text(
+                      schedule.classroomName, 
+                      style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11)),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ],
