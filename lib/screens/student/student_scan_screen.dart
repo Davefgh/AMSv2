@@ -177,7 +177,6 @@ class _StudentScanScreenState extends State<StudentScanScreen>
     return MainScaffold(
       title: 'Scan QR Code',
       currentIndex: 1,
-      isAdmin: false,
       isStudent: true,
       body: LayoutBuilder(
         builder: (context, constraints) {

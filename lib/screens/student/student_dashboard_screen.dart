@@ -50,7 +50,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     return MainScaffold(
       title: 'Student Dashboard',
       currentIndex: 0,
-      isAdmin: false,
       isStudent: true,
       actions: [
         IconButton(

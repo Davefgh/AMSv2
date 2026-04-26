@@ -465,7 +465,6 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     return MainScaffold(
       title: 'Sessions',
       currentIndex: 2, // Sessions tab
-      isAdmin: false,
       actions: [
         _buildProfileAvatar(),
       ],

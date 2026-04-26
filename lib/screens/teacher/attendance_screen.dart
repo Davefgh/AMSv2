@@ -128,7 +128,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return MainScaffold(
       title: 'Attendance Management',
       currentIndex: 1,
-      isAdmin: false,
       body: Column(
         children: [
           _buildHeader(),
