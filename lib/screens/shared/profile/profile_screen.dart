@@ -247,8 +247,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               backgroundColor: const Color(0xFF1E293B),
               backgroundImage: NetworkImage(
                 profile is Instructor 
-                  ? 'https://i.pravatar.cc/150?u=${profile.id}' 
-                  : 'https://i.pravatar.cc/150?u=${(profile as UserProfile).userId}'
+                  ? 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(profile.fullName)}&background=38BDF8&color=0F172A&size=150' 
+                  : 'https://ui-avatars.com/api/?name=${Uri.encodeComponent((profile as UserProfile).username)}&background=34D399&color=0F172A&size=150'
               ),
             ),
           ),

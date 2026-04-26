@@ -221,7 +221,16 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               CircleAvatar(
                 radius: Sizing.r(18),
                 backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFE0E7FF),
-                child: Text(name[0], style: TextStyle(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: Sizing.sp(12))),
+                child: Text(
+                  _instructor != null 
+                    ? '${_instructor!.firstname[0]}${_instructor!.lastname[0]}'.toUpperCase()
+                    : 'I', 
+                  style: TextStyle(
+                    color: const Color(0xFF38BDF8), 
+                    fontWeight: FontWeight.bold, 
+                    fontSize: Sizing.sp(12)
+                  )
+                ),
               ),
               SizedBox(width: Sizing.w(10)),
               Expanded(
