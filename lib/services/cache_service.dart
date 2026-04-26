@@ -216,24 +216,43 @@ class CacheService {
   /// Invalidate multiple cache entries by pattern
   Future<void> invalidatePattern(String pattern) async {
     // Remove from memory cache
-    final keysToRemove =
+    final memoryKeysToRemove =
         _memoryCache.keys.where((key) => key.contains(pattern)).toList();
 
-    for (final key in keysToRemove) {
+    for (final key in memoryKeysToRemove) {
       _memoryCache.remove(key);
-      await StorageService.remove('$_cachePrefix$key');
     }
 
-    _logger.d(
-        'Cache INVALIDATED (pattern): $pattern (${keysToRemove.length} entries)');
+    // Remove from persistent cache
+    final allKeys = StorageService.getAllKeys();
+    final persistentKeysToRemove = allKeys
+        .where((key) => key.startsWith(_cachePrefix))
+        .where((key) => key.substring(_cachePrefix.length).contains(pattern))
+        .toList();
+
+    for (final key in persistentKeysToRemove) {
+      await StorageService.remove(key);
+    }
+
+    final totalRemoved =
+        memoryKeysToRemove.length + persistentKeysToRemove.length;
+    _logger.d('Cache INVALIDATED (pattern): $pattern ($totalRemoved entries)');
   }
 
-  /// Clear all cache
+  /// Clear all cache entries (only removes cache keys, not other storage)
   Future<void> clearAll() async {
     _memoryCache.clear();
-    // Note: This clears ALL SharedPreferences, not just cache
-    // In production, you might want to iterate and remove only cache keys
-    _logger.d('Cache CLEARED (all)');
+
+    // Get all keys from SharedPreferences
+    final allKeys = StorageService.getAllKeys();
+
+    // Remove only cache keys (those with cache prefix)
+    final cacheKeys = allKeys.where((key) => key.startsWith(_cachePrefix));
+    for (final key in cacheKeys) {
+      await StorageService.remove(key);
+    }
+
+    _logger.d('Cache CLEARED (${cacheKeys.length} entries)');
   }
 
   /// Clear only memory cache (keep persistent cache)
