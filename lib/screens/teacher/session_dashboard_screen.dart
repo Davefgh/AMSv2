@@ -735,101 +735,199 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => Dialog(
           backgroundColor: surfaceColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          child: Theme(
-            data: ThemeData.dark(),
-            child: Container(
-              width: 450,
-              padding: const EdgeInsets.all(24),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Start Session',
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: headerTextColor),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: subtitleTextColor),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(color: dividerColor),
+                  const SizedBox(height: 16),
+
+                  // Session Details Info Box
+                  _buildDetailRow('Course:', '${s.subjectCode} - ${s.subjectName}'),
+                  _buildDetailRow('Date:', DateFormat('EEEE, MMMM d, yyyy').format(s.sessionDate ?? DateTime.now())),
+                  _buildDetailRow('Scheduled Time:', '${_formatTime(s.scheduledTimeIn)} - ${_formatTime(s.scheduledTimeOut)}'),
+                  
+                  const SizedBox(height: 24),
+                  const Divider(color: dividerColor),
+                  const SizedBox(height: 24),
+
+                  // Room Selection
+                  const Text('Actual Room (Optional)', style: TextStyle(color: headerTextColor, fontWeight: FontWeight.bold, fontSize: 15)),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.03),
+                      border: Border.all(color: dividerColor), 
+                      borderRadius: BorderRadius.circular(12)
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: selectedRoomId,
+                        isExpanded: true,
+                        dropdownColor: surfaceColor,
+                        icon: const Icon(Icons.keyboard_arrow_down, color: subtitleTextColor),
+                        items: [
+                          if (selectedRoomId != null)
+                            DropdownMenuItem(value: selectedRoomId, child: Text('Use scheduled room (${s.scheduledRoomName})', style: const TextStyle(fontSize: 14))),
+                        ],
+                        onChanged: (val) => setDialogState(() => selectedRoomId = val),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text('Select if the session is being held in a different room', style: TextStyle(color: subtitleTextColor, fontSize: 11)),
+
+                  const SizedBox(height: 24),
+
+                  // Cutoff Input
+                  const Text('Attendance Cutoff (minutes)', style: TextStyle(color: headerTextColor, fontWeight: FontWeight.bold, fontSize: 15)),
+                  const SizedBox(height: 12),
+                  TextField(
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      suffixText: 'minutes',
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      suffixStyle: const TextStyle(color: subtitleTextColor, fontSize: 13),
+                      hintText: '15',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: dividerColor)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: dividerColor)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: primaryBlue)),
+                    ),
+                    onChanged: (val) => attendanceCutoff = int.tryParse(val) ?? 15,
+                  ),
+                  const SizedBox(height: 6),
+                  const Text('Students can check in up to this many minutes after session start (0-120)', style: TextStyle(color: subtitleTextColor, fontSize: 11)),
+
+                  const SizedBox(height: 32),
+
+                  // Summary Notice
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: successGreen.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: successGreen.withOpacity(0.2)),
+                    ),
+                    child: Row(
                       children: [
-                        const Text('Start Session', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: headerTextColor)),
-                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                        const Icon(Icons.play_circle_outline, color: successGreen, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text('Ready to start?', style: TextStyle(color: successGreen, fontWeight: FontWeight.bold, fontSize: 14)),
+                              SizedBox(height: 2),
+                              Text('The session will begin immediately and students can start checking in.', style: TextStyle(color: successGreen, fontSize: 12)),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text('${s.subjectCode} - ${s.subjectName}', style: const TextStyle(color: subtitleTextColor, fontSize: 14)),
-                    const SizedBox(height: 24),
-                    _buildLabel('Actual Room'),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        border: Border.all(color: dividerColor), 
-                        borderRadius: BorderRadius.circular(12)
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: selectedRoomId,
-                          isExpanded: true,
-                          dropdownColor: surfaceColor,
-                          items: [
-                            if (selectedRoomId != null)
-                              DropdownMenuItem(value: selectedRoomId, child: Text('Use scheduled room (${s.scheduledRoomName})')),
-                          ],
-                          onChanged: (val) => setDialogState(() => selectedRoomId = val),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Action Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            setDialogState(() => _isLoading = true);
+                            try {
+                              await _apiService.startSession(
+                                s.id,
+                                actualRoomId: selectedRoomId,
+                                attendanceCutoffMinutes: attendanceCutoff,
+                                rowVersion: s.rowVersion ?? '',
+                              );
+                              if (mounted) {
+                                Navigator.pop(context);
+                                _loadData();
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                setDialogState(() => _isLoading = false);
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                              }
+                            }
+                          },
+                          icon: const Icon(Icons.play_arrow, size: 18),
+                          label: const Text('Start Session', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: successGreen,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildLabel('Attendance Cutoff'),
-                    TextField(
-                      keyboardType: TextInputType.number,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        suffixText: 'minutes',
-                        hintText: '15',
-                        suffixStyle: const TextStyle(color: subtitleTextColor),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: dividerColor)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: dividerColor)),
-                      ),
-                      onChanged: (val) => attendanceCutoff = int.tryParse(val) ?? 15,
-                    ),
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          setDialogState(() => _isLoading = true);
-                          try {
-                            await _apiService.startSession(
-                              s.id,
-                              actualRoomId: selectedRoomId,
-                              attendanceCutoffMinutes: attendanceCutoff,
-                              rowVersion: s.rowVersion ?? '',
-                            );
-                            if (mounted) {
-                              Navigator.pop(context);
-                              _loadData();
-                            }
-                          } catch (e) {
-                            if (mounted) {
-                              setDialogState(() => _isLoading = false);
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: successGreen,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: headerTextColor,
+                            side: const BorderSide(color: dividerColor),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                         ),
-                        child: const Text('Confirm & Start Session', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(label, style: const TextStyle(color: subtitleTextColor, fontSize: 13)),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(color: headerTextColor, fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ),
+        ],
       ),
     );
   }
