@@ -44,10 +44,10 @@ class NavigationShell extends ConsumerWidget {
 
     // Define screens for each tab
     final List<Widget> screens = isStudent
-        ? const [
-            StudentDashboardScreen(),
-            StudentScanScreen(),
-            ProfileScreen(),
+        ? [
+            const StudentDashboardScreen(),
+            StudentScanScreen(isVisible: currentIndex == 1),
+            const ProfileScreen(),
           ]
         : const [
             TeacherDashboardScreen(),
@@ -59,7 +59,7 @@ class NavigationShell extends ConsumerWidget {
     return Scaffold(
       backgroundColor: bgColor,
       body: Responsive(
-        mobile: _buildMobileLayout(context, isDark, screens, currentIndex),
+        mobile: _buildMobileLayout(context, isDark, screens, currentIndex, ref),
         tablet: _buildTabletLayout(context, isDark, screens, currentIndex, ref),
         desktop:
             _buildTabletLayout(context, isDark, screens, currentIndex, ref),
@@ -124,14 +124,14 @@ class NavigationShell extends ConsumerWidget {
   }
 
   Widget _buildMobileLayout(BuildContext context, bool isDark,
-      List<Widget> screens, int currentIndex) {
+      List<Widget> screens, int currentIndex, WidgetRef ref) {
     return Stack(
       children: [
         _buildBackground(isDark),
         SafeArea(
           child: Column(
             children: [
-              _buildHeader(context, isDark, currentIndex),
+              _buildHeader(context, isDark, currentIndex, ref),
               Expanded(
                 // IndexedStack keeps all screens alive
                 child: IndexedStack(
@@ -159,7 +159,7 @@ class NavigationShell extends ConsumerWidget {
               SafeArea(
                 child: Column(
                   children: [
-                    _buildHeader(context, isDark, currentIndex),
+                    _buildHeader(context, isDark, currentIndex, ref),
                     Expanded(
                       child: Center(
                         child: ConstrainedBox(
@@ -181,7 +181,8 @@ class NavigationShell extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark, int currentIndex) {
+  Widget _buildHeader(
+      BuildContext context, bool isDark, int currentIndex, WidgetRef ref) {
     final textColor = isDark ? Colors.white : Colors.black;
     final titles = isStudent
         ? ['Student Dashboard', 'Scan QR', 'Profile']
@@ -242,7 +243,6 @@ class NavigationShell extends ConsumerWidget {
                 IconButton(
                   onPressed: () {
                     // Navigate to profile tab
-                    final ref = ProviderScope.containerOf(context);
                     ref.read(navigationIndexProvider.notifier).setIndex(2);
                   },
                   icon: Container(
@@ -371,11 +371,12 @@ class NavigationShell extends ConsumerWidget {
     final destinations =
         isStudent ? _studentDestinations : _teacherDestinations;
 
-    const bgColor = Color(0xFF0F172A);
-    const borderColor = Color(0xFF1E293B);
+    final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final borderColor =
+        isDark ? const Color(0xFF1E293B) : Colors.black.withValues(alpha: 0.1);
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: bgColor,
         border: Border(top: BorderSide(color: borderColor, width: 1)),
       ),
@@ -385,7 +386,9 @@ class NavigationShell extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
+        unselectedItemColor: isDark
+            ? Colors.white.withValues(alpha: 0.4)
+            : Colors.black.withValues(alpha: 0.4),
         showUnselectedLabels: true,
         selectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),

@@ -7,7 +7,8 @@ import '../../models/student_model.dart';
 enum _ScanState { idle, scanning, processing, success, error }
 
 class StudentScanScreen extends StatefulWidget {
-  const StudentScanScreen({super.key});
+  final bool isVisible;
+  const StudentScanScreen({super.key, this.isVisible = false});
 
   @override
   State<StudentScanScreen> createState() => _StudentScanScreenState();
@@ -56,6 +57,19 @@ class _StudentScanScreenState extends State<StudentScanScreen>
         CurvedAnimation(parent: _resultCtrl, curve: Curves.elasticOut);
 
     _loadStudentProfile();
+  }
+
+  @override
+  void didUpdateWidget(StudentScanScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Stop camera when tab becomes inactive, start when active
+    if (widget.isVisible != oldWidget.isVisible) {
+      if (widget.isVisible) {
+        _cameraController.start();
+      } else {
+        _cameraController.stop();
+      }
+    }
   }
 
   @override
