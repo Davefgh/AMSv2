@@ -17,9 +17,9 @@ class ClassSession {
   final String? actualRoomName;
   final String scheduledTimeIn;
   final String scheduledTimeOut;
-  final int? startedBy;
+  final String? startedBy;
   final String? startedByName;
-  final int? endedBy;
+  final String? endedBy;
   final String? endedByName;
   final String? rowVersion;
   final String? description;
@@ -73,6 +73,11 @@ class ClassSession {
       return null;
     }
 
+    String? parseString(dynamic v) {
+      if (v == null) return null;
+      return v.toString();
+    }
+
     return ClassSession(
       id: json['id']?.toString() ?? '',
       scheduleId: json['scheduleId']?.toString() ?? '',
@@ -91,9 +96,9 @@ class ClassSession {
           json['actualRoomName'] ?? json['actualRoom'] ?? json['room'],
       scheduledTimeIn: json['scheduledTimeIn'] ?? json['timeIn'] ?? '',
       scheduledTimeOut: json['scheduledTimeOut'] ?? json['timeOut'] ?? '',
-      startedBy: parseInt(json['startedBy']),
+      startedBy: parseString(json['startedById'] ?? json['startedBy']),
       startedByName: json['startedByName'],
-      endedBy: parseInt(json['endedBy']),
+      endedBy: parseString(json['endedById'] ?? json['endedBy']),
       endedByName: json['endedByName'],
       rowVersion: json['rowVersion'],
       description: json['description'] ?? json['notes'],

@@ -1,6 +1,6 @@
 class EnrollmentSession {
   final String? enrollmentSessionId;
-  final int? studentId;
+  final String? studentId;
   final String? studentName;
   final String? deviceId;
   final int? assignedSensorFingerprintId;
@@ -24,12 +24,13 @@ class EnrollmentSession {
   factory EnrollmentSession.fromJson(Map<String, dynamic> json) {
     return EnrollmentSession(
       enrollmentSessionId: json['enrollmentSessionId'],
-      studentId: json['studentId'],
+      studentId: json['studentId']?.toString(),
       studentName: json['studentName'],
       deviceId: json['deviceId'],
       assignedSensorFingerprintId: json['assignedSensorFingerprintId'],
       status: json['status'],
-      expiresAt: json['expiresAt'] != null ? DateTime.parse(json['expiresAt']) : null,
+      expiresAt:
+          json['expiresAt'] != null ? DateTime.parse(json['expiresAt']) : null,
       message: json['message'],
       success: json['success'] ?? false,
     );
@@ -37,9 +38,9 @@ class EnrollmentSession {
 }
 
 class FingerprintInfo {
-  final int? id;
+  final String? id;
   final String? deviceId;
-  final int? studentId;
+  final String? studentId;
   final String? studentName;
   final String? status;
   final DateTime? createdAt;
@@ -55,12 +56,13 @@ class FingerprintInfo {
 
   factory FingerprintInfo.fromJson(Map<String, dynamic> json) {
     return FingerprintInfo(
-      id: json['id'],
+      id: json['id']?.toString(),
       deviceId: json['deviceId'],
-      studentId: json['studentId'],
+      studentId: json['studentId']?.toString(),
       studentName: json['studentName'],
       status: json['status'],
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
     );
   }
 }
