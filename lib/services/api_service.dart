@@ -58,11 +58,8 @@ class ApiService {
   Future<List<Student>> getStudentsBySection(String sectionId) async {
     validateId(sectionId, 'Section');
     try {
-      final response = await get('/api/sections/$sectionId/all-students');
-      if (response is List) {
-        return response.map((s) => Student.fromJson(s)).toList();
-      }
-      return [];
+      final allStudents = await getStudents();
+      return allStudents.where((s) => s.sectionId == sectionId).toList();
     } catch (e) {
       _logger.e('getStudentsBySection Error: $e');
       rethrow;
