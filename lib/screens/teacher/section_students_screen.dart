@@ -27,11 +27,11 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
   String? _errorMessage;
-  
+
   List<Student> _students = [];
   List<Schedule> _schedules = [];
-  String _selectedStatus = 'All'; 
-  final Set<String> _expandedIds = {}; 
+  String _selectedStatus = 'All';
+  final Set<String> _expandedIds = {};
 
   final List<String> _statusOptions = ['All', 'Regular', 'Irregular', 'Retake'];
 
@@ -50,14 +50,14 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
 
     try {
       final students = await _apiService.getStudentsBySection(widget.sectionId);
-      
+
       // Use getMySchedules and filter locally to avoid 404 on the 'by-section' endpoint
       final allSchedules = await _apiService.getMySchedules();
       final sectionSchedules = allSchedules.where((s) {
         final sId = s.sectionId ?? (s.section?['id'] as String?);
         return sId == widget.sectionId;
       }).toList();
-      
+
       if (mounted) {
         setState(() {
           _students = students;
@@ -91,7 +91,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
     return MainScaffold(
       title: widget.sectionName,
       currentIndex: -1,
-      isAdmin: false,
+      isStudent: false,
       showBackButton: true,
       body: _isLoading
           ? const SkeletonListView()
@@ -106,14 +106,17 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
       builder: (context, appProvider, _) {
         final isDark = appProvider.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
-        final subtitleColor = isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B);
+        final subtitleColor =
+            isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
 
         return RefreshIndicator(
           onRefresh: _loadData,
           color: const Color(0xFF38BDF8),
           child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-            padding: EdgeInsets.symmetric(horizontal: Sizing.w(24), vertical: Sizing.h(20)),
+            physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics()),
+            padding: EdgeInsets.symmetric(
+                horizontal: Sizing.w(24), vertical: Sizing.h(20)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -146,7 +149,7 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                   _buildEmptyState('No students found for this filter.')
                 else
                   ..._filteredStudents.map((s) => _buildStudentCard(s, isDark)),
-                
+
                 SizedBox(height: Sizing.h(40)),
               ],
             ),
@@ -159,12 +162,12 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
   Widget _buildHeader(Color subtitleColor) {
     String courseName = 'Bachelor of Science in Computer Science';
     if (_schedules.isNotEmpty) {
-       try {
-          final course = _schedules.first.section?['course'];
-          if (course != null && course is Map) {
-            courseName = course['name']?.toString() ?? courseName;
-          }
-       } catch (_) {}
+      try {
+        final course = _schedules.first.section?['course'];
+        if (course != null && course is Map) {
+          courseName = course['name']?.toString() ?? courseName;
+        }
+      } catch (_) {}
     }
 
     return Column(
@@ -208,18 +211,21 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color iconColor, bool isDark) {
+  Widget _buildStatCard(
+      String label, String value, IconData icon, Color iconColor, bool isDark) {
     return Container(
       padding: EdgeInsets.all(Sizing.w(16)),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.05),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -233,7 +239,9 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
           Text(
             label,
             style: TextStyle(
-              color: isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.5)
+                  : const Color(0xFF64748B),
               fontSize: Sizing.sp(11),
               fontWeight: FontWeight.w600,
             ),
@@ -264,22 +272,29 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
               borderRadius: BorderRadius.circular(30),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(horizontal: Sizing.w(20), vertical: Sizing.h(10)),
+                padding: EdgeInsets.symmetric(
+                    horizontal: Sizing.w(20), vertical: Sizing.h(10)),
                 decoration: BoxDecoration(
-                  color: isSelected 
-                      ? const Color(0xFF38BDF8) 
-                      : (isDark ? Colors.white.withOpacity(0.05) : Colors.white),
+                  color: isSelected
+                      ? const Color(0xFF38BDF8)
+                      : (isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.white),
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(
-                    color: isSelected 
-                        ? const Color(0xFF38BDF8) 
-                        : (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1)),
+                    color: isSelected
+                        ? const Color(0xFF38BDF8)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.1)),
                   ),
                 ),
                 child: Text(
                   status,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : Colors.black87),
                     fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
                     fontSize: Sizing.sp(13),
                   ),
@@ -305,9 +320,10 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
   }
 
   Widget _buildScheduleCard(Schedule schedule, bool isDark) {
-    final cardColor = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
+    final cardColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
-    final secondaryTextColor = isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B);
+    final secondaryTextColor =
+        isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
     final isExpanded = _expandedIds.contains(schedule.id);
 
     return AnimatedContainer(
@@ -316,7 +332,10 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
+        border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.black.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,11 +365,17 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                           children: [
                             Text(
                               schedule.subjectName,
-                              style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: Sizing.sp(15)),
+                              style: TextStyle(
+                                  color: textColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: Sizing.sp(15)),
                             ),
                             Text(
                               schedule.subjectCode,
-                              style: TextStyle(color: const Color(0xFF38BDF8), fontSize: Sizing.sp(11), fontWeight: FontWeight.w700),
+                              style: TextStyle(
+                                  color: const Color(0xFF38BDF8),
+                                  fontSize: Sizing.sp(11),
+                                  fontWeight: FontWeight.w700),
                             ),
                           ],
                         ),
@@ -359,11 +384,16 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                         children: [
                           Text(
                             '${_students.length} Students',
-                            style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11), fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                                color: secondaryTextColor,
+                                fontSize: Sizing.sp(11),
+                                fontWeight: FontWeight.w600),
                           ),
                           SizedBox(width: Sizing.w(4)),
                           Icon(
-                            isExpanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                            isExpanded
+                                ? Icons.expand_less_rounded
+                                : Icons.expand_more_rounded,
                             color: secondaryTextColor,
                             size: Sizing.sp(20),
                           ),
@@ -378,33 +408,44 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withOpacity(0.15),
+                          color: const Color(0xFF6366F1).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           schedule.dayName ?? 'Day',
-                          style: const TextStyle(color: Color(0xFF818CF8), fontSize: 10, fontWeight: FontWeight.w900),
+                          style: const TextStyle(
+                              color: Color(0xFF818CF8),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900),
                         ),
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.access_time, size: Sizing.sp(12), color: secondaryTextColor),
+                          Icon(Icons.access_time,
+                              size: Sizing.sp(12), color: secondaryTextColor),
                           SizedBox(width: Sizing.w(4)),
-                          Text('${schedule.timeIn} - ${schedule.timeOut}', style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11))),
+                          Text('${schedule.timeIn} - ${schedule.timeOut}',
+                              style: TextStyle(
+                                  color: secondaryTextColor,
+                                  fontSize: Sizing.sp(11))),
                         ],
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.location_on_outlined, size: Sizing.sp(12), color: secondaryTextColor),
+                          Icon(Icons.location_on_outlined,
+                              size: Sizing.sp(12), color: secondaryTextColor),
                           SizedBox(width: Sizing.w(4)),
                           Flexible(
                             child: Text(
-                              schedule.classroomName, 
-                              style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(11)),
+                              schedule.classroomName,
+                              style: TextStyle(
+                                  color: secondaryTextColor,
+                                  fontSize: Sizing.sp(11)),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -427,21 +468,50 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
   }
 
   Widget _buildTableHeader(bool isDark) {
-    final labelColor = isDark ? Colors.white.withOpacity(0.4) : const Color(0xFF64748B);
+    final labelColor =
+        isDark ? Colors.white.withValues(alpha: 0.4) : const Color(0xFF64748B);
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: Sizing.w(16), vertical: Sizing.h(12)),
+      padding: EdgeInsets.symmetric(
+          horizontal: Sizing.w(16), vertical: Sizing.h(12)),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.02) : Colors.black.withOpacity(0.02),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.02)
+            : Colors.black.withValues(alpha: 0.02),
         border: Border(
-          top: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
-          bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+          top: BorderSide(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.05)),
+          bottom: BorderSide(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.05)),
         ),
       ),
       child: Row(
         children: [
-          Expanded(flex: 3, child: Text('Student ID', style: TextStyle(color: labelColor, fontSize: Sizing.sp(10), fontWeight: FontWeight.bold))),
-          Expanded(flex: 4, child: Text('Name', style: TextStyle(color: labelColor, fontSize: Sizing.sp(10), fontWeight: FontWeight.bold))),
-          Expanded(flex: 2, child: Text('Status', style: TextStyle(color: labelColor, fontSize: Sizing.sp(10), fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+          Expanded(
+              flex: 3,
+              child: Text('Student ID',
+                  style: TextStyle(
+                      color: labelColor,
+                      fontSize: Sizing.sp(10),
+                      fontWeight: FontWeight.bold))),
+          Expanded(
+              flex: 4,
+              child: Text('Name',
+                  style: TextStyle(
+                      color: labelColor,
+                      fontSize: Sizing.sp(10),
+                      fontWeight: FontWeight.bold))),
+          Expanded(
+              flex: 2,
+              child: Text('Status',
+                  style: TextStyle(
+                      color: labelColor,
+                      fontSize: Sizing.sp(10),
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.right)),
         ],
       ),
     );
@@ -449,13 +519,18 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
 
   Widget _buildTableRow(Student student, bool isDark) {
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
-    final secondaryTextColor = isDark ? Colors.white.withOpacity(0.3) : const Color(0xFF64748B);
+    final secondaryTextColor =
+        isDark ? Colors.white.withValues(alpha: 0.3) : const Color(0xFF64748B);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: Sizing.w(16), vertical: Sizing.h(12)),
+      padding: EdgeInsets.symmetric(
+          horizontal: Sizing.w(16), vertical: Sizing.h(12)),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.03)),
+          bottom: BorderSide(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.03)
+                  : Colors.black.withValues(alpha: 0.03)),
         ),
       ),
       child: Row(
@@ -463,20 +538,30 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
           Expanded(
             flex: 3,
             child: Text(
-              student.id.length > 12 ? '${student.id.substring(0, 12)}...' : student.id,
-              style: TextStyle(color: secondaryTextColor, fontSize: Sizing.sp(10), fontFamily: 'Monospace'),
+              student.id.length > 12
+                  ? '${student.id.substring(0, 12)}...'
+                  : student.id,
+              style: TextStyle(
+                  color: secondaryTextColor,
+                  fontSize: Sizing.sp(10),
+                  fontFamily: 'Monospace'),
             ),
           ),
           Expanded(
             flex: 4,
             child: Row(
               children: [
-                Icon(Icons.fingerprint_rounded, size: Sizing.sp(12), color: isDark ? Colors.white24 : Colors.black26),
+                Icon(Icons.fingerprint_rounded,
+                    size: Sizing.sp(12),
+                    color: isDark ? Colors.white24 : Colors.black26),
                 SizedBox(width: Sizing.w(8)),
                 Expanded(
                   child: Text(
                     student.fullName,
-                    style: TextStyle(color: textColor, fontSize: Sizing.sp(11), fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        color: textColor,
+                        fontSize: Sizing.sp(11),
+                        fontWeight: FontWeight.w600),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -488,13 +573,17 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: student.isRegular ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                color: student.isRegular
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : Colors.orange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 student.isRegular ? 'REGULAR' : 'IRREGULAR',
                 style: TextStyle(
-                  color: student.isRegular ? Colors.greenAccent : Colors.orangeAccent,
+                  color: student.isRegular
+                      ? Colors.greenAccent
+                      : Colors.orangeAccent,
                   fontSize: Sizing.sp(8),
                   fontWeight: FontWeight.w900,
                 ),
@@ -518,13 +607,16 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
               width: Sizing.w(46),
               height: Sizing.w(46),
               decoration: BoxDecoration(
-                color: const Color(0xFF38BDF8).withOpacity(0.1),
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.2)),
+                border:
+                    Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.2)),
               ),
               child: Center(
                 child: Text(
-                  student.firstname.isNotEmpty ? student.firstname[0].toUpperCase() : '?',
+                  student.firstname.isNotEmpty
+                      ? student.firstname[0].toUpperCase()
+                      : '?',
                   style: TextStyle(
                     color: const Color(0xFF38BDF8),
                     fontSize: Sizing.sp(18),
@@ -550,15 +642,20 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: student.isRegular ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                          color: student.isRegular
+                              ? Colors.green.withValues(alpha: 0.1)
+                              : Colors.orange.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           student.isRegular ? 'REGULAR' : 'IRREGULAR',
                           style: TextStyle(
-                            color: student.isRegular ? Colors.greenAccent : Colors.orangeAccent,
+                            color: student.isRegular
+                                ? Colors.greenAccent
+                                : Colors.orangeAccent,
                             fontSize: Sizing.sp(9),
                             fontWeight: FontWeight.w900,
                           ),
@@ -569,7 +666,9 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                         child: Text(
                           'ID: ${student.id.length > 8 ? "${student.id.substring(0, 8)}..." : student.id}',
                           style: TextStyle(
-                            color: isDark ? Colors.white.withOpacity(0.3) : Colors.black.withOpacity(0.3),
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.3)
+                                : Colors.black.withValues(alpha: 0.3),
                             fontSize: Sizing.sp(10),
                             fontWeight: FontWeight.w500,
                           ),
@@ -581,7 +680,9 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
                 ],
               ),
             ),
-            Icon(Icons.info_outline_rounded, color: isDark ? Colors.white10 : Colors.black12, size: Sizing.sp(20)),
+            Icon(Icons.info_outline_rounded,
+                color: isDark ? Colors.white10 : Colors.black12,
+                size: Sizing.sp(20)),
           ],
         ),
       ),
@@ -591,7 +692,8 @@ class _SectionStudentsScreenState extends State<SectionStudentsScreen> {
   Widget _buildEmptyState(String msg) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: Sizing.h(40)),
-      child: Center(child: Text(msg, style: const TextStyle(color: Colors.white24))),
+      child: Center(
+          child: Text(msg, style: const TextStyle(color: Colors.white24))),
     );
   }
 
@@ -625,10 +727,12 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(Sizing.w(16)),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withOpacity(0.04) : Colors.white,
+            color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.08),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.08),
             ),
           ),
           child: child,

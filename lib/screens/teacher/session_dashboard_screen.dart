@@ -6,10 +6,6 @@ import '../../models/schedule_model.dart';
 import '../../models/session_model.dart';
 import 'session_details_screen.dart';
 import '../../widgets/main_scaffold.dart';
-import '../../models/instructor_model.dart';
-import '../../services/storage_service.dart';
-import '../shared/auth/login_screen.dart';
-import '../../models/user_profile.dart';
 import '../../widgets/skeleton_loader.dart';
 
 class SessionDashboardScreen extends StatefulWidget {
@@ -29,18 +25,14 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   List<Schedule> _instructorSchedules = [];
   int _activeTabIndex =
       0; // 0: All, 1: Not Started, 2: Active, 3: Completed, 4: Cancelled
-  InstructorProfileInfo? _profile;
 
   // Premium Dark Theme Colors
   static const Color primaryBlue = Color(0xFF38BDF8);
-  static const Color bgColor = Color(0xFF0F172A);
   static const Color surfaceColor = Color(0xFF1E293B);
   static const Color headerTextColor = Colors.white;
   static const Color subtitleTextColor = Color(0xFF94A3B8);
-  static const Color colHeaderColor = Color(0xFF64748B);
   static const Color successGreen = Color(0xFF10B981);
   static const Color dangerRed = Color(0xFFEF4444);
-  static const Color pendingBlue = Color(0xFF3B82F6);
   static const Color dividerColor = Colors.white10;
 
   @override
@@ -57,11 +49,9 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     try {
       final mySessions = await _apiService.getMySessions();
       final schedules = await _apiService.getMySchedules();
-      final profile = await _apiService.getMe();
       setState(() {
         _allSessions = mySessions;
         _instructorSchedules = schedules;
-        _profile = profile.instructorProfile;
         _applyFilter();
         _isLoading = false;
       });
@@ -221,7 +211,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
+                        color: Colors.white.withValues(alpha: 0.05),
                         border: Border.all(color: dividerColor),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -504,8 +494,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: active
-                    ? primaryBlue.withOpacity(0.2)
-                    : Colors.white.withOpacity(0.05),
+                    ? primaryBlue.withValues(alpha: 0.2)
+                    : Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -545,12 +535,12 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: surfaceColor.withOpacity(0.4),
+        color: surfaceColor.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: dividerColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -628,7 +618,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
+              color: Colors.white.withValues(alpha: 0.03),
               borderRadius:
                   const BorderRadius.vertical(bottom: Radius.circular(24)),
               border: const Border(top: BorderSide(color: dividerColor)),
@@ -678,9 +668,9 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Text(
         label,
@@ -743,13 +733,13 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       label: Text(label,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
       style: ElevatedButton.styleFrom(
-        backgroundColor: color.withOpacity(0.15),
+        backgroundColor: color.withValues(alpha: 0.15),
         foregroundColor: color,
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: color.withOpacity(0.3)),
+          side: BorderSide(color: color.withValues(alpha: 0.3)),
         ),
       ),
     );
@@ -777,9 +767,9 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Icon(icon, color: color, size: 20),
       ),
@@ -863,7 +853,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.03),
+                        color: Colors.white.withValues(alpha: 0.03),
                         border: Border.all(color: dividerColor),
                         borderRadius: BorderRadius.circular(12)),
                     child: DropdownButtonHideUnderline(
@@ -934,9 +924,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: successGreen.withOpacity(0.05),
+                      color: successGreen.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: successGreen.withOpacity(0.2)),
+                      border: Border.all(
+                          color: successGreen.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       children: [
@@ -1058,27 +1049,6 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          SizedBox(
-              width: 120,
-              child: Text(label,
-                  style:
-                      const TextStyle(color: subtitleTextColor, fontSize: 13))),
-          Expanded(
-              child: Text(value,
-                  style: const TextStyle(
-                      color: headerTextColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13))),
-        ],
-      ),
-    );
-  }
-
   void _confirmDelete(ClassSession s) {
     final TextEditingController reasonController = TextEditingController();
     showDialog(
@@ -1165,7 +1135,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         children: [
           const SizedBox(height: 100),
           Icon(Icons.inbox_outlined,
-              size: 64, color: Colors.white.withOpacity(0.1)),
+              size: 64, color: Colors.white.withValues(alpha: 0.1)),
           const SizedBox(height: 16),
           const Text('No sessions found for this category',
               style: TextStyle(color: subtitleTextColor, fontSize: 16)),
@@ -1173,7 +1143,4 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       ),
     );
   }
-
-  Widget _buildTableHeader() =>
-      const SizedBox.shrink(); // Not used in card view
 }

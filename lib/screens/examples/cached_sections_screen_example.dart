@@ -381,7 +381,7 @@ class _SectionListTile extends StatelessWidget {
           section.name,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('Year Level: ${section.yearLevel}'),
+        subtitle: Text('Capacity: ${section.capacity ?? "N/A"}'),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

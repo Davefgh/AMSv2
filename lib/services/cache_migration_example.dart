@@ -1,11 +1,14 @@
-/// Example: Migrating a screen from ApiService to CachedApiService
-///
-/// This file shows before/after examples of using the caching system.
-/// DO NOT import this file in production - it's for reference only.
+// Example: Migrating a screen from ApiService to CachedApiService
+//
+// This file shows before/after examples of using the caching system.
+// DO NOT import this file in production - it's for reference only.
+
+library;
 
 import 'package:flutter/material.dart';
 import 'api_service.dart';
 import 'cached_api_service.dart';
+import 'storage_service.dart';
 import '../models/section_model.dart';
 
 // ============================================================================
@@ -13,6 +16,8 @@ import '../models/section_model.dart';
 // ============================================================================
 
 class SectionsScreenBefore extends StatefulWidget {
+  const SectionsScreenBefore({super.key});
+
   @override
   _SectionsScreenBeforeState createState() => _SectionsScreenBeforeState();
 }
@@ -99,7 +104,7 @@ class _SectionsScreenBeforeState extends State<SectionsScreenBefore> {
         final section = _sections[index];
         return ListTile(
           title: Text(section.name),
-          subtitle: Text('Year: ${section.yearLevel}'),
+          subtitle: Text('Capacity: ${section.capacity ?? "N/A"}'),
           trailing: Icon(Icons.chevron_right),
           onTap: () {
             // Navigate to section details
@@ -115,6 +120,8 @@ class _SectionsScreenBeforeState extends State<SectionsScreenBefore> {
 // ============================================================================
 
 class SectionsScreenAfter extends StatefulWidget {
+  const SectionsScreenAfter({super.key});
+
   @override
   _SectionsScreenAfterState createState() => _SectionsScreenAfterState();
 }
@@ -243,7 +250,7 @@ class _SectionsScreenAfterState extends State<SectionsScreenAfter> {
           final section = _sections[index];
           return ListTile(
             title: Text(section.name),
-            subtitle: Text('Year: ${section.yearLevel}'),
+            subtitle: Text('Capacity: ${section.capacity ?? "N/A"}'),
             trailing: Icon(Icons.chevron_right),
             onTap: () {
               // Navigate to section details

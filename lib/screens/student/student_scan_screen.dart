@@ -275,13 +275,13 @@ class _StudentScanScreenState extends State<StudentScanScreen>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(colors: [
                         Colors.transparent,
-                        const Color(0xFF38BDF8).withOpacity(0.9),
+                        const Color(0xFF38BDF8).withValues(alpha: 0.9),
                         Colors.transparent,
                       ]),
                       borderRadius: BorderRadius.circular(2),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF38BDF8).withOpacity(0.5),
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
                           blurRadius: 8,
                           spreadRadius: 2,
                         ),
@@ -352,13 +352,13 @@ class _StudentScanScreenState extends State<StudentScanScreen>
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: active
-                ? const Color(0xFF38BDF8).withOpacity(0.25)
-                : Colors.black.withOpacity(0.4),
+                ? const Color(0xFF38BDF8).withValues(alpha: 0.25)
+                : Colors.black.withValues(alpha: 0.4),
             shape: BoxShape.circle,
             border: Border.all(
               color: active
-                  ? const Color(0xFF38BDF8).withOpacity(0.7)
-                  : Colors.white.withOpacity(0.2),
+                  ? const Color(0xFF38BDF8).withValues(alpha: 0.7)
+                  : Colors.white.withValues(alpha: 0.2),
             ),
           ),
           child: Icon(icon,
@@ -378,7 +378,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
           colors: [
-            Colors.black.withOpacity(0.85),
+            Colors.black.withValues(alpha: 0.85),
             Colors.transparent,
           ],
         ),
@@ -419,7 +419,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
             Text(
               'Logged in as ${_studentProfile!.fullName}',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.45),
+                color: Colors.white.withValues(alpha: 0.45),
                 fontSize: 12,
               ),
             ),
@@ -454,15 +454,15 @@ class _StudentScanScreenState extends State<StudentScanScreen>
           margin: const EdgeInsets.symmetric(horizontal: 32),
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F172A).withOpacity(0.97),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.97),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: color.withOpacity(0.5),
+              color: color.withValues(alpha: 0.5),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.25),
+                color: color.withValues(alpha: 0.25),
                 blurRadius: 40,
                 spreadRadius: 4,
               ),
@@ -474,7 +474,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: color, size: 52),
@@ -506,7 +506,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
                   _errorDetail!,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 13,
                     height: 1.5,
                   ),
@@ -516,7 +516,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
               Text(
                 'Resuming scanner in 3s…',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.35),
+                  color: Colors.white.withValues(alpha: 0.35),
                   fontSize: 12,
                 ),
               ),
@@ -616,7 +616,7 @@ class _VignettePainter extends CustomPainter {
 
     canvas.drawPath(
       path,
-      Paint()..color = Colors.black.withOpacity(0.6),
+      Paint()..color = Colors.black.withValues(alpha: 0.6),
     );
   }
 

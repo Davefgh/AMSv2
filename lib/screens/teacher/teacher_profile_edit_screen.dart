@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
-import '../../services/storage_service.dart';
 import '../../widgets/main_scaffold.dart';
 import '../../models/user_profile.dart';
 
@@ -8,24 +7,25 @@ class TeacherProfileEditScreen extends StatefulWidget {
   const TeacherProfileEditScreen({super.key});
 
   @override
-  State<TeacherProfileEditScreen> createState() => _TeacherProfileEditScreenState();
+  State<TeacherProfileEditScreen> createState() =>
+      _TeacherProfileEditScreenState();
 }
 
 class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
   final ApiService _apiService = ApiService();
   final _formKey = GlobalKey<FormState>();
-  
+
   bool _isLoading = true;
   bool _isSaving = false;
   UserProfile? _profile;
-  
+
   late TextEditingController _firstnameController;
   late TextEditingController _lastnameController;
   late TextEditingController _emailController;
   late TextEditingController _currentPasswordController;
   late TextEditingController _newPasswordController;
   late TextEditingController _confirmPasswordController;
-  
+
   bool _isChangingPassword = false;
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
@@ -85,18 +85,27 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
 
     try {
       await _apiService.updateTeacherProfile(
-        firstname: _firstnameController.text.trim().isEmpty ? null : _firstnameController.text.trim(),
-        lastname: _lastnameController.text.trim().isEmpty ? null : _lastnameController.text.trim(),
-        email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
-        currentPassword: _isChangingPassword && _currentPasswordController.text.isNotEmpty 
-            ? _currentPasswordController.text 
-            : null,
-        newPassword: _isChangingPassword && _newPasswordController.text.isNotEmpty 
-            ? _newPasswordController.text 
-            : null,
-        confirmNewPassword: _isChangingPassword && _confirmPasswordController.text.isNotEmpty 
-            ? _confirmPasswordController.text 
-            : null,
+        firstname: _firstnameController.text.trim().isEmpty
+            ? null
+            : _firstnameController.text.trim(),
+        lastname: _lastnameController.text.trim().isEmpty
+            ? null
+            : _lastnameController.text.trim(),
+        email: _emailController.text.trim().isEmpty
+            ? null
+            : _emailController.text.trim(),
+        currentPassword:
+            _isChangingPassword && _currentPasswordController.text.isNotEmpty
+                ? _currentPasswordController.text
+                : null,
+        newPassword:
+            _isChangingPassword && _newPasswordController.text.isNotEmpty
+                ? _newPasswordController.text
+                : null,
+        confirmNewPassword:
+            _isChangingPassword && _confirmPasswordController.text.isNotEmpty
+                ? _confirmPasswordController.text
+                : null,
       );
 
       if (mounted) {
@@ -131,10 +140,11 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
     return MainScaffold(
       title: 'Edit Profile',
       currentIndex: -1,
-      isAdmin: false,
+      isStudent: false,
       showBackButton: true,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Form(
@@ -151,7 +161,8 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                             height: 100,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFF38BDF8), width: 2),
+                              border: Border.all(
+                                  color: const Color(0xFF38BDF8), width: 2),
                             ),
                             child: CircleAvatar(
                               backgroundImage: NetworkImage(
@@ -163,7 +174,7 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Personal Information Section
                     const Text(
                       'Personal Information',
@@ -174,7 +185,7 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // First Name
                     _buildTextField(
                       controller: _firstnameController,
@@ -188,7 +199,7 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Last Name
                     _buildTextField(
                       controller: _lastnameController,
@@ -202,7 +213,7 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Email
                     _buildTextField(
                       controller: _emailController,
@@ -220,7 +231,7 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                       },
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Change Password Section
                     Row(
                       children: [
@@ -245,14 +256,14 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                               }
                             });
                           },
-                          activeColor: const Color(0xFF38BDF8),
+                          activeThumbColor: const Color(0xFF38BDF8),
                         ),
                       ],
                     ),
-                    
+
                     if (_isChangingPassword) ...[
                       const SizedBox(height: 16),
-                      
+
                       // Current Password
                       _buildTextField(
                         controller: _currentPasswordController,
@@ -261,24 +272,28 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                         obscureText: _obscureCurrentPassword,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureCurrentPassword ? Icons.visibility_off : Icons.visibility,
+                            _obscureCurrentPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: Colors.white38,
                           ),
                           onPressed: () {
                             setState(() {
-                              _obscureCurrentPassword = !_obscureCurrentPassword;
+                              _obscureCurrentPassword =
+                                  !_obscureCurrentPassword;
                             });
                           },
                         ),
                         validator: (value) {
-                          if (_isChangingPassword && (value == null || value.isEmpty)) {
+                          if (_isChangingPassword &&
+                              (value == null || value.isEmpty)) {
                             return 'Current password is required';
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // New Password
                       _buildTextField(
                         controller: _newPasswordController,
@@ -287,7 +302,9 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                         obscureText: _obscureNewPassword,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureNewPassword ? Icons.visibility_off : Icons.visibility,
+                            _obscureNewPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: Colors.white38,
                           ),
                           onPressed: () {
@@ -297,7 +314,8 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                           },
                         ),
                         validator: (value) {
-                          if (_isChangingPassword && (value == null || value.isEmpty)) {
+                          if (_isChangingPassword &&
+                              (value == null || value.isEmpty)) {
                             return 'New password is required';
                           }
                           if (_isChangingPassword && value!.length < 6) {
@@ -307,7 +325,7 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Confirm Password
                       _buildTextField(
                         controller: _confirmPasswordController,
@@ -316,29 +334,34 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                         obscureText: _obscureConfirmPassword,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                            _obscureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: Colors.white38,
                           ),
                           onPressed: () {
                             setState(() {
-                              _obscureConfirmPassword = !_obscureConfirmPassword;
+                              _obscureConfirmPassword =
+                                  !_obscureConfirmPassword;
                             });
                           },
                         ),
                         validator: (value) {
-                          if (_isChangingPassword && (value == null || value.isEmpty)) {
+                          if (_isChangingPassword &&
+                              (value == null || value.isEmpty)) {
                             return 'Please confirm your password';
                           }
-                          if (_isChangingPassword && value != _newPasswordController.text) {
+                          if (_isChangingPassword &&
+                              value != _newPasswordController.text) {
                             return 'Passwords do not match';
                           }
                           return null;
                         },
                       ),
                     ],
-                    
+
                     const SizedBox(height: 32),
-                    
+
                     // Save Button
                     SizedBox(
                       width: double.infinity,
@@ -359,7 +382,8 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0F172A)),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFF0F172A)),
                                 ),
                               )
                             : const Text(
@@ -398,14 +422,14 @@ class _TeacherProfileEditScreenState extends State<TeacherProfileEditScreen> {
         prefixIcon: Icon(icon, color: Colors.white38),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: Colors.white.withValues(alpha: 0.05),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
