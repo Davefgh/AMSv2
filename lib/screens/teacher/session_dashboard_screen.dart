@@ -960,7 +960,30 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                 Icons.badge_outlined, 'Instructor ID', _profile!.id.toString()),
             _buildProfileInfoRow(Icons.calendar_today_outlined, 'Joined',
                 DateFormat('MMMM dd, yyyy').format(_profile!.createdAt)),
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/teacher-profile-edit');
+                },
+                icon: const Icon(Icons.edit_rounded, size: 18),
+                label: const Text('Edit Profile',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF38BDF8).withOpacity(0.1),
+                  foregroundColor: const Color(0xFF38BDF8),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Color(0xFF38BDF8), width: 0.5),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(

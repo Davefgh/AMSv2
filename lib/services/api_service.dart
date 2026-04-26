@@ -1149,6 +1149,40 @@ class ApiService {
     }
   }
 
+  /// Updates teacher account profile
+  /// 
+  /// Parameters:
+  /// - [firstname]: Optional first name
+  /// - [lastname]: Optional last name
+  /// - [email]: Optional email
+  /// - [currentPassword]: Required if changing password
+  /// - [newPassword]: New password (requires currentPassword)
+  /// - [confirmNewPassword]: Confirm new password (must match newPassword)
+  Future<void> updateTeacherProfile({
+    String? firstname,
+    String? lastname,
+    String? email,
+    String? currentPassword,
+    String? newPassword,
+    String? confirmNewPassword,
+  }) async {
+    try {
+      final data = <String, dynamic>{};
+      
+      if (firstname != null) data['firstname'] = firstname;
+      if (lastname != null) data['lastname'] = lastname;
+      if (email != null) data['email'] = email;
+      if (currentPassword != null) data['currentPassword'] = currentPassword;
+      if (newPassword != null) data['newPassword'] = newPassword;
+      if (confirmNewPassword != null) data['confirmNewPassword'] = confirmNewPassword;
+      
+      await patch('/api/account/profile', data);
+    } catch (e) {
+      _logger.e('updateTeacherProfile Error: $e');
+      rethrow;
+    }
+  }
+
   // Prevents concurrent refresh attempts
   bool _isRefreshing = false;
 
