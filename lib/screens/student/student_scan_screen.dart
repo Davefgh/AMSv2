@@ -212,7 +212,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
         controller: _cameraController,
         scanWindow: scanWindow,
         onDetect: _onDetect,
-        errorBuilder: (context, error, child) => _buildCameraError(error),
+        errorBuilder: (context, error) => _buildCameraError(error),
       );
     }
     // Keep showing last frame (frozen) during result display
