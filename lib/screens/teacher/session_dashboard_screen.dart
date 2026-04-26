@@ -904,8 +904,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         child: CircleAvatar(
           radius: 16,
           backgroundColor: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-          backgroundImage: const NetworkImage(
-              'https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
+          backgroundImage: NetworkImage(
+              'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_profile?.fullName ?? "Instructor")}&background=38BDF8&color=0F172A'),
         ),
       ),
     );
@@ -935,9 +935,9 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                       blurRadius: 20)
                 ],
               ),
-              child: const CircleAvatar(
+              child: CircleAvatar(
                 backgroundImage: NetworkImage(
-                    'https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
+                    'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_profile!.fullName)}&background=38BDF8&color=0F172A'),
               ),
             ),
             const SizedBox(height: 20),
