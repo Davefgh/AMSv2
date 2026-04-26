@@ -4,7 +4,6 @@ import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/session_model.dart';
 import '../../models/instructor_model.dart';
-import '../../widgets/main_scaffold.dart';
 import '../../utils/sizing_utils.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -133,29 +132,11 @@ class _TeacherDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
-    final appState = ref.watch(appProvider);
-
-    return MainScaffold(
-      title: 'Dashboard',
-      currentIndex: 0,
-      actions: [
-        IconButton(
-          icon: Icon(
-            appState.isDarkMode
-                ? Icons.light_mode_rounded
-                : Icons.dark_mode_rounded,
-            color: appState.isDarkMode ? Colors.white : Colors.black,
-          ),
-          onPressed: () => ref.read(appProvider.notifier).toggleDarkMode(),
-          tooltip: appState.isDarkMode ? 'Light Mode' : 'Dark Mode',
-        ),
-      ],
-      body: _isLoading
-          ? const SkeletonDashboard()
-          : _errorMessage != null
-              ? _buildErrorState()
-              : _buildDashboard(),
-    );
+    return _isLoading
+        ? const SkeletonDashboard()
+        : _errorMessage != null
+            ? _buildErrorState()
+            : _buildDashboard();
   }
 
   Widget _buildDashboard() {

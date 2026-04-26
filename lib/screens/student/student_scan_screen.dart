@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import '../../widgets/main_scaffold.dart';
 import '../../services/api_service.dart';
 import '../../models/student_model.dart';
 
 enum _ScanState { idle, scanning, processing, success, error }
 
 class StudentScanScreen extends StatefulWidget {
-  const StudentScanScreen({super.key});
+  final bool isVisible;
+  const StudentScanScreen({super.key, this.isVisible = false});
 
   @override
   State<StudentScanScreen> createState() => _StudentScanScreenState();
@@ -57,6 +57,19 @@ class _StudentScanScreenState extends State<StudentScanScreen>
         CurvedAnimation(parent: _resultCtrl, curve: Curves.elasticOut);
 
     _loadStudentProfile();
+  }
+
+  @override
+  void didUpdateWidget(StudentScanScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Stop camera when tab becomes inactive, start when active
+    if (widget.isVisible != oldWidget.isVisible) {
+      if (widget.isVisible) {
+        _cameraController.start();
+      } else {
+        _cameraController.stop();
+      }
+    }
   }
 
   @override
@@ -174,32 +187,27 @@ class _StudentScanScreenState extends State<StudentScanScreen>
   // ── Build ────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return MainScaffold(
-      title: 'Scan QR Code',
-      currentIndex: 1,
-      isStudent: true,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final side = constraints.maxWidth * 0.68;
-          final frameTop = (constraints.maxHeight - side) / 2.2;
-          final scanWindow = Rect.fromLTWH(
-            (constraints.maxWidth - side) / 2,
-            frameTop,
-            side,
-            side,
-          );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final side = constraints.maxWidth * 0.68;
+        final frameTop = (constraints.maxHeight - side) / 2.2;
+        final scanWindow = Rect.fromLTWH(
+          (constraints.maxWidth - side) / 2,
+          frameTop,
+          side,
+          side,
+        );
 
-          return Stack(
-            children: [
-              _buildScannerView(scanWindow),
-              _buildOverlay(constraints, side, frameTop, scanWindow),
-              if (_scanState == _ScanState.success ||
-                  _scanState == _ScanState.error)
-                _buildResultOverlay(),
-            ],
-          );
-        },
-      ),
+        return Stack(
+          children: [
+            _buildScannerView(scanWindow),
+            _buildOverlay(constraints, side, frameTop, scanWindow),
+            if (_scanState == _ScanState.success ||
+                _scanState == _ScanState.error)
+              _buildResultOverlay(),
+          ],
+        );
+      },
     );
   }
 

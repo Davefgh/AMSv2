@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../models/session_model.dart';
 import 'dart:ui';
-import '../../widgets/main_scaffold.dart';
 import 'package:intl/intl.dart';
 import 'record_attendance_screen.dart';
 import '../../widgets/skeleton_loader.dart';
@@ -125,24 +124,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainScaffold(
-      title: 'Attendance Management',
-      currentIndex: 1,
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: _isLoading
-                ? const SkeletonSessionList()
-                : _errorMessage != null
-                    ? _buildErrorState()
-                    : RefreshIndicator(
-                        color: const Color(0xFF38BDF8),
-                        backgroundColor: const Color(0xFF1E293B),
-                        onRefresh: _loadData,
-                        child: _filteredSessions.isEmpty
-                            ? _buildEmptyState()
-                            : ListView.builder(
+    return Column(
+      children: [
+        _buildHeader(),
+        Expanded(
+          child: _isLoading
+              ? const SkeletonSessionList()
+              : _errorMessage != null
+                  ? _buildErrorState()
+                  : RefreshIndicator(
+                      color: const Color(0xFF38BDF8),
+                      backgroundColor: const Color(0xFF1E293B),
+                      onRefresh: _loadData,
+                      child: _filteredSessions.isEmpty
+                          ? _buildEmptyState()
+                          : ListView.builder(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 24, vertical: 12),
                                 physics: const BouncingScrollPhysics(
@@ -151,10 +147,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 itemBuilder: (context, index) =>
                                     _buildSessionCard(_filteredSessions[index]),
                               ),
-                      ),
-          ),
-        ],
-      ),
+                    ),
+        ),
+      ],
     );
   }
 

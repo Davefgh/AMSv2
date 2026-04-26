@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/api_service.dart';
 import '../../models/schedule_model.dart';
 import '../../models/user_profile.dart';
-import '../../widgets/main_scaffold.dart';
 import '../../utils/sizing_utils.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../providers/app_provider.dart';
@@ -116,15 +115,11 @@ class _TeacherSchedulesScreenState
 
   @override
   Widget build(BuildContext context) {
-    return MainScaffold(
-      title: 'My Classes',
-      currentIndex: 3,
-      body: _isLoading
-          ? const SkeletonDashboard()
-          : _errorMessage != null
-              ? _buildErrorState()
-              : _buildContent(),
-    );
+    return _isLoading
+        ? const SkeletonDashboard()
+        : _errorMessage != null
+            ? _buildErrorState()
+            : _buildContent();
   }
 
   Widget _buildContent() {
