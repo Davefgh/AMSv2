@@ -247,7 +247,7 @@ class CacheService {
     final allKeys = StorageService.getAllKeys();
 
     // Remove only cache keys (those with cache prefix)
-    final cacheKeys = allKeys.where((key) => key.startsWith(_cachePrefix));
+    final cacheKeys = allKeys.where((key) => key.startsWith(_cachePrefix)).toList();
     for (final key in cacheKeys) {
       await StorageService.remove(key);
     }
