@@ -6,6 +6,7 @@ import '../screens/teacher/attendance_screen.dart';
 import '../screens/teacher/session_dashboard_screen.dart';
 import '../screens/student/student_dashboard_screen.dart';
 import '../screens/student/student_scan_screen.dart';
+import '../screens/student/student_schedules_screen.dart';
 import '../screens/shared/profile/profile_screen.dart';
 import '../config/routes/app_routes.dart';
 import '../utils/responsive.dart';
@@ -47,7 +48,8 @@ class NavigationShell extends ConsumerWidget {
     final List<Widget> screens = isStudent
         ? [
             const StudentDashboardScreen(),
-            StudentScanScreen(isVisible: currentIndex == 1),
+            const StudentSchedulesScreen(),
+            StudentScanScreen(isVisible: currentIndex == 2),
             const ProfileScreen(),
           ]
         : const [
@@ -186,7 +188,7 @@ class NavigationShell extends ConsumerWidget {
       BuildContext context, bool isDark, int currentIndex, WidgetRef ref) {
     final textColor = isDark ? Colors.white : Colors.black;
     final titles = isStudent
-        ? ['Student Dashboard', 'Scan QR', 'Profile']
+        ? ['Student Dashboard', 'Schedules', 'Scan QR', 'Profile']
         : ['Instructor Dashboard', 'Attendance', 'Sessions', 'Profile'];
 
     return Padding(
@@ -434,6 +436,7 @@ class NavigationShell extends ConsumerWidget {
 
   List<_NavDestination> get _studentDestinations => const [
         _NavDestination(Icons.dashboard_rounded, 'Dashboard'),
+        _NavDestination(Icons.calendar_today_rounded, 'Schedules'),
         _NavDestination(Icons.qr_code_scanner_rounded, 'Scan'),
         _NavDestination(Icons.person_rounded, 'Profile'),
       ];
