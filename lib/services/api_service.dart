@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:uuid/uuid.dart';
 import '../utils/constants.dart';
 import '../utils/id_utils.dart';
 import 'storage_service.dart';
@@ -639,16 +638,16 @@ class ApiService {
 
   // --- QR Code Methods ---
 
-  Future<Map<String, dynamic>> generateQrCode(String sessionId) async {
+  Future<Map<String, dynamic>> generateQrCode(String sessionId, {int? expirationMinutes, int? maxUsage, String? qrHash}) async {
+    validateId(sessionId, 'Session');
     try {
-      final String uniqueId = const Uuid().v4();
       final response = await post('/api/QrCode/generate', {
-        'sessionId': sessionId,
-        'expirationMinutes': 60,
-        'maxUsage': null,
-        'uniqueHash': uniqueId,
+        'SessionId': sessionId,
+        'ExpirationMinutes': expirationMinutes ?? 15,
+        if (maxUsage != null) 'MaxUsage': maxUsage,
+        if (qrHash != null) 'UniqueHash': qrHash,
       });
-      return response as Map<String, dynamic>;
+      return response as Map<String, dynamic>? ?? {};
     } catch (e) {
       _logger.e('generateQrCode Error: $e');
       rethrow;
@@ -944,12 +943,38 @@ class ApiService {
     validateId(studentId, 'Student');
     try {
       final response = await post('/api/QrCode/scan', {
-        'qrHash': qrHash,
-        'studentId': studentId,
+        'QrHash': qrHash,
+        'StudentId': studentId,
       });
       return response as Map<String, dynamic>? ?? {};
     } catch (e) {
       _logger.e('scanQrCode Error: $e');
+      rethrow;
+    }
+  }
+
+
+  Future<Map<String, dynamic>?> getQrCodeBySession(String sessionId) async {
+    validateId(sessionId, 'Session');
+    try {
+      final response = await get('/api/QrCode/session/$sessionId');
+      if (response is List && response.isNotEmpty) {
+        return response[0] as Map<String, dynamic>;
+      }
+      return response as Map<String, dynamic>?;
+    } catch (e) {
+      if (e is ApiException && e.statusCode == 404) return null;
+      _logger.e('getQrCodeBySession Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> revokeQrCode(String sessionId) async {
+    validateId(sessionId, 'Session');
+    try {
+      await post('/api/QrCode/revoke', {'SessionId': sessionId});
+    } catch (e) {
+      _logger.e('revokeQrCode Error: $e');
       rethrow;
     }
   }
