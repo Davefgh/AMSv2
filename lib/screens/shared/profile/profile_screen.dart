@@ -363,11 +363,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Column(
         children: [
           if (profile is Instructor) ...[
-            _buildDetailTile(
-                Icons.person_outline_rounded, 'First Name', profile.firstname),
-            _buildDivider(),
-            _buildDetailTile(
-                Icons.person_outline_rounded, 'Last Name', profile.lastname),
+            _buildDetailTile(Icons.person_outline_rounded, 'Name',
+                '${profile.firstname} ${profile.lastname}'),
             _buildDivider(),
             _buildDetailTile(Icons.calendar_month_outlined, 'Member Since',
                 dateFormat.format(profile.createdAt)),
