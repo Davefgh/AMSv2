@@ -368,18 +368,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             _buildDivider(),
             _buildDetailTile(Icons.calendar_month_outlined, 'Member Since',
                 dateFormat.format(profile.createdAt)),
-            _buildDivider(),
-            _buildDetailTile(Icons.update_rounded, 'Last Updated',
-                dateFormat.format(profile.updatedAt)),
           ] else if (profile is UserProfile) ...[
             _buildDetailTile(
                 Icons.email_outlined, 'Email Address', profile.email),
             _buildDivider(),
             _buildDetailTile(Icons.calendar_month_outlined, 'Member Since',
                 dateFormat.format(profile.createdAt)),
-            _buildDivider(),
-            _buildDetailTile(Icons.update_rounded, 'Last Updated',
-                dateFormat.format(profile.updatedAt)),
           ],
         ],
       ),
