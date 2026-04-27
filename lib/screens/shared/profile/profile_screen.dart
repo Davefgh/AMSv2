@@ -221,6 +221,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         SizedBox(height: Sizing.h(24)),
         _buildDetailSection(profile),
         SizedBox(height: Sizing.h(24)),
+        _buildEditProfileButton(),
+        SizedBox(height: Sizing.h(16)),
         _buildLogoutButton(),
         SizedBox(height: Sizing.h(16)),
       ],
@@ -269,6 +271,67 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Icon(
                   Icons.chevron_right_rounded,
                   color: Colors.redAccent.withValues(alpha: 0.5),
+                  size: Sizing.sp(20),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditProfileButton() {
+    return _GlassCard(
+      padding: EdgeInsets.zero,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () async {
+            final result = await Navigator.pushNamed(
+              context,
+              '/edit-profile',
+            );
+            // Reload profile if edit was successful
+            if (result == true) {
+              _reloadProfile();
+            }
+          },
+          borderRadius: BorderRadius.circular(Sizing.r(24)),
+          splashColor: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+          highlightColor: const Color(0xFF38BDF8).withValues(alpha: 0.05),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: Sizing.w(20),
+              vertical: Sizing.h(18),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(Sizing.w(10)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(Sizing.r(12)),
+                  ),
+                  child: Icon(
+                    Icons.edit_rounded,
+                    color: const Color(0xFF38BDF8),
+                    size: Sizing.sp(20),
+                  ),
+                ),
+                SizedBox(width: Sizing.w(16)),
+                Text(
+                  'Edit Profile',
+                  style: TextStyle(
+                    color: const Color(0xFF38BDF8),
+                    fontSize: Sizing.sp(15),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
                   size: Sizing.sp(20),
                 ),
               ],
@@ -360,10 +423,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 dateFormat.format(profile.createdAt)),
           ] else if (profile is UserProfile) ...[
             _buildDetailTile(
-                Icons.person_outline_rounded, 'Name', profile.fullName),
+                Icons.person_outline_rounded, 'Username', profile.username),
             _buildDivider(),
+            if (profile.fullName.isNotEmpty) ...[
+              _buildDetailTile(
+                  Icons.badge_outlined, 'Full Name', profile.fullName),
+              _buildDivider(),
+            ],
             _buildDetailTile(
                 Icons.email_outlined, 'Email Address', profile.email),
+            if (profile.studentProfile != null) ...[
+              _buildDivider(),
+              _buildDetailTile(
+                Icons.school_outlined,
+                'Section',
+                profile.studentProfile!.sectionName,
+              ),
+              _buildDivider(),
+              _buildDetailTile(
+                Icons.book_outlined,
+                'Course',
+                profile.studentProfile!.courseName,
+              ),
+              _buildDivider(),
+              _buildDetailTile(
+                Icons.verified_user_outlined,
+                'Student Type',
+                profile.studentProfile!.isRegular ? 'Regular' : 'Irregular',
+              ),
+            ],
             _buildDivider(),
             _buildDetailTile(Icons.calendar_month_outlined, 'Member Since',
                 dateFormat.format(profile.createdAt)),
