@@ -664,6 +664,17 @@ class ApiService {
     }
   }
 
+  Future<List<dynamic>> getQrScanHistory(String qrId) async {
+    validateId(qrId, 'QR Code');
+    try {
+      final response = await get('/api/QrCode/$qrId/scan-history');
+      return response as List<dynamic>? ?? [];
+    } catch (e) {
+      _logger.e('getQrScanHistory Error: $e');
+      return [];
+    }
+  }
+
   Future<Map<String, dynamic>> getNotificationPreference() async {
     try {
       final response =
@@ -954,17 +965,16 @@ class ApiService {
   }
 
 
-  Future<Map<String, dynamic>?> getQrCodeBySession(String sessionId) async {
+  Future<List<dynamic>> getQrCodesBySession(String sessionId) async {
     validateId(sessionId, 'Session');
     try {
       final response = await get('/api/QrCode/session/$sessionId');
-      if (response is List && response.isNotEmpty) {
-        return response[0] as Map<String, dynamic>;
-      }
-      return response as Map<String, dynamic>?;
+      if (response is List) return response;
+      if (response is Map) return [response];
+      return [];
     } catch (e) {
-      if (e is ApiException && e.statusCode == 404) return null;
-      _logger.e('getQrCodeBySession Error: $e');
+      if (e is ApiException && e.statusCode == 404) return [];
+      _logger.e('getQrCodesBySession Error: $e');
       rethrow;
     }
   }

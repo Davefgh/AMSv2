@@ -854,12 +854,12 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   void _openDetails(ClassSession s) async {
     setState(() => _isLoading = true);
     try {
-      final qrData = await _apiService.getQrCodeBySession(s.id);
+      final qrList = await _apiService.getQrCodesBySession(s.id);
       setState(() => _isLoading = false);
 
       if (mounted) {
-        if (qrData != null) {
-          _showSessionQRDetailsModal(s, qrData);
+        if (qrList.isNotEmpty) {
+          _showQRListModal(s, qrList);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -878,6 +878,239 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         );
       }
     }
+  }
+
+  void _showQRListModal(ClassSession s, List<dynamic> qrCodes) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: surfaceColor,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('QR Codes for Session', 
+                          style: TextStyle(color: headerTextColor, fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('${s.subjectName} - ${s.sectionName}', 
+                          style: const TextStyle(color: subtitleTextColor, fontSize: 13)),
+                      ],
+                    ),
+                    IconButton(icon: const Icon(Icons.close, color: subtitleTextColor), onPressed: () => Navigator.pop(context)),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Text('${qrCodes.length} QR codes', style: const TextStyle(color: subtitleTextColor, fontSize: 14)),
+                const SizedBox(height: 16),
+                
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: qrCodes.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final qr = qrCodes[index];
+                      final hash = qr['qrHash'] ?? 'No Hash';
+                      final createdAt = _parseDateTime(qr['createdAt']);
+                      final expiresAt = _parseDateTime(qr['expiresAt']);
+                      final scanned = qr['scannedCount'] ?? 0;
+                      final limit = qr['usageLimit'];
+                      
+                      final isExpired = expiresAt.isBefore(DateTime.now());
+                      final diff = expiresAt.difference(DateTime.now());
+                      final expirationText = isExpired ? 'Expired' : 'Expires in ${diff.inMinutes}m';
+                      final statusColor = isExpired ? dangerRed : successGreen;
+                      final statusLabel = isExpired ? 'EXPIRED' : 'ACTIVE';
+
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.03),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: dividerColor),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text('QR #${hash.length > 8 ? hash.substring(0, 8) : hash}...', 
+                                    style: const TextStyle(color: headerTextColor, fontWeight: FontWeight.bold, fontSize: 15)),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: statusColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(statusLabel, style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            _buildQRListInfoRow(Icons.history, 'Created:', DateFormat('MMM d, y, hh:mm a').format(createdAt)),
+                            const SizedBox(height: 6),
+                            _buildQRListInfoRow(Icons.timer_outlined, 'Expiration:', expirationText),
+                            const SizedBox(height: 6),
+                            _buildQRListInfoRow(Icons.people_outline, 'Usage:', '$scanned / ${limit ?? 'Unlimited'}'),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _showSessionQRDetailsModal(s, qr);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isExpired ? Colors.white12 : const Color(0xFF4F46E5),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                                child: Text(isExpired ? 'View Details' : 'View QR Code', style: const TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close', style: TextStyle(color: subtitleTextColor, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showScanHistoryModal(String qrId) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return FutureBuilder<List<dynamic>>(
+          future: _apiService.getQrScanHistory(qrId),
+          builder: (context, snapshot) {
+            Widget content;
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              content = const Padding(
+                padding: EdgeInsets.all(40),
+                child: Center(child: CircularProgressIndicator(color: primaryBlue)),
+              );
+            } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+              content = Padding(
+                padding: const EdgeInsets.all(40),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.people_outline, size: 48, color: Colors.white.withValues(alpha: 0.1)),
+                    const SizedBox(height: 16),
+                    const Text('No scans recorded yet', style: TextStyle(color: subtitleTextColor)),
+                  ],
+                ),
+              );
+            } else {
+              final scans = snapshot.data!;
+              content = ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.all(20),
+                  itemCount: scans.length,
+                  separatorBuilder: (_, __) => const Divider(color: dividerColor, height: 24),
+                  itemBuilder: (context, index) {
+                    final scan = scans[index];
+                    final student = scan['student'] ?? {};
+                    final name = student['fullName'] ?? 'Unknown Student';
+                    final studentId = student['studentNumber'] ?? 'N/A';
+                    final scanTime = DateTime.parse(scan['scannedAt'] ?? DateTime.now().toIso8601String());
+
+                    return Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: primaryBlue.withValues(alpha: 0.1),
+                          child: Text(name.isNotEmpty ? name[0] : '?', 
+                              style: const TextStyle(color: primaryBlue, fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(name, style: const TextStyle(color: headerTextColor, fontWeight: FontWeight.bold)),
+                              Text('ID: $studentId', style: const TextStyle(color: subtitleTextColor, fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                        Text(DateFormat('hh:mm a').format(scanTime), 
+                            style: const TextStyle(color: subtitleTextColor, fontSize: 12)),
+                      ],
+                    );
+                  },
+                ),
+              );
+            }
+
+            return Dialog(
+              backgroundColor: surfaceColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Scan History', style: TextStyle(color: headerTextColor, fontSize: 18, fontWeight: FontWeight.bold)),
+                        IconButton(icon: const Icon(Icons.close, color: subtitleTextColor), onPressed: () => Navigator.pop(context)),
+                      ],
+                    ),
+                  ),
+                  content,
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: TextButton(onPressed: () => Navigator.pop(context), 
+                        child: const Text('Close', style: TextStyle(color: subtitleTextColor))),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildQRListInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, color: subtitleTextColor, size: 14),
+        const SizedBox(width: 8),
+        Text(label, style: const TextStyle(color: subtitleTextColor, fontSize: 12)),
+        const SizedBox(width: 4),
+        Text(value, style: const TextStyle(color: headerTextColor, fontSize: 12, fontWeight: FontWeight.w500)),
+      ],
+    );
   }
 
   void _showStartSessionDialog(ClassSession s) {
@@ -1298,6 +1531,20 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     );
   }
 
+  DateTime _parseDateTime(String? dateStr) {
+    if (dateStr == null) return DateTime.now();
+    try {
+      // If the string doesn't specify a timezone, assume it's UTC from the server
+      String formattedStr = dateStr;
+      if (!formattedStr.contains('Z') && !formattedStr.contains('+')) {
+        formattedStr += 'Z';
+      }
+      return DateTime.parse(formattedStr).toLocal();
+    } catch (e) {
+      return DateTime.now();
+    }
+  }
+
   Widget _buildErrorState() {
     return Center(
       child: Column(
@@ -1529,7 +1776,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
   void _showSessionQRDetailsModal(ClassSession s, Map<String, dynamic> qrData) {
     String qrHash = qrData['qrHash'] ?? '';
-    DateTime expiresAt = DateTime.parse(qrData['expiresAt'] ?? DateTime.now().add(const Duration(minutes: 30)).toIso8601String());
+    DateTime expiresAt = _parseDateTime(qrData['expiresAt']);
     int scannedCount = qrData['scannedCount'] ?? 0;
     int? limit = qrData['usageLimit'];
 
@@ -1598,28 +1845,31 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Scan Count Chip
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.03),
-                        borderRadius: BorderRadius.circular(40),
-                        border: Border.all(color: dividerColor),
-                      ),
-                      child: IntrinsicHeight(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.people_alt_outlined, color: subtitleTextColor, size: 20),
-                            const SizedBox(width: 12),
-                            Text('$scannedCount', style: const TextStyle(color: headerTextColor, fontSize: 18, fontWeight: FontWeight.bold)),
-                            const SizedBox(width: 6),
-                            const Text('SCANNED', style: TextStyle(color: subtitleTextColor, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                            const SizedBox(width: 16),
-                            const VerticalDivider(color: Colors.white24, thickness: 1, width: 1),
-                            const SizedBox(width: 16),
-                            Text(limit?.toString() ?? 'LIMIT', style: const TextStyle(color: subtitleTextColor, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                          ],
+                    InkWell(
+                      onTap: () => _showScanHistoryModal(qrData['id'] ?? ''),
+                      borderRadius: BorderRadius.circular(40),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.03),
+                          borderRadius: BorderRadius.circular(40),
+                          border: Border.all(color: dividerColor),
+                        ),
+                        child: IntrinsicHeight(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.people_alt_outlined, color: subtitleTextColor, size: 20),
+                              const SizedBox(width: 12),
+                              Text('$scannedCount', style: const TextStyle(color: headerTextColor, fontSize: 18, fontWeight: FontWeight.bold)),
+                              const SizedBox(width: 6),
+                              const Text('SCANNED', style: TextStyle(color: subtitleTextColor, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                              const SizedBox(width: 16),
+                              const VerticalDivider(color: Colors.white24, thickness: 1, width: 1),
+                              const SizedBox(width: 16),
+                              Text(limit?.toString() ?? 'LIMIT', style: const TextStyle(color: subtitleTextColor, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -1631,10 +1881,9 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     
                     const SizedBox(height: 32),
 
-                    // Actions
                     Row(
                       children: [
-                        _buildQRActionButton(Icons.fullscreen, 'Fullscreen', () {}),
+                        _buildQRActionButton(Icons.history, 'History', () => _showScanHistoryModal(qrData['id'] ?? '')),
                         const SizedBox(width: 8),
                         _buildQRActionButton(Icons.download, 'Download', () {}),
                         const SizedBox(width: 8),
