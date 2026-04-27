@@ -363,9 +363,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Column(
         children: [
           if (profile is Instructor) ...[
-            _buildDetailTile(Icons.perm_identity_rounded, 'Instructor ID',
-                profile.id.toString()),
-            _buildDivider(),
             _buildDetailTile(
                 Icons.person_outline_rounded, 'First Name', profile.firstname),
             _buildDivider(),
@@ -378,9 +375,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             _buildDetailTile(Icons.update_rounded, 'Last Updated',
                 dateFormat.format(profile.updatedAt)),
           ] else if (profile is UserProfile) ...[
-            _buildDetailTile(
-                Icons.perm_identity_rounded, 'User ID', profile.userId),
-            _buildDivider(),
             _buildDetailTile(
                 Icons.email_outlined, 'Email Address', profile.email),
             _buildDivider(),

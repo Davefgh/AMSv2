@@ -160,6 +160,9 @@ class _TeacherDashboardScreenState
             _buildHeader(isDark, textColor, secondaryTextColor),
             SizedBox(height: Sizing.h(24)),
             _buildStatsGrid(isDark, cardColor),
+            SizedBox(height: Sizing.h(16)),
+            _buildScheduleQuickAccessCard(
+                isDark, cardColor, textColor, secondaryTextColor),
             SizedBox(height: Sizing.h(24)),
             _buildTabLayout(isDark, cardColor, textColor, secondaryTextColor),
           ],
@@ -583,6 +586,82 @@ class _TeacherDashboardScreenState
                 fontWeight: FontWeight.w900,
                 letterSpacing: -0.5)),
       ],
+    );
+  }
+
+  Widget _buildScheduleQuickAccessCard(
+      bool isDark, Color cardColor, Color textColor, Color secondaryTextColor) {
+    return InkWell(
+      onTap: () {
+        Navigator.pushNamed(context, '/teacher-schedules');
+      },
+      borderRadius: BorderRadius.circular(Sizing.r(16)),
+      child: Container(
+        padding: EdgeInsets.all(Sizing.w(16)),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(Sizing.r(16)),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.black.withValues(alpha: 0.1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.2)
+                  : Colors.black.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(Sizing.w(12)),
+              decoration: BoxDecoration(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(Sizing.r(12)),
+              ),
+              child: Icon(
+                Icons.calendar_month_rounded,
+                color: const Color(0xFF38BDF8),
+                size: Sizing.sp(24),
+              ),
+            ),
+            SizedBox(width: Sizing.w(16)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'My Weekly Schedule',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: Sizing.sp(15),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: Sizing.h(4)),
+                  Text(
+                    'View all your classes and schedules',
+                    style: TextStyle(
+                      color: secondaryTextColor,
+                      fontSize: Sizing.sp(12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: secondaryTextColor,
+              size: Sizing.sp(16),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

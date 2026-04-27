@@ -4,7 +4,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../screens/teacher/teacher_dashboard_screen.dart';
 import '../screens/teacher/attendance_screen.dart';
 import '../screens/teacher/session_dashboard_screen.dart';
-import '../screens/teacher/teacher_schedules_screen.dart';
 import '../screens/student/student_dashboard_screen.dart';
 import '../screens/student/student_scan_screen.dart';
 import '../screens/shared/profile/profile_screen.dart';
@@ -53,7 +52,7 @@ class NavigationShell extends ConsumerWidget {
             TeacherDashboardScreen(),
             AttendanceScreen(),
             SessionDashboardScreen(),
-            TeacherSchedulesScreen(),
+            ProfileScreen(),
           ];
 
     return Scaffold(
@@ -186,7 +185,7 @@ class NavigationShell extends ConsumerWidget {
     final textColor = isDark ? Colors.white : Colors.black;
     final titles = isStudent
         ? ['Student Dashboard', 'Scan QR', 'Profile']
-        : ['Teacher Dashboard', 'Attendance', 'Sessions', 'Classes'];
+        : ['Teacher Dashboard', 'Attendance', 'Sessions', 'Profile'];
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -357,7 +356,7 @@ class NavigationShell extends ConsumerWidget {
         _NavDestination(Icons.home_rounded, 'Home'),
         _NavDestination(Icons.library_books_rounded, 'Attendance'),
         _NavDestination(Icons.qr_code_scanner_rounded, 'Sessions'),
-        _NavDestination(Icons.school_rounded, 'Classes'),
+        _NavDestination(Icons.person_rounded, 'Profile'),
       ];
 
   List<_NavDestination> get _studentDestinations => const [

@@ -110,6 +110,8 @@ class _MyAppState extends ConsumerState<MyApp> {
             AppRoutes.routes[AppRoutes.teacherProfileEdit]!(context),
         AppRoutes.teacherNotifications: (context) =>
             AppRoutes.routes[AppRoutes.teacherNotifications]!(context),
+        AppRoutes.teacherSchedules: (context) =>
+            AppRoutes.routes[AppRoutes.teacherSchedules]!(context),
         AppRoutes.studentFingerprint: (context) =>
             AppRoutes.routes[AppRoutes.studentFingerprint]!(context),
       },
