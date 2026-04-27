@@ -291,8 +291,8 @@ class _TeacherDashboardScreenState
           ? 4
           : (constraints.maxWidth > 640 ? 4 : 2);
       final aspectRatio = constraints.maxWidth > 1024
-          ? 1.0
-          : (constraints.maxWidth > 640 ? 1.1 : 1.0);
+          ? 2.0
+          : (constraints.maxWidth > 640 ? 2.2 : 1.8);
       return GridView.count(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -325,18 +325,18 @@ class _TeacherDashboardScreenState
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color,
-      bool isDark, Color cardColor,
-      {String? subtitle}) {
+      bool isDark, Color cardColor) {
     final textColor = isDark ? Colors.white : Colors.black;
     final secondaryTextColor = isDark
         ? Colors.white.withValues(alpha: 0.5)
         : Colors.black.withValues(alpha: 0.6);
 
     return Container(
-      padding: EdgeInsets.all(Sizing.w(16)), // Reduced from 20
+      padding: EdgeInsets.symmetric(
+          horizontal: Sizing.w(12), vertical: Sizing.h(10)),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(Sizing.r(24)),
+        borderRadius: BorderRadius.circular(Sizing.r(16)),
         border: Border.all(
           color: isDark
               ? Colors.white.withValues(alpha: 0.1)
@@ -352,54 +352,44 @@ class _TeacherDashboardScreenState
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(Sizing.w(8)), // Reduced from 10
+            padding: EdgeInsets.all(Sizing.w(8)),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(Sizing.r(10)),
             ),
-            child: Icon(icon,
-                color: color, size: Sizing.sp(18)), // Reduced from 20
+            child: Icon(icon, color: color, size: Sizing.sp(18)),
           ),
-          SizedBox(height: Sizing.h(12)), // Reduced from 16
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              style: TextStyle(
-                color: textColor,
-                fontSize: Sizing.sp(22), // Reduced from 24
-                fontWeight: FontWeight.bold,
-              ),
+          SizedBox(width: Sizing.w(10)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: secondaryTextColor,
+                    fontSize: Sizing.sp(11),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: Sizing.h(2)),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: Sizing.sp(18),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: Sizing.h(2)), // Reduced from 4
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: secondaryTextColor,
-              fontSize: Sizing.sp(11), // Reduced from 13
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          if (subtitle != null) ...[
-            SizedBox(height: Sizing.h(2)),
-            Text(
-              subtitle,
-              style: TextStyle(
-                color: color,
-                fontSize: Sizing.sp(9), // Reduced from 11
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
         ],
       ),
     );
