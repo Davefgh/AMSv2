@@ -361,10 +361,16 @@ class ApiService {
   Future<List<Enrollment>> getEnrollmentsByStudent(String studentId) async {
     validateId(studentId, 'Student');
     try {
+      _logger.i('Fetching enrollments for student: $studentId');
       final response = await get('/api/StudentEnrollment/student/$studentId');
+      _logger.i('Enrollment response type: ${response.runtimeType}');
+      _logger.i('Enrollment response: $response');
+      
       if (response is List) {
+        _logger.i('Response is a list with ${response.length} items');
         return response.map((e) => Enrollment.fromJson(e)).toList();
       }
+      _logger.w('Response is not a list, returning empty');
       return [];
     } catch (e) {
       _logger.e('getEnrollmentsByStudent Error: $e');

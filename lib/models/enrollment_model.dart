@@ -13,6 +13,7 @@ class Enrollment {
   final String? studentName;
   final String? sectionName;
   final String? subjectName;
+  final String? subjectCode;
 
   Enrollment({
     this.id = '',
@@ -25,6 +26,7 @@ class Enrollment {
     this.studentName,
     this.sectionName,
     this.subjectName,
+    this.subjectCode,
   });
 
   /// Returns true if this enrollment has a valid ID
@@ -50,6 +52,8 @@ class Enrollment {
           (json['section'] != null ? json['section']['name'] : null),
       subjectName: json['subjectName'] ??
           (json['subject'] != null ? json['subject']['name'] : null),
+      subjectCode: json['subjectCode'] ??
+          (json['subject'] != null ? json['subject']['code'] : null),
     );
   }
 
