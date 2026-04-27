@@ -9,7 +9,6 @@ import '../../../models/instructor_model.dart';
 import '../../../providers/app_provider.dart';
 import '../../../providers/notification_provider.dart';
 import '../../../services/notification_hub_service.dart';
-import '../../../utils/sizing_utils.dart';
 import '../../../utils/constants.dart';
 import '../../../widgets/skeleton_loader.dart';
 
@@ -36,24 +35,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Profile is now a first-class screen in indexedStack (no scaffold wrapper needed)
-    final content = FutureBuilder<dynamic>(
-      future: _profileFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SkeletonProfile();
-        } else if (snapshot.hasError) {
-          return _buildErrorState(snapshot.error.toString());
-        } else if (!snapshot.hasData) {
-          return _buildErrorState('No profile data found');
-        }
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F172A),
+      body: FutureBuilder<dynamic>(
+        future: _profileFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SkeletonProfile();
+          } else if (snapshot.hasError) {
+            return _buildErrorState(snapshot.error.toString());
+          } else if (!snapshot.hasData) {
+            return _buildErrorState('No profile data found');
+          }
 
-        final profileData = snapshot.data!;
-        return _buildProfileContent(profileData);
-      },
+          final profileData = snapshot.data!;
+          return _buildProfileContent(profileData);
+        },
+      ),
     );
-
-    return content;
   }
 
   void _reloadProfile() {
@@ -65,91 +64,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _logout() async {
-    final confirmed = await showModalBottomSheet<bool>(
+    final confirmed = await showDialog<bool>(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => Container(
-        padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 32,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Log Out',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1,
+        content: const Text(
+          'Are you sure you want to log out?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
           ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
-              'Log Out',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Are you sure you want to log out of your account?',
-              style: TextStyle(color: Colors.white70, fontSize: 16),
-            ),
-            const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx, false),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white70,
-                      side: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.2)),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text('Cancel', style: TextStyle(fontSize: 16)),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(ctx, true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child:
-                        const Text('Log Out', style: TextStyle(fontSize: 16)),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+            child: const Text('Log Out'),
+          ),
+        ],
       ),
     );
 
@@ -170,40 +113,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildErrorState(String error) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(Sizing.w(24.0)),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline_rounded,
-                color: Colors.redAccent, size: Sizing.sp(64)),
-            SizedBox(height: Sizing.h(16)),
-            Text(
+            const Icon(Icons.error_outline, color: Colors.redAccent, size: 64),
+            const SizedBox(height: 16),
+            const Text(
               'Failed to load profile',
               style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  fontSize: Sizing.sp(18),
-                  fontWeight: FontWeight.bold),
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            SizedBox(height: Sizing.h(8)),
+            const SizedBox(height: 8),
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: Sizing.sp(14)),
+              style: const TextStyle(color: Colors.white60, fontSize: 14),
             ),
-            SizedBox(height: Sizing.h(24)),
-            ElevatedButton(
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
               onPressed: _reloadProfile,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(
-                    horizontal: Sizing.w(32), vertical: Sizing.h(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(Sizing.r(12))),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: const Text('Try Again'),
             ),
           ],
         ),
@@ -212,272 +153,234 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildProfileContent(dynamic profile) {
+    String username;
+    String fullName;
+    String email;
+    String roleName;
+    DateTime createdAt;
+
+    if (profile is Instructor) {
+      username = profile.fullName;
+      fullName = profile.fullName;
+      email = '';
+      roleName = 'Instructor';
+      createdAt = profile.createdAt;
+    } else if (profile is UserProfile) {
+      username = profile.username;
+      fullName = profile.fullName;
+      email = profile.email;
+      roleName = profile.role.toUpperCase();
+      createdAt = profile.createdAt;
+    } else {
+      username = 'Unknown User';
+      fullName = 'Unknown User';
+      email = '';
+      roleName = 'N/A';
+      createdAt = DateTime.now();
+    }
+
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.symmetric(
-          horizontal: Sizing.w(24), vertical: Sizing.h(12)),
+      padding: EdgeInsets.zero,
       children: [
-        _buildUserCard(profile),
-        SizedBox(height: Sizing.h(24)),
-        _buildDetailSection(profile),
-        SizedBox(height: Sizing.h(24)),
-        _buildEditProfileButton(),
-        SizedBox(height: Sizing.h(16)),
-        _buildLogoutButton(),
-        SizedBox(height: Sizing.h(16)),
+        // Header with Avatar
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF1E293B),
+                const Color(0xFF38BDF8).withValues(alpha: 0.2),
+              ],
+            ),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
+          child: Column(
+            children: [
+              // Avatar
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFF38BDF8),
+                    width: 3,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundColor: const Color(0xFF0F172A),
+                  backgroundImage: NetworkImage(
+                    'https://ui-avatars.com/api/?name=${Uri.encodeComponent(fullName.isNotEmpty ? fullName : username)}&background=38BDF8&color=0F172A&size=150',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Name
+              Text(
+                fullName.isNotEmpty ? fullName : username,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Role Badge
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+                  ),
+                ),
+                child: Text(
+                  roleName,
+                  style: const TextStyle(
+                    color: Color(0xFF38BDF8),
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Content
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile Information Card
+              _buildInfoCard(profile, username, email, createdAt),
+              const SizedBox(height: 16),
+              
+              // Actions
+              _buildActionButton(
+                icon: Icons.edit_rounded,
+                label: 'Edit Profile',
+                color: const Color(0xFF38BDF8),
+                onTap: () async {
+                  final result = await Navigator.pushNamed(
+                    context,
+                    '/edit-profile',
+                  );
+                  if (result == true) {
+                    _reloadProfile();
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildActionButton(
+                icon: Icons.logout_rounded,
+                label: 'Log Out',
+                color: Colors.redAccent,
+                onTap: _logout,
+              ),
+              const SizedBox(height: 80), // Extra padding for bottom nav
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildLogoutButton() {
-    return _GlassCard(
-      padding: EdgeInsets.zero,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _logout,
-          borderRadius: BorderRadius.circular(Sizing.r(24)),
-          splashColor: Colors.redAccent.withValues(alpha: 0.1),
-          highlightColor: Colors.redAccent.withValues(alpha: 0.05),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: Sizing.w(20),
-              vertical: Sizing.h(18),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(Sizing.w(10)),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(Sizing.r(12)),
-                  ),
-                  child: Icon(
-                    Icons.logout_rounded,
-                    color: Colors.redAccent,
-                    size: Sizing.sp(20),
-                  ),
-                ),
-                SizedBox(width: Sizing.w(16)),
-                Text(
-                  'Log Out',
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                    fontSize: Sizing.sp(15),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: Colors.redAccent.withValues(alpha: 0.5),
-                  size: Sizing.sp(20),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEditProfileButton() {
-    return _GlassCard(
-      padding: EdgeInsets.zero,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () async {
-            final result = await Navigator.pushNamed(
-              context,
-              '/edit-profile',
-            );
-            // Reload profile if edit was successful
-            if (result == true) {
-              _reloadProfile();
-            }
-          },
-          borderRadius: BorderRadius.circular(Sizing.r(24)),
-          splashColor: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-          highlightColor: const Color(0xFF38BDF8).withValues(alpha: 0.05),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: Sizing.w(20),
-              vertical: Sizing.h(18),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(Sizing.w(10)),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(Sizing.r(12)),
-                  ),
-                  child: Icon(
-                    Icons.edit_rounded,
-                    color: const Color(0xFF38BDF8),
-                    size: Sizing.sp(20),
-                  ),
-                ),
-                SizedBox(width: Sizing.w(16)),
-                Text(
-                  'Edit Profile',
-                  style: TextStyle(
-                    color: const Color(0xFF38BDF8),
-                    fontSize: Sizing.sp(15),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
-                  size: Sizing.sp(20),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUserCard(dynamic profile) {
-    String username;
-    String roleName;
-
-    if (profile is Instructor) {
-      username = profile.fullName;
-      roleName = 'Instructor';
-    } else if (profile is UserProfile) {
-      username = profile.username;
-      roleName = profile.role.toUpperCase();
-    } else {
-      username = 'Unknown User';
-      roleName = 'N/A';
-    }
-
-    return _GlassCard(
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(Sizing.w(4)),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF38BDF8), width: 2),
-            ),
-            child: CircleAvatar(
-              radius: Sizing.r(50),
-              backgroundColor: const Color(0xFF1E293B),
-              backgroundImage: NetworkImage(profile is Instructor
-                  ? 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(profile.fullName)}&background=38BDF8&color=0F172A&size=150'
-                  : 'https://ui-avatars.com/api/?name=${Uri.encodeComponent((profile as UserProfile).username)}&background=34D399&color=0F172A&size=150'),
-            ),
-          ),
-          SizedBox(height: Sizing.h(16)),
-          Text(
-            username,
-            style: TextStyle(
-              fontSize: Sizing.sp(24),
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: Sizing.h(4)),
-          Container(
-            padding: EdgeInsets.symmetric(
-                horizontal: Sizing.w(12), vertical: Sizing.h(4)),
-            decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(Sizing.r(20)),
-              border: Border.all(
-                  color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
-            ),
-            child: Text(
-              roleName,
-              style: TextStyle(
-                color: const Color(0xFF38BDF8),
-                fontSize: Sizing.sp(12),
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailSection(dynamic profile) {
+  Widget _buildInfoCard(
+    dynamic profile,
+    String username,
+    String email,
+    DateTime createdAt,
+  ) {
     final dateFormat = DateFormat('MMMM dd, yyyy');
-
-    return _GlassCard(
-      padding: EdgeInsets.zero,
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+        ),
+      ),
       child: Column(
         children: [
-          if (profile is Instructor) ...[
-            _buildDetailTile(Icons.person_outline_rounded, 'Name',
-                '${profile.firstname} ${profile.lastname}'),
-            _buildDivider(),
-            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since',
-                dateFormat.format(profile.createdAt)),
-          ] else if (profile is UserProfile) ...[
-            _buildDetailTile(
-                Icons.person_outline_rounded, 'Username', profile.username),
-            _buildDivider(),
-            if (profile.fullName.isNotEmpty) ...[
-              _buildDetailTile(
-                  Icons.badge_outlined, 'Full Name', profile.fullName),
+          if (profile is UserProfile) ...[
+            _buildInfoTile(
+              icon: Icons.person_outline,
+              label: 'Username',
+              value: username,
+            ),
+            if (email.isNotEmpty) ...[
               _buildDivider(),
+              _buildInfoTile(
+                icon: Icons.email_outlined,
+                label: 'Email',
+                value: email,
+              ),
             ],
-            _buildDetailTile(
-                Icons.email_outlined, 'Email Address', profile.email),
             if (profile.studentProfile != null) ...[
               _buildDivider(),
-              _buildDetailTile(
-                Icons.school_outlined,
-                'Section',
-                profile.studentProfile!.sectionName,
+              _buildInfoTile(
+                icon: Icons.school_outlined,
+                label: 'Section',
+                value: profile.studentProfile!.sectionName,
               ),
               _buildDivider(),
-              _buildDetailTile(
-                Icons.book_outlined,
-                'Course',
-                profile.studentProfile!.courseName,
+              _buildInfoTile(
+                icon: Icons.book_outlined,
+                label: 'Course',
+                value: profile.studentProfile!.courseName,
               ),
               _buildDivider(),
-              _buildDetailTile(
-                Icons.verified_user_outlined,
-                'Student Type',
-                profile.studentProfile!.isRegular ? 'Regular' : 'Irregular',
+              _buildInfoTile(
+                icon: Icons.verified_user_outlined,
+                label: 'Type',
+                value: profile.studentProfile!.isRegular ? 'Regular' : 'Irregular',
               ),
             ],
-            _buildDivider(),
-            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since',
-                dateFormat.format(profile.createdAt)),
           ],
+          _buildDivider(),
+          _buildInfoTile(
+            icon: Icons.calendar_today_outlined,
+            label: 'Member Since',
+            value: dateFormat.format(createdAt),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDetailTile(IconData icon, String label, String value) {
+  Widget _buildInfoTile({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-          horizontal: Sizing.w(20), vertical: Sizing.h(16)),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(Sizing.w(10)),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(Sizing.r(12)),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon,
-                color: Colors.white.withValues(alpha: 0.7),
-                size: Sizing.sp(20)),
+            child: Icon(
+              icon,
+              color: const Color(0xFF38BDF8),
+              size: 20,
+            ),
           ),
-          SizedBox(width: Sizing.w(16)),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,16 +388,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Text(
                   label,
                   style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: Sizing.sp(13)),
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 12,
+                  ),
                 ),
-                SizedBox(height: Sizing.h(2)),
+                const SizedBox(height: 2),
                 Text(
                   value,
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: Sizing.sp(15),
-                      fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -504,39 +409,64 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildDivider() {
-    return Divider(height: 1, color: Colors.white.withValues(alpha: 0.05));
-  }
-}
-
-class _GlassCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-
-  const _GlassCard({
-    required this.child,
-    this.padding = const EdgeInsets.all(24),
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(Sizing.r(24)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: padding,
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(Sizing.r(24)),
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.1),
-              width: 1.0,
             ),
           ),
-          child: child,
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: color.withValues(alpha: 0.5),
+                size: 20,
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: Colors.white.withValues(alpha: 0.05),
     );
   }
 }
