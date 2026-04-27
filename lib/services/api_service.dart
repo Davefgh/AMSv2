@@ -66,6 +66,71 @@ class ApiService {
     }
   }
 
+  Future<List<Student>> getStudentsBySchedule(String scheduleId) async {
+    validateId(scheduleId, 'Schedule');
+    try {
+      // Try the API endpoint first
+      try {
+        _logger.i('Trying /api/schedules/$scheduleId/students');
+        final response = await get('/api/schedules/$scheduleId/students');
+        if (response is List) {
+          _logger.i('Got ${response.length} students from schedule endpoint');
+          return response
+              .map((s) => Student.fromJson(s as Map<String, dynamic>))
+              .toList();
+        }
+      } catch (e) {
+        _logger.w('getStudentsBySchedule API endpoint not available: $e');
+      }
+
+      // Fallback: Get schedule, then get students by section
+      _logger.i('Fetching schedule details');
+      final schedule = await getSchedule(scheduleId);
+      _logger.i('Schedule sectionId: ${schedule.sectionId}, subjectId: ${schedule.subjectId}');
+      
+      if (schedule.sectionId != null && schedule.sectionId!.isNotEmpty) {
+        _logger.i('Getting students by sectionId: ${schedule.sectionId}');
+        final students = await getStudentsBySection(schedule.sectionId!);
+        _logger.i('Got ${students.length} students from section');
+        return students;
+      }
+
+      _logger.w('Schedule has no sectionId');
+      return [];
+    } catch (e) {
+      _logger.e('getStudentsBySchedule Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Student>> getStudentsBySession(String sessionId) async {
+    validateId(sessionId, 'Session');
+    try {
+      // Try the direct API endpoint first
+      try {
+        _logger.i('Trying /api/sessions/$sessionId/students');
+        final response = await get('/api/sessions/$sessionId/students');
+        if (response is List) {
+          _logger.i('Got ${response.length} students from session endpoint');
+          return response
+              .map((s) => Student.fromJson(s as Map<String, dynamic>))
+              .toList();
+        }
+      } catch (e) {
+        _logger.w('getStudentsBySession API endpoint not available: $e');
+      }
+
+      // Fallback: Get session, then use schedule to get students
+      _logger.i('Fetching session details to get schedule');
+      final session = await getSessionById(sessionId);
+      _logger.i('Session scheduleId: ${session.scheduleId}, sectionId: ${session.sectionId}, subjectId: ${session.subjectId}');
+      return await getStudentsBySchedule(session.scheduleId);
+    } catch (e) {
+      _logger.e('getStudentsBySession Error: $e');
+      rethrow;
+    }
+  }
+
   Future<Section> createSection(Map<String, dynamic> data) async {
     try {
       final response = await post('/api/sections', data);
