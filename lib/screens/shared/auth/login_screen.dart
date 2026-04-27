@@ -22,43 +22,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isPasswordVisible = false;
   bool _isLoading = false;
   String? _errorMessage;
-  bool _isTestingConnection = false;
 
   @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  Future<void> _testConnection() async {
-    setState(() {
-      _isTestingConnection = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final health = await ApiService().getHealth();
-      setState(() {
-        _errorMessage = 'Connection successful! Server status: ${health.status}';
-      });
-    } catch (e) {
-      setState(() {
-        if (e is ApiException) {
-          _errorMessage =
-              'Connection test failed (${e.statusCode}): ${e.message}\nURL: ${AppConstants.apiBaseUrl}/api/health';
-        } else {
-          _errorMessage =
-              'Connection test failed: $e\nURL: ${AppConstants.apiBaseUrl}';
-        }
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isTestingConnection = false;
-        });
-      }
-    }
   }
 
   Future<void> _handleLogin() async {
@@ -270,9 +239,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 const SizedBox(height: 32),
                                 // Login Button
                                 _buildLoginButton(),
-                                const SizedBox(height: 16),
-                                // Test Connection Button
-                                _buildTestConnectionButton(),
                               ],
                             ),
                           ),
@@ -500,42 +466,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTestConnectionButton() {
-    return TextButton(
-      onPressed: _isTestingConnection ? null : _testConnection,
-      style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-      ),
-      child: _isTestingConnection
-          ? const SizedBox(
-              height: 16,
-              width: 16,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.wifi_find,
-                  color: Colors.white.withValues(alpha: 0.8),
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Test API Connection',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
     );
   }
 }
