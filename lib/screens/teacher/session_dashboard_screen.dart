@@ -603,22 +603,26 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      _buildInfoItem(
-                          Icons.calendar_today,
-                          DateFormat('MMM d')
-                              .format(s.sessionDate ?? DateTime.now())),
-                      const SizedBox(width: 16),
-                      _buildInfoItem(Icons.door_front_door_outlined,
-                          s.actualRoomName ?? s.scheduledRoomName),
-                      const SizedBox(width: 16),
-                      _buildInfoItem(
-                          Icons.access_time,
-                          s.actualStartTime != null
-                              ? DateFormat('h:mm a').format(s.actualStartTime!)
-                              : _formatTime(s.scheduledTimeIn)),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildInfoItem(
+                            Icons.calendar_today,
+                            DateFormat('MMM d')
+                                .format(s.sessionDate ?? DateTime.now())),
+                        const SizedBox(width: 16),
+                        _buildInfoItem(Icons.door_front_door_outlined,
+                            s.actualRoomName ?? s.scheduledRoomName),
+                        const SizedBox(width: 16),
+                        _buildInfoItem(
+                            Icons.access_time,
+                            s.actualStartTime != null
+                                ? DateFormat('h:mm a')
+                                    .format(s.actualStartTime!)
+                                : _formatTime(s.scheduledTimeIn)),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Text(
