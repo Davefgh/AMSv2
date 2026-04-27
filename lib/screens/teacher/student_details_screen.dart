@@ -7,6 +7,7 @@ import '../../models/enrollment_model.dart';
 import '../../models/attendance_model.dart';
 import '../../widgets/main_scaffold.dart';
 import '../../widgets/skeleton_loader.dart';
+import '../../widgets/fingerprint_enrollment_modal.dart';
 import '../../utils/sizing_utils.dart';
 import '../../providers/app_provider.dart';
 
@@ -354,7 +355,16 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
           // Enroll Button
           ElevatedButton.icon(
             onPressed: () {
-              // TODO: Navigate to fingerprint enrollment
+              showDialog(
+                context: context,
+                builder: (context) => FingerprintEnrollmentModal(
+                  student: _student!,
+                  onEnrollmentComplete: () {
+                    // Refresh the screen to show updated fingerprint status
+                    _loadData();
+                  },
+                ),
+              );
             },
             icon: Icon(Icons.add, size: Sizing.sp(16)),
             label: Text(

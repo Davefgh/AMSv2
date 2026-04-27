@@ -20,6 +20,7 @@ import '../models/health_status.dart';
 import '../models/attendance_model.dart';
 import '../models/session_model.dart';
 import '../models/fingerprint_model.dart';
+import '../models/device_model.dart';
 import '../main.dart' show navigatorKey;
 
 class ApiException implements Exception {
@@ -1062,6 +1063,21 @@ class ApiService {
   }
 
   // --- Fingerprint APIs ---
+
+  /// GET /api/Fingerprint/devices
+  /// Gets all available fingerprint devices
+  Future<List<FingerprintDevice>> getFingerprintDevices() async {
+    try {
+      final response = await get('/api/Fingerprint/devices');
+      if (response is List) {
+        return response.map((d) => FingerprintDevice.fromJson(d)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getFingerprintDevices Error: $e');
+      rethrow;
+    }
+  }
 
   /// POST /api/Fingerprint/enrollment-sessions
   /// Creates an enrollment session for a student on a device.
