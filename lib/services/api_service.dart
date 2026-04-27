@@ -880,8 +880,8 @@ class ApiService {
     validateId(id, 'Session');
     try {
       await patch('/api/sessions/$id/room', {
-        'actualRoomId': actualRoomId,
-        'rowVersion': rowVersion,
+        'ActualRoomId': actualRoomId,
+        'RowVersion': rowVersion,
       });
     } catch (e) {
       _logger.e('updateSessionRoom Error: $e');

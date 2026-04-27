@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../services/api_service.dart';
+import '../../models/classroom_model.dart';
 import '../../models/schedule_model.dart';
 import '../../models/session_model.dart';
 import '../../widgets/skeleton_loader.dart';
@@ -1491,42 +1492,410 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     );
   }
 
-  void _showLocationDialog(ClassSession s) {
+  void _showLocationDialog(ClassSession s) async {
+    String? selectedRoomId;
+    List<Classroom> rooms = [];
+    bool modalLoading = true;
+    bool isUpdating = false;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: const [
-            Icon(Icons.location_on_outlined, color: primaryBlue),
-            SizedBox(width: 12),
-            Text('Session Location', style: TextStyle(color: Colors.white)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Current Location:',
-                style: TextStyle(color: subtitleTextColor, fontSize: 13)),
-            const SizedBox(height: 8),
-            Text(s.actualRoomName ?? s.scheduledRoomName,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18)),
-            const SizedBox(height: 16),
-            const Text(
-                'To change the location, you must use the start session configuration or end this session and start a new one.',
-                style: TextStyle(color: Colors.white38, fontSize: 11)),
-          ],
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close', style: TextStyle(color: primaryBlue))),
-        ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          if (rooms.isEmpty && modalLoading) {
+            _apiService.getClassrooms().then((value) {
+              if (mounted) {
+                setModalState(() {
+                  rooms = value;
+                  modalLoading = false;
+                });
+              }
+            });
+          }
+
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 40,
+                    offset: const Offset(0, 16),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header strip
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(20, 18, 12, 18),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.06)),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: primaryBlue.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.swap_horiz_rounded,
+                              color: primaryBlue, size: 18),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text('Change Session Room',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.3)),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close,
+                              color: Colors.white.withValues(alpha: 0.4),
+                              size: 18),
+                          onPressed: () => Navigator.pop(context),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Meta info card
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.03),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.07)),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Course',
+                                      style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.45),
+                                          fontSize: 12)),
+                                  Flexible(
+                                    child: Text(
+                                      '${s.subjectCode} · ${s.subjectName}',
+                                      textAlign: TextAlign.end,
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                child: Divider(
+                                    color: Colors.white.withValues(alpha: 0.06),
+                                    height: 1),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Date',
+                                      style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.45),
+                                          fontSize: 12)),
+                                  Text(
+                                      DateFormat('EEE, MMM d, y')
+                                          .format(DateTime.now()),
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Current Room amber badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 11),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: [
+                              const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                              const Color(0xFFF59E0B).withValues(alpha: 0.06),
+                            ]),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: const Color(0xFFF59E0B)
+                                    .withValues(alpha: 0.28)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.meeting_room_rounded,
+                                  color: Color(0xFFFBBF24), size: 15),
+                              const SizedBox(width: 8),
+                              const Text('Current Room',
+                                  style: TextStyle(
+                                      color: Color(0xFFFBBF24), fontSize: 12)),
+                              const Spacer(),
+                              Text(s.actualRoomName ?? s.scheduledRoomName,
+                                  style: const TextStyle(
+                                      color: Color(0xFFFBBF24),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13)),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        // New Room label
+                        Row(
+                          children: [
+                            const Text('New Room',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600)),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: dangerRed.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text('Required',
+                                  style: TextStyle(
+                                      color: dangerRed,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Dropdown
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            border: Border.all(
+                                color: selectedRoomId != null
+                                    ? primaryBlue.withValues(alpha: 0.5)
+                                    : Colors.white.withValues(alpha: 0.1)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: modalLoading
+                              ? const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 14),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                          height: 15,
+                                          width: 15,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: primaryBlue)),
+                                      SizedBox(width: 10),
+                                      Text('Loading rooms...',
+                                          style: TextStyle(
+                                              color: Colors.white38,
+                                              fontSize: 13)),
+                                    ],
+                                  ),
+                                )
+                              : DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: selectedRoomId,
+                                    isExpanded: true,
+                                    hint: const Text('Select a classroom',
+                                        style: TextStyle(
+                                            color: Colors.white38,
+                                            fontSize: 14)),
+                                    dropdownColor: const Color(0xFF1E293B),
+                                    icon: const Icon(Icons.keyboard_arrow_down,
+                                        color: Colors.white38),
+                                    items: rooms.map((r) {
+                                      return DropdownMenuItem<String>(
+                                        value: r.id,
+                                        child: Text(r.name,
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14)),
+                                      );
+                                    }).toList(),
+                                    onChanged: (val) => setModalState(
+                                        () => selectedRoomId = val),
+                                  ),
+                                ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text('Select the new room for this active session',
+                            style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.35),
+                                fontSize: 11)),
+
+                        const SizedBox(height: 16),
+
+                        // Info callout
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: [
+                              primaryBlue.withValues(alpha: 0.12),
+                              primaryBlue.withValues(alpha: 0.05),
+                            ]),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: primaryBlue.withValues(alpha: 0.2)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.info_outline_rounded,
+                                  color: Color(0xFF60A5FA), size: 15),
+                              const SizedBox(width: 10),
+                              const Expanded(
+                                child: Text(
+                                    'The room will update immediately. Students will see the new location in their app.',
+                                    style: TextStyle(
+                                        color: Color(0xFF93C5FD),
+                                        fontSize: 12,
+                                        height: 1.5)),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 22),
+
+                        // Buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: ElevatedButton(
+                                onPressed:
+                                    (selectedRoomId == null || isUpdating)
+                                        ? null
+                                        : () async {
+                                            setModalState(
+                                                () => isUpdating = true);
+                                            try {
+                                              await _apiService
+                                                  .updateSessionRoom(s.id,
+                                                      actualRoomId:
+                                                          selectedRoomId!,
+                                                      rowVersion:
+                                                          s.rowVersion ?? '');
+                                              if (mounted) {
+                                                Navigator.pop(context);
+                                                _loadData();
+                                              }
+                                            } catch (e) {
+                                              setModalState(
+                                                  () => isUpdating = false);
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(SnackBar(
+                                                      content:
+                                                          Text(e.toString())));
+                                            }
+                                          },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: primaryBlue,
+                                  foregroundColor: Colors.white,
+                                  disabledBackgroundColor:
+                                      Colors.white.withValues(alpha: 0.06),
+                                  disabledForegroundColor:
+                                      Colors.white.withValues(alpha: 0.2),
+                                  elevation: 0,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: isUpdating
+                                    ? const SizedBox(
+                                        height: 16,
+                                        width: 16,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white))
+                                    : const Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.location_on_rounded,
+                                              size: 16),
+                                          SizedBox(width: 8),
+                                          Text('Update Room',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14)),
+                                        ],
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              flex: 2,
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.pop(context),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.12)),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: Text('Cancel',
+                                    style: TextStyle(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.6),
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
