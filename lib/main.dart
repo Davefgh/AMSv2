@@ -103,10 +103,12 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
         _startNotificationHub();
         break;
       case AppLifecycleState.paused:
-      case AppLifecycleState.inactive:
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
         NotificationHubService().stop();
+        break;
+      case AppLifecycleState.inactive:
+        // Transient state (calls, notifications, biometric prompts) - do not disconnect
         break;
     }
   }

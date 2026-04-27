@@ -280,25 +280,6 @@ class NavigationShell extends ConsumerWidget {
                     );
                   },
                 ),
-                const SizedBox(width: 4),
-                IconButton(
-                  onPressed: () {
-                    // Navigate to profile tab
-                    ref.read(navigationIndexProvider.notifier).setIndex(2);
-                  },
-                  icon: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: textColor.withValues(alpha: 0.24), width: 1),
-                    ),
-                    child:
-                        Icon(Icons.person_rounded, color: textColor, size: 20),
-                  ),
-                  splashRadius: 20,
-                ),
-                const SizedBox(width: 12),
               ],
             ),
           // Add notification icon for teachers

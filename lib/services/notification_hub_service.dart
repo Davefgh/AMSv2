@@ -69,6 +69,9 @@ class NotificationHubService {
   Future<void> start() async {
     if (_isConnecting || isConnected) return;
 
+    _reconnectAttempts =
+        0; // Reset counter at start to allow retries after stop/resume
+
     final tokenFactory = createAccessTokenFactory(
       refreshToken: ApiService().tryRefreshToken,
     );
@@ -119,7 +122,6 @@ class NotificationHubService {
       });
 
       await _hubConnection!.start();
-      _reconnectAttempts = 0;
       _logger.i('SignalR connection started successfully');
     } catch (e) {
       _logger.e('Failed to start SignalR connection: $e');
