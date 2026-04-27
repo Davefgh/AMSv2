@@ -677,10 +677,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isInitialLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0F172A),
-        body: SkeletonSessionList(),
-      );
+      return const SkeletonSessionDetails();
     }
 
     final isActive =

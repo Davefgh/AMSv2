@@ -334,3 +334,181 @@ class SkeletonSessionList extends StatelessWidget {
     );
   }
 }
+
+/// Skeleton that mirrors the redesigned SessionDetailsScreen layout.
+class SkeletonSessionDetails extends StatelessWidget {
+  const SkeletonSessionDetails({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F172A),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── AppBar skeleton
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: Row(
+                children: [
+                  // Back button
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const Spacer(),
+                  // Title
+                  const SkeletonBox(width: 110, height: 13, radius: 6),
+                  const Spacer(),
+                  // Status pill
+                  const SkeletonBox(width: 56, height: 20, radius: 8),
+                ],
+              ),
+            ),
+
+            // ── Scrollable body
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Section label
+                    const SkeletonBox(width: 80, height: 10, radius: 4),
+                    const SizedBox(height: 6),
+                    // Subject name
+                    const SkeletonBox(width: 220, height: 19, radius: 6),
+                    const SizedBox(height: 18),
+
+                    // ── Info card
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.07)),
+                      ),
+                      child: Column(
+                        children: [
+                          _skeletonInfoRow(),
+                          _skeletonDivider(),
+                          _skeletonInfoRow(labelWidth: 140),
+                          _skeletonDivider(),
+                          _skeletonInfoRow(labelWidth: 100),
+                          _skeletonDivider(),
+                          _skeletonInfoRow(labelWidth: 80),
+                          _skeletonDivider(),
+                          _skeletonInfoRow(labelWidth: 160),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // ── QR section header
+                    Row(
+                      children: [
+                        const SkeletonBox(width: 60, height: 10, radius: 4),
+                        const SizedBox(width: 8),
+                        const SkeletonBox(width: 20, height: 16, radius: 5),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    // ── QR entry cards
+                    _skeletonQrCard(),
+                    const SizedBox(height: 8),
+                    _skeletonQrCard(),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Bottom action bar skeleton
+            Container(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 12,
+                bottom: MediaQuery.of(context).padding.bottom + 12,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                border: Border(
+                    top: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.06))),
+              ),
+              child: const SkeletonBox(height: 46, radius: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// One compact info row: 32×32 icon square + two stacked lines.
+  static Widget _skeletonInfoRow({double labelWidth = 120}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          const SkeletonBox(width: 32, height: 32, radius: 8),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SkeletonBox(width: labelWidth, height: 13, radius: 5),
+              const SizedBox(height: 4),
+              const SkeletonBox(width: 70, height: 10, radius: 4),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Hairline divider aligned to the text column (not the icon).
+  static Widget _skeletonDivider() {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      indent: 58,
+      color: Colors.white.withValues(alpha: 0.05),
+    );
+  }
+
+  /// One QR entry card: 32×32 icon + two stacked lines + status pill.
+  static Widget _skeletonQrCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.02),
+        borderRadius: BorderRadius.circular(12),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Row(
+        children: [
+          const SkeletonBox(width: 32, height: 32, radius: 8),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonBox(width: 100, height: 13, radius: 5),
+                SizedBox(height: 4),
+                SkeletonBox(width: 140, height: 10, radius: 4),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          const SkeletonBox(width: 48, height: 20, radius: 6),
+        ],
+      ),
+    );
+  }
+}
