@@ -6,8 +6,9 @@ import '../../../services/api_service.dart';
 import '../../../services/storage_service.dart';
 import '../../../models/user_profile.dart';
 import '../../../models/instructor_model.dart';
-import '../../../widgets/main_scaffold.dart';
 import '../../../providers/app_provider.dart';
+import '../../../providers/notification_provider.dart';
+import '../../../services/notification_hub_service.dart';
 import '../../../utils/sizing_utils.dart';
 import '../../../utils/constants.dart';
 import '../../../widgets/skeleton_loader.dart';
@@ -35,10 +36,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isStudent = _userRole == 'student';
-
-    // For students, this is part of the NavigationShell (no scaffold needed)
-    // For teachers, this is a standalone screen (needs MainScaffold)
+    // Profile is now a first-class screen in indexedStack (no scaffold wrapper needed)
     final content = FutureBuilder<dynamic>(
       future: _profileFuture,
       builder: (context, snapshot) {
@@ -55,19 +53,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       },
     );
 
-    // Students see this as a tab (no scaffold wrapper)
-    if (isStudent) {
-      return content;
-    }
-
-    // Teachers see this as a standalone screen (with scaffold)
-    return MainScaffold(
-      title: 'Profile',
-      currentIndex: -1,
-      showBackButton: true,
-      isStudent: false,
-      body: content,
-    );
+    return content;
   }
 
   void _reloadProfile() {
@@ -169,7 +155,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     if (confirmed != true) return;
 
+    await NotificationHubService().stop();
+    ref.read(notificationProvider.notifier).clearNotifications();
     await StorageService.remove(AppConstants.storageKeyToken);
+    await StorageService.remove(AppConstants.storageKeyRefreshToken);
+    await StorageService.remove(AppConstants.storageKeyUser);
     await StorageService.remove(AppConstants.storageKeyRole);
 
     if (mounted) {
