@@ -53,7 +53,6 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
       title: 'Notifications',
       currentIndex: -1,
       showBackButton: true,
-      isAdmin: false,
       body: Stack(
         children: [
           _buildBackground(),
@@ -85,13 +84,13 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.notifications_none_rounded,
             size: 48,
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
           ),
         ),
         const SizedBox(height: 20),
@@ -108,7 +107,7 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
           'Check-in activity and alerts will appear here.',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             fontSize: 14,
           ),
         ),
@@ -127,7 +126,7 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> {
             height: 300,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withOpacity(0.05),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.05),
             ),
           ),
         ),

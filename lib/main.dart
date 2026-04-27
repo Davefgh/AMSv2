@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'config/theme/app_theme.dart';
 import 'config/routes/app_routes.dart';
@@ -8,6 +8,7 @@ import 'screens/shared/auth/login_screen.dart';
 import 'services/storage_service.dart';
 import 'services/api_service.dart';
 import 'utils/constants.dart';
+import 'widgets/navigation_shell.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -54,10 +55,14 @@ void main() async {
     }
   }
 
-  runApp(MyApp(initialRoute: initialRoute, initialRole: role));
+  runApp(
+    ProviderScope(
+      child: MyApp(initialRoute: initialRoute, initialRole: role),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerStatefulWidget {
   final String initialRoute;
   final String initialRole;
 
@@ -65,28 +70,50 @@ class MyApp extends StatelessWidget {
       {super.key, required this.initialRoute, required this.initialRole});
 
   @override
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize user role after first frame to avoid modifying provider during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(appProvider.notifier).setUserRole(widget.initialRole);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) {
-          final provider = AppProvider();
-          provider.setUserRole(initialRole);
-          return provider;
-        }),
-      ],
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        title: 'AMSv2',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        initialRoute: initialRoute,
-        routes: {
-          '/': (context) => const LoginScreen(),
-          ...AppRoutes.routes,
-        },
-        debugShowCheckedModeBanner: false,
-      ),
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      title: 'AMSv2',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      initialRoute: widget.initialRoute,
+      routes: {
+        '/': (context) => const LoginScreen(),
+        // Use NavigationShell for main dashboards
+        AppRoutes.teacherDashboard: (context) =>
+            const NavigationShell(isStudent: false),
+        AppRoutes.studentDashboard: (context) =>
+            const NavigationShell(isStudent: true),
+        // Keep standalone routes that are not part of bottom navigation
+        AppRoutes.editProfile: (context) =>
+            AppRoutes.routes[AppRoutes.editProfile]!(context),
+        AppRoutes.settings: (context) =>
+            AppRoutes.routes[AppRoutes.settings]!(context),
+        AppRoutes.notifications: (context) =>
+            AppRoutes.routes[AppRoutes.notifications]!(context),
+        AppRoutes.teacherProfileEdit: (context) =>
+            AppRoutes.routes[AppRoutes.teacherProfileEdit]!(context),
+        AppRoutes.teacherNotifications: (context) =>
+            AppRoutes.routes[AppRoutes.teacherNotifications]!(context),
+        AppRoutes.studentFingerprint: (context) =>
+            AppRoutes.routes[AppRoutes.studentFingerprint]!(context),
+      },
+      debugShowCheckedModeBanner: false,
     );
   }
 }

@@ -226,9 +226,11 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     if (_session == null) return;
 
     final TextEditingController descriptionController = TextEditingController();
-    final bool? confirm = await showDialog<bool>(
+    final bool? confirm = await showModalBottomSheet<bool>(
       context: context,
-      builder: (context) => _buildInputDialog(
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _buildInputBottomSheet(
         title: 'End Session',
         label: 'Session Description',
         hint: 'e.g., Covered chapters 1 to 3',
@@ -262,9 +264,11 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     if (_session == null) return;
 
     final TextEditingController reasonController = TextEditingController();
-    final bool? confirm = await showDialog<bool>(
+    final bool? confirm = await showModalBottomSheet<bool>(
       context: context,
-      builder: (context) => _buildInputDialog(
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _buildInputBottomSheet(
         title: 'Delete Session',
         label: 'Reason for deletion',
         hint: 'e.g., Instructor unavailable',
@@ -298,7 +302,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     }
   }
 
-  Widget _buildInputDialog({
+  Widget _buildInputBottomSheet({
     required String title,
     required String label,
     required String hint,
@@ -306,44 +310,85 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     required String confirmLabel,
     required Color confirmColor,
   }) {
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-      child: AlertDialog(
-        backgroundColor: const Color(0xFF1E293B).withOpacity(0.9),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: const BorderSide(color: Colors.white10)),
-        title: Text(title,
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label,
-                style: const TextStyle(color: Colors.white70, fontSize: 13)),
-            const SizedBox(height: 12),
-            _buildModalTextField(
-                controller: controller,
-                hint: hint,
-                icon: Icons.edit_note_rounded),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child:
-                const Text('Cancel', style: TextStyle(color: Colors.white38)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: confirmColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+    return Container(
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 32,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 48,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: Text(confirmLabel),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(label,
+              style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          const SizedBox(height: 12),
+          _buildModalTextField(
+              controller: controller,
+              hint: hint,
+              icon: Icons.edit_note_rounded),
+          const SizedBox(height: 32),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white70,
+                    side:
+                        BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text('Cancel', style: TextStyle(fontSize: 16)),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: confirmColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(confirmLabel,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -396,7 +441,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                   width: 48,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -415,7 +460,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               Text(
                 'Select your classroom category and location.',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -441,7 +486,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? const Color(0xFF38BDF8)
-                                : Colors.white.withOpacity(0.05),
+                                : Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                                 color: isSelected
@@ -492,20 +537,20 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFF38BDF8).withOpacity(0.15)
-                              : Colors.white.withOpacity(0.03),
+                              ? const Color(0xFF38BDF8).withValues(alpha: 0.15)
+                              : Colors.white.withValues(alpha: 0.03),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
                                 ? const Color(0xFF38BDF8)
-                                : Colors.white.withOpacity(0.05),
+                                : Colors.white.withValues(alpha: 0.05),
                             width: isSelected ? 2 : 1,
                           ),
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
                                     color: const Color(0xFF38BDF8)
-                                        .withOpacity(0.2),
+                                        .withValues(alpha: 0.2),
                                     blurRadius: 8,
                                   )
                                 ]
@@ -587,7 +632,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             ? []
             : [
                 BoxShadow(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -602,7 +647,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: isOutlined
-                ? BorderSide(color: Colors.white.withOpacity(0.1))
+                ? BorderSide(color: Colors.white.withValues(alpha: 0.1))
                 : BorderSide.none,
           ),
           elevation: 0,
@@ -682,10 +727,10 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.03),
+                            color: Colors.white.withValues(alpha: 0.03),
                             borderRadius: BorderRadius.circular(32),
                             border: Border.all(
-                                color: Colors.white.withOpacity(0.08)),
+                                color: Colors.white.withValues(alpha: 0.08)),
                           ),
                           child: Column(
                             children: [
@@ -809,7 +854,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             height: 300,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withOpacity(0.12),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
             ),
           ),
         ),
@@ -822,7 +867,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             height: 350,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withOpacity(0.05),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.05),
             ),
           ),
         ),
@@ -835,7 +880,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             height: 250,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withOpacity(0.08),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
             ),
           ),
         ),
@@ -855,7 +900,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
@@ -895,10 +940,10 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: (iconColor ?? Colors.white).withOpacity(0.1),
+              color: (iconColor ?? Colors.white).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                  color: (iconColor ?? Colors.white).withOpacity(0.1)),
+                  color: (iconColor ?? Colors.white).withValues(alpha: 0.1)),
             ),
             child: isInstructor
                 ? Container(
@@ -940,7 +985,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color:
-                              const Color(0xFFFBBF24).withOpacity(0.15),
+                              const Color(0xFFFBBF24).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -963,7 +1008,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                       style: TextStyle(
                         color: _timeRemainingText.contains('m')
                             ? const Color(0xFF38BDF8)
-                            : Colors.white.withOpacity(0.3),
+                            : Colors.white.withValues(alpha: 0.3),
                         fontSize: 12,
                         fontWeight: _timeRemainingText.contains('m')
                             ? FontWeight.bold
@@ -1000,7 +1045,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             Text(
               'After the cutoff, new scans will be rejected.',
               style: TextStyle(
-                  color: Colors.white.withOpacity(0.4), fontSize: 13),
+                  color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
             ),
             const SizedBox(height: 24),
             Row(
@@ -1042,9 +1087,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Text(
           label,
@@ -1059,7 +1104,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   Widget _buildDivider() {
     return Padding(
       padding: const EdgeInsets.only(left: 68),
-      child: Divider(color: Colors.white.withOpacity(0.05), height: 1),
+      child: Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
     );
   }
 
@@ -1067,9 +1112,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withOpacity(0.5),
+        color: const Color(0xFF1E293B).withValues(alpha: 0.5),
         border: Border(
-            top: BorderSide(color: Colors.white.withOpacity(0.05))),
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1095,7 +1140,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               onPressed: _handleEndSession,
               icon: Icons.stop_rounded,
               label: 'End Session',
-              color: Colors.redAccent.withOpacity(0.1),
+              color: Colors.redAccent.withValues(alpha: 0.1),
               textColor: Colors.redAccent,
               isOutlined: true,
             ),
@@ -1107,7 +1152,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 onPressed: _handleDeleteSession,
                 icon: Icons.delete_forever_rounded,
                 label: 'Delete Session',
-                color: Colors.redAccent.withOpacity(0.1),
+                color: Colors.redAccent.withValues(alpha: 0.1),
                 textColor: Colors.redAccent,
                 isOutlined: true,
               ),
@@ -1117,7 +1162,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               onPressed: () => Navigator.pop(context),
               icon: Icons.check_rounded,
               label: 'Done',
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               textColor: Colors.white,
             ),
           ],
@@ -1142,7 +1187,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             ? []
             : [
                 BoxShadow(
-                  color: color.withOpacity(0.3),
+                  color: color.withValues(alpha: 0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 6),
                 ),
@@ -1160,7 +1205,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
             side: isOutlined
-                ? BorderSide(color: color.withOpacity(0.3))
+                ? BorderSide(color: color.withValues(alpha: 0.3))
                 : BorderSide.none,
           ),
           elevation: 0,
@@ -1211,87 +1256,98 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   }
 
   void _displayQRCodeModal(String qrHash) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: true,
-      builder: (context) => Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.85,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: Colors.white10),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Session QR Code',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.none,
-                    ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Session QR Code',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child:
-                        const Icon(Icons.close_rounded, color: Colors.white54),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(Icons.close_rounded,
+                      color: Colors.white.withValues(alpha: 0.5)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
+              child: QrImageView(
+                data: qrHash,
+                version: QrVersions.auto,
+                size: 240.0,
+                gapless: false,
+                eyeStyle: const QrEyeStyle(
+                  eyeShape: QrEyeShape.square,
+                  color: Color(0xFF0F172A),
                 ),
-                child: QrImageView(
-                  data: qrHash,
-                  version: QrVersions.auto,
-                  size: 240.0,
-                  gapless: false,
-                  eyeStyle: const QrEyeStyle(
-                    eyeShape: QrEyeShape.square,
-                    color: Color(0xFF0F172A),
-                  ),
-                  dataModuleStyle: const QrDataModuleStyle(
-                    dataModuleShape: QrDataModuleShape.square,
-                    color: Color(0xFF0F172A),
-                  ),
+                dataModuleStyle: const QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.square,
+                  color: Color(0xFF0F172A),
                 ),
               ),
-              const SizedBox(height: 24),
-              Text(
-                '${_session?.sectionName ?? _schedule?.sectionName ?? ""} - ${_session?.subjectName ?? _schedule?.subjectName ?? ""}',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  decoration: TextDecoration.none,
-                ),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              '${_session?.sectionName ?? _schedule?.sectionName ?? ""} - ${_session?.subjectName ?? _schedule?.subjectName ?? ""}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Students can scan this to record attendance.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
-                  fontSize: 12,
-                  decoration: TextDecoration.none,
-                  fontWeight: FontWeight.normal,
-                ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Students can scan this to record attendance.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.6),
+                fontSize: 14,
               ),
-              const SizedBox(height: 12),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -1301,7 +1357,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return Text(
       text,
       style: TextStyle(
-        color: Colors.white.withOpacity(0.5),
+        color: Colors.white.withValues(alpha: 0.5),
         fontWeight: FontWeight.bold,
         fontSize: 12,
         letterSpacing: 0.5,
@@ -1317,9 +1373,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: TextField(
         controller: controller,
@@ -1328,7 +1384,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(
-              color: Colors.white.withOpacity(0.2), fontSize: 15),
+              color: Colors.white.withValues(alpha: 0.2), fontSize: 15),
           border: InputBorder.none,
           suffixIcon:
               icon != null ? Icon(icon, color: Colors.white24, size: 20) : null,

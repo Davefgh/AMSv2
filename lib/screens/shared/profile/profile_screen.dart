@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/api_service.dart';
 import '../../../services/storage_service.dart';
 import '../../../models/user_profile.dart';
@@ -12,14 +12,14 @@ import '../../../utils/sizing_utils.dart';
 import '../../../utils/constants.dart';
 import '../../../widgets/skeleton_loader.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final ApiService _apiService = ApiService();
   late Future<dynamic> _profileFuture;
   late String _userRole;
@@ -27,80 +27,143 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _userRole = context.read<AppProvider>().userRole;
+    _userRole = ref.read(appProvider).userRole;
     final isTeacher = _userRole == 'instructor' || _userRole == 'teacher';
-    _profileFuture = isTeacher ? _apiService.getInstructorProfile() : _apiService.getMe();
+    _profileFuture =
+        isTeacher ? _apiService.getInstructorProfile() : _apiService.getMe();
   }
 
   @override
   Widget build(BuildContext context) {
-    final isAdmin = _userRole == 'admin';
     final isStudent = _userRole == 'student';
 
+    // For students, this is part of the NavigationShell (no scaffold needed)
+    // For teachers, this is a standalone screen (needs MainScaffold)
+    final content = FutureBuilder<dynamic>(
+      future: _profileFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SkeletonProfile();
+        } else if (snapshot.hasError) {
+          return _buildErrorState(snapshot.error.toString());
+        } else if (!snapshot.hasData) {
+          return _buildErrorState('No profile data found');
+        }
+
+        final profileData = snapshot.data!;
+        return _buildProfileContent(profileData);
+      },
+    );
+
+    // Students see this as a tab (no scaffold wrapper)
+    if (isStudent) {
+      return content;
+    }
+
+    // Teachers see this as a standalone screen (with scaffold)
     return MainScaffold(
       title: 'Profile',
-      currentIndex: isStudent ? 2 : -1,
+      currentIndex: -1,
       showBackButton: true,
-      isAdmin: isAdmin,
-      isStudent: isStudent,
-      body: FutureBuilder<dynamic>(
-        future: _profileFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SkeletonProfile();
-          } else if (snapshot.hasError) {
-            return _buildErrorState(snapshot.error.toString());
-          } else if (!snapshot.hasData) {
-            return _buildErrorState('No profile data found');
-          }
-
-          final profileData = snapshot.data!;
-          return _buildProfileContent(profileData);
-        },
-      ),
+      isStudent: false,
+      body: content,
     );
   }
 
   void _reloadProfile() {
     final isTeacher = _userRole == 'instructor' || _userRole == 'teacher';
     setState(() {
-      _profileFuture = isTeacher ? _apiService.getInstructorProfile() : _apiService.getMe();
+      _profileFuture =
+          isTeacher ? _apiService.getInstructorProfile() : _apiService.getMe();
     });
   }
 
   Future<void> _logout() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showModalBottomSheet<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Log Out',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 32,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 32,
         ),
-        content: const Text(
-          'Are you sure you want to log out of your account?',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white.withOpacity(0.6)),
-            ),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.1),
+            width: 1,
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
-            child: const Text('Log Out', style: TextStyle(color: Colors.white)),
-          ),
-        ],
+            const SizedBox(height: 24),
+            const Text(
+              'Log Out',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Are you sure you want to log out of your account?',
+              style: TextStyle(color: Colors.white70, fontSize: 16),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                      side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.2)),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text('Cancel', style: TextStyle(fontSize: 16)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child:
+                        const Text('Log Out', style: TextStyle(fontSize: 16)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
 
@@ -114,7 +177,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-
   Widget _buildErrorState(String error) {
     return Center(
       child: Padding(
@@ -122,17 +184,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: Sizing.sp(64)),
+            Icon(Icons.error_outline_rounded,
+                color: Colors.redAccent, size: Sizing.sp(64)),
             SizedBox(height: Sizing.h(16)),
             Text(
               'Failed to load profile',
-              style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: Sizing.sp(18), fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: Sizing.sp(18),
+                  fontWeight: FontWeight.bold),
             ),
             SizedBox(height: Sizing.h(8)),
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: Sizing.sp(14)),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: Sizing.sp(14)),
             ),
             SizedBox(height: Sizing.h(24)),
             ElevatedButton(
@@ -140,8 +208,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: Sizing.w(32), vertical: Sizing.h(12)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Sizing.r(12))),
+                padding: EdgeInsets.symmetric(
+                    horizontal: Sizing.w(32), vertical: Sizing.h(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(Sizing.r(12))),
               ),
               child: const Text('Try Again'),
             ),
@@ -154,7 +224,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileContent(dynamic profile) {
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.symmetric(horizontal: Sizing.w(24), vertical: Sizing.h(12)),
+      padding: EdgeInsets.symmetric(
+          horizontal: Sizing.w(24), vertical: Sizing.h(12)),
       children: [
         _buildUserCard(profile),
         SizedBox(height: Sizing.h(24)),
@@ -174,8 +245,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: InkWell(
           onTap: _logout,
           borderRadius: BorderRadius.circular(Sizing.r(24)),
-          splashColor: Colors.redAccent.withOpacity(0.1),
-          highlightColor: Colors.redAccent.withOpacity(0.05),
+          splashColor: Colors.redAccent.withValues(alpha: 0.1),
+          highlightColor: Colors.redAccent.withValues(alpha: 0.05),
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: Sizing.w(20),
@@ -186,7 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Container(
                   padding: EdgeInsets.all(Sizing.w(10)),
                   decoration: BoxDecoration(
-                    color: Colors.redAccent.withOpacity(0.1),
+                    color: Colors.redAccent.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(Sizing.r(12)),
                   ),
                   child: Icon(
@@ -207,7 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const Spacer(),
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: Colors.redAccent.withOpacity(0.5),
+                  color: Colors.redAccent.withValues(alpha: 0.5),
                   size: Sizing.sp(20),
                 ),
               ],
@@ -245,11 +316,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: CircleAvatar(
               radius: Sizing.r(50),
               backgroundColor: const Color(0xFF1E293B),
-              backgroundImage: NetworkImage(
-                profile is Instructor 
-                  ? 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(profile.fullName)}&background=38BDF8&color=0F172A&size=150' 
-                  : 'https://ui-avatars.com/api/?name=${Uri.encodeComponent((profile as UserProfile).username)}&background=34D399&color=0F172A&size=150'
-              ),
+              backgroundImage: NetworkImage(profile is Instructor
+                  ? 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(profile.fullName)}&background=38BDF8&color=0F172A&size=150'
+                  : 'https://ui-avatars.com/api/?name=${Uri.encodeComponent((profile as UserProfile).username)}&background=34D399&color=0F172A&size=150'),
             ),
           ),
           SizedBox(height: Sizing.h(16)),
@@ -263,11 +332,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           SizedBox(height: Sizing.h(4)),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: Sizing.w(12), vertical: Sizing.h(4)),
+            padding: EdgeInsets.symmetric(
+                horizontal: Sizing.w(12), vertical: Sizing.h(4)),
             decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withOpacity(0.1),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(Sizing.r(20)),
-              border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.3)),
+              border: Border.all(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
             ),
             child: Text(
               roleName,
@@ -286,29 +357,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildDetailSection(dynamic profile) {
     final dateFormat = DateFormat('MMMM dd, yyyy');
-    
+
     return _GlassCard(
       padding: EdgeInsets.zero,
       child: Column(
         children: [
           if (profile is Instructor) ...[
-            _buildDetailTile(Icons.perm_identity_rounded, 'Instructor ID', profile.id.toString()),
+            _buildDetailTile(Icons.perm_identity_rounded, 'Instructor ID',
+                profile.id.toString()),
             _buildDivider(),
-            _buildDetailTile(Icons.person_outline_rounded, 'First Name', profile.firstname),
+            _buildDetailTile(
+                Icons.person_outline_rounded, 'First Name', profile.firstname),
             _buildDivider(),
-            _buildDetailTile(Icons.person_outline_rounded, 'Last Name', profile.lastname),
+            _buildDetailTile(
+                Icons.person_outline_rounded, 'Last Name', profile.lastname),
             _buildDivider(),
-            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since', dateFormat.format(profile.createdAt)),
+            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since',
+                dateFormat.format(profile.createdAt)),
             _buildDivider(),
-            _buildDetailTile(Icons.update_rounded, 'Last Updated', dateFormat.format(profile.updatedAt)),
+            _buildDetailTile(Icons.update_rounded, 'Last Updated',
+                dateFormat.format(profile.updatedAt)),
           ] else if (profile is UserProfile) ...[
-            _buildDetailTile(Icons.perm_identity_rounded, 'User ID', profile.userId),
+            _buildDetailTile(
+                Icons.perm_identity_rounded, 'User ID', profile.userId),
             _buildDivider(),
-            _buildDetailTile(Icons.email_outlined, 'Email Address', profile.email),
+            _buildDetailTile(
+                Icons.email_outlined, 'Email Address', profile.email),
             _buildDivider(),
-            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since', dateFormat.format(profile.createdAt)),
+            _buildDetailTile(Icons.calendar_month_outlined, 'Member Since',
+                dateFormat.format(profile.createdAt)),
             _buildDivider(),
-            _buildDetailTile(Icons.update_rounded, 'Last Updated', dateFormat.format(profile.updatedAt)),
+            _buildDetailTile(Icons.update_rounded, 'Last Updated',
+                dateFormat.format(profile.updatedAt)),
           ],
         ],
       ),
@@ -317,16 +397,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildDetailTile(IconData icon, String label, String value) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: Sizing.w(20), vertical: Sizing.h(16)),
+      padding: EdgeInsets.symmetric(
+          horizontal: Sizing.w(20), vertical: Sizing.h(16)),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(Sizing.w(10)),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(Sizing.r(12)),
             ),
-            child: Icon(icon, color: Colors.white.withOpacity(0.7), size: Sizing.sp(20)),
+            child: Icon(icon,
+                color: Colors.white.withValues(alpha: 0.7),
+                size: Sizing.sp(20)),
           ),
           SizedBox(width: Sizing.w(16)),
           Expanded(
@@ -335,12 +418,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Text(
                   label,
-                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: Sizing.sp(13)),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: Sizing.sp(13)),
                 ),
                 SizedBox(height: Sizing.h(2)),
                 Text(
                   value,
-                  style: TextStyle(color: Colors.white, fontSize: Sizing.sp(15), fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: Sizing.sp(15),
+                      fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -351,9 +439,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildDivider() {
-    return Divider(height: 1, color: Colors.white.withOpacity(0.05));
+    return Divider(height: 1, color: Colors.white.withValues(alpha: 0.05));
   }
-
 }
 
 class _GlassCard extends StatelessWidget {
@@ -374,10 +461,10 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(Sizing.r(24)),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               width: 1.0,
             ),
           ),

@@ -1,49 +1,72 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../screens/teacher/teacher_dashboard_screen.dart';
+import '../screens/teacher/attendance_screen.dart';
+import '../screens/teacher/session_dashboard_screen.dart';
+import '../screens/teacher/teacher_schedules_screen.dart';
+import '../screens/student/student_dashboard_screen.dart';
+import '../screens/student/student_scan_screen.dart';
+import '../screens/shared/profile/profile_screen.dart';
 import '../utils/responsive.dart';
 import '../utils/sizing_utils.dart';
-import '../config/routes/app_routes.dart';
 import '../providers/app_provider.dart';
+import 'dart:ui';
 
-class MainScaffold extends ConsumerWidget {
-  final Widget body;
-  final String title;
-  final int currentIndex;
-  final List<Widget>? actions;
-  final Widget? floatingActionButton;
+part 'navigation_shell.g.dart';
+
+// Navigation index notifier
+@riverpod
+class NavigationIndex extends _$NavigationIndex {
+  @override
+  int build() => 0;
+
+  void setIndex(int index) {
+    state = index;
+  }
+}
+
+class NavigationShell extends ConsumerWidget {
   final bool isStudent;
-  final bool showBackButton;
 
-  const MainScaffold({
+  const NavigationShell({
     super.key,
-    required this.body,
-    required this.title,
-    required this.currentIndex,
-    this.actions,
-    this.floatingActionButton,
-    this.isStudent = false,
-    this.showBackButton = false,
+    required this.isStudent,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Sizing.init(context);
+    final currentIndex = ref.watch(navigationIndexProvider);
     final appState = ref.watch(appProvider);
     final isDark = appState.isDarkMode;
     final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
 
+    // Define screens for each tab
+    final List<Widget> screens = isStudent
+        ? [
+            const StudentDashboardScreen(),
+            StudentScanScreen(isVisible: currentIndex == 1),
+            const ProfileScreen(),
+          ]
+        : const [
+            TeacherDashboardScreen(),
+            AttendanceScreen(),
+            SessionDashboardScreen(),
+            TeacherSchedulesScreen(),
+          ];
+
     return Scaffold(
       backgroundColor: bgColor,
       body: Responsive(
-        mobile: _buildMobileLayout(context, isDark),
-        tablet: _buildTabletLayout(context, isDark),
-        desktop: _buildTabletLayout(context, isDark),
+        mobile: _buildMobileLayout(context, isDark, screens, currentIndex, ref),
+        tablet: _buildTabletLayout(context, isDark, screens, currentIndex, ref),
+        desktop:
+            _buildTabletLayout(context, isDark, screens, currentIndex, ref),
       ),
-      bottomNavigationBar: (currentIndex >= 0 && Responsive.isMobile(context))
-          ? _buildBottomNavBar(context, isDark)
+      bottomNavigationBar: Responsive.isMobile(context)
+          ? _buildBottomNavBar(context, isDark, currentIndex, ref)
           : null,
-      floatingActionButton: floatingActionButton,
     );
   }
 
@@ -100,15 +123,22 @@ class MainScaffold extends ConsumerWidget {
     );
   }
 
-  Widget _buildMobileLayout(BuildContext context, bool isDark) {
+  Widget _buildMobileLayout(BuildContext context, bool isDark,
+      List<Widget> screens, int currentIndex, WidgetRef ref) {
     return Stack(
       children: [
         _buildBackground(isDark),
         SafeArea(
           child: Column(
             children: [
-              _buildHeader(context, isDark, showLogo: true),
-              Expanded(child: body),
+              _buildHeader(context, isDark, currentIndex, ref),
+              Expanded(
+                // IndexedStack keeps all screens alive
+                child: IndexedStack(
+                  index: currentIndex,
+                  children: screens,
+                ),
+              ),
             ],
           ),
         ),
@@ -116,10 +146,11 @@ class MainScaffold extends ConsumerWidget {
     );
   }
 
-  Widget _buildTabletLayout(BuildContext context, bool isDark) {
+  Widget _buildTabletLayout(BuildContext context, bool isDark,
+      List<Widget> screens, int currentIndex, WidgetRef ref) {
     return Row(
       children: [
-        _buildNavigationRail(context, isDark,
+        _buildNavigationRail(context, isDark, currentIndex, ref,
             extended: MediaQuery.of(context).size.width > 900),
         Expanded(
           child: Stack(
@@ -128,12 +159,15 @@ class MainScaffold extends ConsumerWidget {
               SafeArea(
                 child: Column(
                   children: [
-                    _buildHeader(context, isDark, showLogo: false),
+                    _buildHeader(context, isDark, currentIndex, ref),
                     Expanded(
                       child: Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 800),
-                          child: body,
+                          child: IndexedStack(
+                            index: currentIndex,
+                            children: screens,
+                          ),
                         ),
                       ),
                     ),
@@ -147,9 +181,12 @@ class MainScaffold extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark,
-      {bool showLogo = true}) {
+  Widget _buildHeader(
+      BuildContext context, bool isDark, int currentIndex, WidgetRef ref) {
     final textColor = isDark ? Colors.white : Colors.black;
+    final titles = isStudent
+        ? ['Student Dashboard', 'Scan QR', 'Profile']
+        : ['Teacher Dashboard', 'Attendance', 'Sessions', 'Classes'];
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -162,31 +199,17 @@ class MainScaffold extends ConsumerWidget {
           Expanded(
             child: Row(
               children: [
-                if (showBackButton) ...[
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(Icons.arrow_back_ios_new_rounded,
-                        color: textColor, size: Sizing.sp(20)),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    splashRadius: 20,
-                  ),
-                  SizedBox(width: Sizing.w(16)),
-                ] else if (showLogo) ...[
-                  Image.asset(
-                    'assets/aclc_logo.png',
-                    height: Sizing.h(40),
-                    width: Sizing.w(40),
-                    errorBuilder: (context, error, stackTrace) => Icon(
-                        Icons.shield,
-                        color: textColor,
-                        size: Sizing.sp(32)),
-                  ),
-                  SizedBox(width: Sizing.w(12)),
-                ],
+                Image.asset(
+                  'assets/aclc_logo.png',
+                  height: Sizing.h(40),
+                  width: Sizing.w(40),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Icon(Icons.shield, color: textColor, size: Sizing.sp(32)),
+                ),
+                SizedBox(width: Sizing.w(12)),
                 Expanded(
                   child: Text(
-                    title,
+                    titles[currentIndex],
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -200,24 +223,53 @@ class MainScaffold extends ConsumerWidget {
               ],
             ),
           ),
-          if (actions != null)
+          // Add actions based on current screen if needed
+          if (isStudent && currentIndex == 0)
             Row(
               mainAxisSize: MainAxisSize.min,
-              children: actions!,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Notifications coming soon!')),
+                    );
+                  },
+                  icon: Icon(Icons.notifications_none_rounded,
+                      color: textColor.withValues(alpha: 0.7)),
+                  splashRadius: 20,
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  onPressed: () {
+                    // Navigate to profile tab
+                    ref.read(navigationIndexProvider.notifier).setIndex(2);
+                  },
+                  icon: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: textColor.withValues(alpha: 0.24), width: 1),
+                    ),
+                    child:
+                        Icon(Icons.person_rounded, color: textColor, size: 20),
+                  ),
+                  splashRadius: 20,
+                ),
+                const SizedBox(width: 12),
+              ],
             ),
         ],
       ),
     );
   }
 
-  Widget _buildNavigationRail(BuildContext context, bool isDark,
+  Widget _buildNavigationRail(
+      BuildContext context, bool isDark, int currentIndex, WidgetRef ref,
       {required bool extended}) {
-    List<_NavDestination> destinations;
-    if (isStudent) {
-      destinations = _studentDestinations;
-    } else {
-      destinations = _teacherDestinations;
-    }
+    final destinations =
+        isStudent ? _studentDestinations : _teacherDestinations;
 
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
@@ -228,17 +280,16 @@ class MainScaffold extends ConsumerWidget {
       decoration: BoxDecoration(
         color: bgColor,
         border: Border(
-          right: BorderSide(
-            color: borderColor,
-            width: 1,
-          ),
+          right: BorderSide(color: borderColor, width: 1),
         ),
       ),
       child: NavigationRail(
         extended: extended,
         backgroundColor: Colors.transparent,
-        selectedIndex: currentIndex == -1 ? null : currentIndex,
-        onDestinationSelected: (index) => _onNavigate(context, index),
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          ref.read(navigationIndexProvider.notifier).setIndex(index);
+        },
         indicatorColor: const Color(0xFF38BDF8).withValues(alpha: 0.2),
         selectedIconTheme: const IconThemeData(color: Color(0xFF38BDF8)),
         unselectedIconTheme: IconThemeData(
@@ -303,44 +354,31 @@ class MainScaffold extends ConsumerWidget {
   }
 
   List<_NavDestination> get _teacherDestinations => const [
-        _NavDestination(Icons.home_rounded, 'Home', AppRoutes.teacherDashboard),
-        _NavDestination(
-            Icons.library_books_rounded, 'Attendance', AppRoutes.attendance),
-        _NavDestination(Icons.qr_code_scanner_rounded, 'Sessions',
-            AppRoutes.sessionDashboard),
-        _NavDestination(
-            Icons.school_rounded, 'Classes', AppRoutes.teacherSchedules),
+        _NavDestination(Icons.home_rounded, 'Home'),
+        _NavDestination(Icons.library_books_rounded, 'Attendance'),
+        _NavDestination(Icons.qr_code_scanner_rounded, 'Sessions'),
+        _NavDestination(Icons.school_rounded, 'Classes'),
       ];
 
   List<_NavDestination> get _studentDestinations => const [
-        _NavDestination(
-            Icons.dashboard_rounded, 'Dashboard', AppRoutes.studentDashboard),
-        _NavDestination(
-            Icons.qr_code_scanner_rounded, 'Scan', AppRoutes.studentScan),
-        _NavDestination(Icons.person_rounded, 'Profile', AppRoutes.profile),
+        _NavDestination(Icons.dashboard_rounded, 'Dashboard'),
+        _NavDestination(Icons.qr_code_scanner_rounded, 'Scan'),
+        _NavDestination(Icons.person_rounded, 'Profile'),
       ];
 
-  Widget _buildBottomNavBar(BuildContext context, bool isDark) {
-    List<_NavDestination> destinations;
-    if (isStudent) {
-      destinations = _studentDestinations;
-    } else {
-      destinations = _teacherDestinations;
-    }
+  Widget _buildBottomNavBar(
+      BuildContext context, bool isDark, int currentIndex, WidgetRef ref) {
+    final destinations =
+        isStudent ? _studentDestinations : _teacherDestinations;
 
-    // Always use dark blue for bottom navbar regardless of theme
-    const bgColor = Color(0xFF0F172A);
-    const borderColor = Color(0xFF1E293B);
+    final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final borderColor =
+        isDark ? const Color(0xFF1E293B) : Colors.black.withValues(alpha: 0.1);
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: bgColor,
-        border: Border(
-          top: BorderSide(
-            color: borderColor,
-            width: 1,
-          ),
-        ),
+        border: Border(top: BorderSide(color: borderColor, width: 1)),
       ),
       child: BottomNavigationBar(
         currentIndex: currentIndex,
@@ -348,7 +386,9 @@ class MainScaffold extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
+        unselectedItemColor: isDark
+            ? Colors.white.withValues(alpha: 0.4)
+            : Colors.black.withValues(alpha: 0.4),
         showUnselectedLabels: true,
         selectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
@@ -360,31 +400,17 @@ class MainScaffold extends ConsumerWidget {
                   label: d.label,
                 ))
             .toList(),
-        onTap: (index) => _onNavigate(context, index),
+        onTap: (index) {
+          ref.read(navigationIndexProvider.notifier).setIndex(index);
+        },
       ),
     );
-  }
-
-  void _onNavigate(BuildContext context, int index) {
-    if (index == currentIndex) return;
-
-    List<_NavDestination> destinations;
-    if (isStudent) {
-      destinations = _studentDestinations;
-    } else {
-      destinations = _teacherDestinations;
-    }
-
-    if (index < 0 || index >= destinations.length) return;
-
-    Navigator.pushReplacementNamed(context, destinations[index].route);
   }
 }
 
 class _NavDestination {
   final IconData icon;
   final String label;
-  final String route;
 
-  const _NavDestination(this.icon, this.label, this.route);
+  const _NavDestination(this.icon, this.label);
 }

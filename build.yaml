@@ -1,0 +1,9 @@
+# Build configuration for Riverpod code generation
+targets:
+  $default:
+    builders:
+      riverpod_generator:
+        options:
+          # Generate providers with the @riverpod annotation
+          generate_for:
+            - lib/**/*.dart

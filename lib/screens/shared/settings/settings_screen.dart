@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/routes/app_routes.dart';
 import '../../../providers/app_provider.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appState = ref.watch(appProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -21,16 +23,12 @@ class SettingsScreen extends StatelessWidget {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          Consumer<AppProvider>(
-            builder: (context, appProvider, _) {
-              return SwitchListTile(
-                title: const Text('Dark Mode'),
-                subtitle: const Text('Enable dark theme'),
-                value: appProvider.isDarkMode,
-                onChanged: (_) {
-                  appProvider.toggleDarkMode();
-                },
-              );
+          SwitchListTile(
+            title: const Text('Dark Mode'),
+            subtitle: const Text('Enable dark theme'),
+            value: appState.isDarkMode,
+            onChanged: (_) {
+              ref.read(appProvider.notifier).toggleDarkMode();
             },
           ),
           const Divider(),

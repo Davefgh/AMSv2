@@ -1,20 +1,20 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/routes/app_routes.dart';
 import '../../../services/api_service.dart';
 import '../../../services/storage_service.dart';
 import '../../../providers/app_provider.dart';
 import '../../../utils/constants.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -58,13 +58,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
         await StorageService.setString(
             AppConstants.storageKeyToken, response['accessToken'] ?? '');
+        await StorageService.setString(AppConstants.storageKeyRefreshToken,
+            response['refreshToken'] ?? '');
         await StorageService.setString(
-            AppConstants.storageKeyRefreshToken, response['refreshToken'] ?? '');
-        await StorageService.setString(AppConstants.storageKeyUser, response['user'] ?? '');
+            AppConstants.storageKeyUser, response['user'] ?? '');
         await StorageService.setString(AppConstants.storageKeyRole, role);
 
         if (mounted) {
-          context.read<AppProvider>().setUserRole(role);
+          ref.read(appProvider.notifier).setUserRole(role);
 
           if (role == 'instructor' || role == 'teacher') {
             Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);
@@ -84,10 +85,12 @@ class _LoginScreenState extends State<LoginScreen> {
           if (e.statusCode == 401 || e.statusCode == 400) {
             _errorMessage = 'Incorrect Username or Password. Please try again.';
           } else {
-            _errorMessage = 'Server Error (${e.statusCode}): Failed to connect to server.';
+            _errorMessage =
+                'Server Error (${e.statusCode}): Failed to connect to server.';
           }
         } else {
-          _errorMessage = 'Failed to connect to server. Please check your connection or .env configuration.';
+          _errorMessage =
+              'Failed to connect to server. Please check your connection or .env configuration.';
         }
       });
     } finally {
@@ -157,15 +160,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Container(
                           padding: EdgeInsets.all(isMobile ? 24 : 32),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                               width: 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 30,
                                 offset: const Offset(0, 15),
                               ),
@@ -197,11 +200,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Colors.red.withOpacity(0.2),
+                                      color: Colors.red.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                         color:
-                                            Colors.red.withOpacity(0.4),
+                                            Colors.red.withValues(alpha: 0.4),
                                       ),
                                     ),
                                     child: Row(
@@ -255,7 +258,7 @@ class _LoginScreenState extends State<LoginScreen> {
         errorBuilder: (context, error, stackTrace) {
           return Container(
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.2),
+              color: Colors.blue.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(
@@ -276,30 +279,30 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         labelText: 'Username or Email',
         labelStyle: TextStyle(
-          color: Colors.white.withOpacity(0.8),
+          color: Colors.white.withValues(alpha: 0.8),
         ),
         prefixIcon: const Icon(
           Icons.person_outline,
           color: Colors.white,
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
+        fillColor: Colors.white.withValues(alpha: 0.1),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             width: 2,
           ),
         ),
@@ -334,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         labelText: 'Password',
         labelStyle: TextStyle(
-          color: Colors.white.withOpacity(0.8),
+          color: Colors.white.withValues(alpha: 0.8),
         ),
         prefixIcon: const Icon(
           Icons.lock_outline,
@@ -352,23 +355,23 @@ class _LoginScreenState extends State<LoginScreen> {
           },
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
+        fillColor: Colors.white.withValues(alpha: 0.1),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             width: 2,
           ),
         ),
@@ -408,20 +411,20 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.white.withOpacity(0.3),
-                Colors.white.withOpacity(0.2),
+                Colors.white.withValues(alpha: 0.3),
+                Colors.white.withValues(alpha: 0.2),
               ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),

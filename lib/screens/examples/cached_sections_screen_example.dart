@@ -4,6 +4,7 @@
 /// a screen with response caching, offline support, and pull-to-refresh.
 ///
 /// Copy this pattern to other screens in your app.
+library;
 
 import 'package:flutter/material.dart';
 import '../../services/cached_api_service.dart';
@@ -11,7 +12,7 @@ import '../../services/api_service.dart';
 import '../../models/section_model.dart';
 
 class CachedSectionsScreen extends StatefulWidget {
-  const CachedSectionsScreen({Key? key}) : super(key: key);
+  const CachedSectionsScreen({super.key});
 
   @override
   State<CachedSectionsScreen> createState() => _CachedSectionsScreenState();
@@ -97,7 +98,7 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Section created successfully')),
+          const SnackBar(content: Text('Section created successfully')),
         );
 
         // Reload with fresh data
@@ -119,22 +120,89 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
   ///
   /// Cache is automatically invalidated after deletion
   Future<void> _deleteSection(Section section) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showModalBottomSheet<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Section'),
-        content: Text('Are you sure you want to delete ${section.name}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text('Delete'),
-          ),
-        ],
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 32,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Delete Section',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Are you sure you want to delete ${section.name}?',
+              style: const TextStyle(color: Colors.white70, fontSize: 16),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                      side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.2)),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text('Cancel', style: TextStyle(fontSize: 16)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text('Delete',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
 
@@ -146,7 +214,7 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Section deleted successfully')),
+          const SnackBar(content: Text('Section deleted successfully')),
         );
 
         // Reload with fresh data
@@ -168,19 +236,19 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sections'),
+        title: const Text('Sections'),
         backgroundColor: _isOffline ? Colors.grey : null,
         actions: [
           // Force refresh button
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: () => _loadSections(forceRefresh: true),
             tooltip: 'Force refresh from server',
           ),
           // Cache stats button (debug only)
           if (const bool.fromEnvironment('dart.vm.product') == false)
             IconButton(
-              icon: Icon(Icons.info_outline),
+              icon: const Icon(Icons.info_outline),
               onPressed: _showCacheStats,
               tooltip: 'Cache statistics',
             ),
@@ -193,12 +261,12 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
             Container(
               width: double.infinity,
               color: Colors.orange,
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  Icon(Icons.cloud_off, color: Colors.white, size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
+                  const Icon(Icons.cloud_off, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
+                  const Expanded(
                     child: Text(
                       'Offline mode - Showing cached data',
                       style: TextStyle(color: Colors.white),
@@ -206,7 +274,7 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
                   ),
                   TextButton(
                     onPressed: () => _loadSections(forceRefresh: true),
-                    child: Text(
+                    child: const Text(
                       'Retry',
                       style: TextStyle(color: Colors.white),
                     ),
@@ -221,8 +289,8 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _createSection,
-        child: Icon(Icons.add),
         tooltip: 'Create section',
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -230,7 +298,7 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
   Widget _buildBody() {
     // Loading state (only show if no cached data)
     if (_loading && _sections.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -248,26 +316,26 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.red),
-            SizedBox(height: 16),
-            Text(
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            const Text(
               'Error loading sections',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Text(
                 _error!,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey[600]),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => _loadSections(forceRefresh: true),
-              icon: Icon(Icons.refresh),
-              label: Text('Retry'),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
             ),
           ],
         ),
@@ -280,17 +348,17 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
+            const Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
             Text(
               'No sections found',
               style: TextStyle(fontSize: 18, color: Colors.grey[600]),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             TextButton.icon(
               onPressed: _createSection,
-              icon: Icon(Icons.add),
-              label: Text('Create first section'),
+              icon: const Icon(Icons.add),
+              label: const Text('Create first section'),
             ),
           ],
         ),
@@ -321,7 +389,7 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
       MaterialPageRoute(
         builder: (context) => Scaffold(
           appBar: AppBar(title: Text(section.name)),
-          body: Center(child: Text('Section Details')),
+          body: const Center(child: Text('Section Details')),
         ),
       ),
     );
@@ -332,24 +400,24 @@ class _CachedSectionsScreenState extends State<CachedSectionsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Cache Statistics'),
+        title: const Text('Cache Statistics'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Memory cache entries: ${stats['memoryCacheSize']}'),
-            SizedBox(height: 8),
-            Text('Cached keys:'),
+            const SizedBox(height: 8),
+            const Text('Cached keys:'),
             ...((stats['memoryCacheKeys'] as List).map((key) => Padding(
-                  padding: EdgeInsets.only(left: 16, top: 4),
-                  child: Text('• $key', style: TextStyle(fontSize: 12)),
+                  padding: const EdgeInsets.only(left: 16, top: 4),
+                  child: Text('• $key', style: const TextStyle(fontSize: 12)),
                 ))),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -372,25 +440,25 @@ class _SectionListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
         leading: CircleAvatar(
           child: Text(section.name.substring(0, 1).toUpperCase()),
         ),
         title: Text(
           section.name,
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('Year Level: ${section.yearLevel}'),
+        subtitle: Text('Capacity: ${section.capacity ?? "N/A"}'),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(Icons.delete_outline, color: Colors.red),
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
               onPressed: onDelete,
               tooltip: 'Delete section',
             ),
-            Icon(Icons.chevron_right),
+            const Icon(Icons.chevron_right),
           ],
         ),
         onTap: onTap,
@@ -420,7 +488,7 @@ class _CreateSectionDialogState extends State<_CreateSectionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Create Section'),
+      title: const Text('Create Section'),
       content: Form(
         key: _formKey,
         child: Column(
@@ -428,7 +496,7 @@ class _CreateSectionDialogState extends State<_CreateSectionDialog> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Section Name',
                 hintText: 'e.g., Section A',
               ),
@@ -439,10 +507,10 @@ class _CreateSectionDialogState extends State<_CreateSectionDialog> {
                 return null;
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _yearLevelController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Year Level',
                 hintText: 'e.g., 1',
               ),
@@ -464,7 +532,7 @@ class _CreateSectionDialogState extends State<_CreateSectionDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: () {
@@ -475,7 +543,7 @@ class _CreateSectionDialogState extends State<_CreateSectionDialog> {
               });
             }
           },
-          child: Text('Create'),
+          child: const Text('Create'),
         ),
       ],
     );

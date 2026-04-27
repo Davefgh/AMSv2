@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:uuid/uuid.dart';
 import '../utils/constants.dart';
 import '../utils/id_utils.dart';
 import 'storage_service.dart';
@@ -541,44 +540,6 @@ class ApiService {
     }
   }
 
-  Future<dynamic> getAdminDataTemplate(String entity) async {
-    try {
-      return await get('/api/admin-data/$entity/template');
-    } catch (e) {
-      _logger.e('getAdminDataTemplate Error: $e');
-      rethrow;
-    }
-  }
-
-  Future<dynamic> getAdminDataExport(String entity) async {
-    try {
-      return await get('/api/admin-data/$entity/export');
-    } catch (e) {
-      _logger.e('getAdminDataExport Error: $e');
-      rethrow;
-    }
-  }
-
-  Future<dynamic> postAdminDataImportPreview(
-      String entity, Map<String, dynamic> body) async {
-    try {
-      return await post('/api/admin-data/$entity/import-preview', body);
-    } catch (e) {
-      _logger.e('postAdminDataImportPreview Error: $e');
-      rethrow;
-    }
-  }
-
-  Future<dynamic> postAdminDataImport(
-      String entity, Map<String, dynamic> body) async {
-    try {
-      return await post('/api/admin-data/$entity/import', body);
-    } catch (e) {
-      _logger.e('postAdminDataImport Error: $e');
-      rethrow;
-    }
-  }
-
   Future<List<Schedule>> getSchedules() async {
     try {
       final response = await get('/api/schedules');
@@ -677,16 +638,16 @@ class ApiService {
 
   // --- QR Code Methods ---
 
-  Future<Map<String, dynamic>> generateQrCode(String sessionId) async {
+  Future<Map<String, dynamic>> generateQrCode(String sessionId, {int? expirationMinutes, int? maxUsage, String? qrHash}) async {
+    validateId(sessionId, 'Session');
     try {
-      final String uniqueId = const Uuid().v4();
       final response = await post('/api/QrCode/generate', {
-        'sessionId': sessionId,
-        'expirationMinutes': 60,
-        'maxUsage': null,
-        'uniqueHash': uniqueId,
+        'SessionId': sessionId,
+        'ExpirationMinutes': expirationMinutes ?? 15,
+        if (maxUsage != null) 'MaxUsage': maxUsage,
+        if (qrHash != null) 'UniqueHash': qrHash,
       });
-      return response as Map<String, dynamic>;
+      return response as Map<String, dynamic>? ?? {};
     } catch (e) {
       _logger.e('generateQrCode Error: $e');
       rethrow;
@@ -700,6 +661,17 @@ class ApiService {
     } catch (e) {
       _logger.e('getQrCodeByHash Error: $e');
       rethrow;
+    }
+  }
+
+  Future<List<dynamic>> getQrScanHistory(String qrId) async {
+    validateId(qrId, 'QR Code');
+    try {
+      final response = await get('/api/QrCode/$qrId/scan-history');
+      return response as List<dynamic>? ?? [];
+    } catch (e) {
+      _logger.e('getQrScanHistory Error: $e');
+      return [];
     }
   }
 
@@ -908,8 +880,8 @@ class ApiService {
     validateId(id, 'Session');
     try {
       await patch('/api/sessions/$id/room', {
-        'actualRoomId': actualRoomId,
-        'rowVersion': rowVersion,
+        'ActualRoomId': actualRoomId,
+        'RowVersion': rowVersion,
       });
     } catch (e) {
       _logger.e('updateSessionRoom Error: $e');
@@ -982,12 +954,37 @@ class ApiService {
     validateId(studentId, 'Student');
     try {
       final response = await post('/api/QrCode/scan', {
-        'qrHash': qrHash,
-        'studentId': studentId,
+        'QrHash': qrHash,
+        'StudentId': studentId,
       });
       return response as Map<String, dynamic>? ?? {};
     } catch (e) {
       _logger.e('scanQrCode Error: $e');
+      rethrow;
+    }
+  }
+
+
+  Future<List<dynamic>> getQrCodesBySession(String sessionId) async {
+    validateId(sessionId, 'Session');
+    try {
+      final response = await get('/api/QrCode/session/$sessionId');
+      if (response is List) return response;
+      if (response is Map) return [response];
+      return [];
+    } catch (e) {
+      if (e is ApiException && e.statusCode == 404) return [];
+      _logger.e('getQrCodesBySession Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> revokeQrCode(String sessionId) async {
+    validateId(sessionId, 'Session');
+    try {
+      await post('/api/QrCode/revoke', {'SessionId': sessionId});
+    } catch (e) {
+      _logger.e('revokeQrCode Error: $e');
       rethrow;
     }
   }
@@ -1149,6 +1146,40 @@ class ApiService {
     }
   }
 
+  /// Updates teacher account profile
+  /// 
+  /// Parameters:
+  /// - [firstname]: Optional first name
+  /// - [lastname]: Optional last name
+  /// - [email]: Optional email
+  /// - [currentPassword]: Required if changing password
+  /// - [newPassword]: New password (requires currentPassword)
+  /// - [confirmNewPassword]: Confirm new password (must match newPassword)
+  Future<void> updateTeacherProfile({
+    String? firstname,
+    String? lastname,
+    String? email,
+    String? currentPassword,
+    String? newPassword,
+    String? confirmNewPassword,
+  }) async {
+    try {
+      final data = <String, dynamic>{};
+      
+      if (firstname != null) data['firstname'] = firstname;
+      if (lastname != null) data['lastname'] = lastname;
+      if (email != null) data['email'] = email;
+      if (currentPassword != null) data['currentPassword'] = currentPassword;
+      if (newPassword != null) data['newPassword'] = newPassword;
+      if (confirmNewPassword != null) data['confirmNewPassword'] = confirmNewPassword;
+      
+      await patch('/api/account/profile', data);
+    } catch (e) {
+      _logger.e('updateTeacherProfile Error: $e');
+      rethrow;
+    }
+  }
+
   // Prevents concurrent refresh attempts
   bool _isRefreshing = false;
 
@@ -1220,11 +1251,12 @@ class ApiService {
     if (response.statusCode == 401) {
       final urlStr = response.request?.url.toString().toLowerCase() ?? '';
       _logger.w('401 Unauthorized detected for: $urlStr');
-      
+
       // Don't logout if we're actually trying to login or refresh
       // Logout will be handled by _withRefresh after refresh attempt fails
       if (!urlStr.contains('login') && !urlStr.contains('refresh')) {
-        _logger.i('401 on non-auth endpoint - will attempt refresh then logout if fails');
+        _logger.i(
+            '401 on non-auth endpoint - will attempt refresh then logout if fails');
         throw ApiException(401, 'Session expired. Please log in again.');
       }
     }
