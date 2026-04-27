@@ -992,14 +992,27 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                             } catch (e) {
                               if (mounted) {
                                 setDialogState(() => _isLoading = false);
+                                String errorMsg = e.toString();
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(e.toString())));
+                                    SnackBar(content: Text(errorMsg)));
+
+                                // Fix: If already started, close modal and refresh UI to stay in sync
+                                if (errorMsg.contains('already been started')) {
+                                  Navigator.pop(context);
+                                  _loadData();
+                                }
                               }
                             }
                           },
-                          icon: const Icon(Icons.play_arrow, size: 18),
-                          label: const Text('Start Session',
-                              style: TextStyle(
+                          icon: _isLoading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.white))
+                              : const Icon(Icons.play_arrow, size: 18),
+                          label: Text(_isLoading ? 'Starting...' : 'Start Session',
+                              style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 15)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: successGreen,
