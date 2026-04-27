@@ -13,6 +13,7 @@ import '../../screens/teacher/teacher_profile_edit_screen.dart';
 import '../../screens/student/student_dashboard_screen.dart';
 import '../../screens/student/student_scan_screen.dart';
 import '../../screens/student/student_fingerprint_screen.dart';
+import '../../screens/student/student_schedules_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -27,6 +28,7 @@ class AppRoutes {
   static const String teacherSchedules = '/teacher-schedules';
   static const String teacherProfileEdit = '/teacher-profile-edit';
   static const String studentDashboard = '/student-dashboard';
+  static const String studentSchedules = '/student-schedules';
   static const String studentScan = '/student-scan';
   static const String teacherNotifications = '/teacher-notifications';
   static const String studentFingerprint = '/student-fingerprint';
@@ -40,10 +42,10 @@ class AppRoutes {
       teacherDashboard: (context) => const TeacherDashboardScreen(),
       attendance: (context) => const AttendanceScreen(),
       sessionDashboard: (context) => const SessionDashboardScreen(),
-
       teacherSchedules: (context) => const TeacherSchedulesScreen(),
       teacherProfileEdit: (context) => const TeacherProfileEditScreen(),
       studentDashboard: (context) => const StudentDashboardScreen(),
+      studentSchedules: (context) => const StudentSchedulesScreen(),
       studentScan: (context) => const StudentScanScreen(),
       teacherNotifications: (context) => const TeacherNotificationScreen(),
       studentFingerprint: (context) => const StudentFingerprintScreen(),
