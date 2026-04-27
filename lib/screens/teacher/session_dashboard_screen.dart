@@ -838,12 +838,15 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     // For ended/cancelled sessions, navigate to the dedicated details screen
     if (!isActive) {
       if (mounted) {
-        Navigator.push(
+        final result = await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => SessionDetailsScreen(session: s),
           ),
-        ).then((_) => _loadData());
+        );
+        if (result == true) {
+          _loadData();
+        }
       }
       return;
     }

@@ -199,6 +199,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             backgroundColor: Color(0xFF34D399),
           ),
         );
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
@@ -264,6 +265,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           description: descriptionController.text,
           rowVersion: _session!.rowVersion!);
       await _refreshSession();
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error ending session: $e')),
@@ -301,7 +305,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       await _apiService.deleteSession(_session!.id,
           reason: reasonController.text, rowVersion: _session!.rowVersion!);
       if (mounted) {
-        Navigator.pop(context);
+        Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Session deleted successfully.')),
         );
