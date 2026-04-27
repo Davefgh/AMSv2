@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/routes/app_routes.dart';
 import '../../../services/api_service.dart';
 import '../../../services/storage_service.dart';
+import '../../../services/notification_hub_service.dart';
 import '../../../providers/app_provider.dart';
 import '../../../utils/constants.dart';
 
@@ -66,6 +67,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
         if (mounted) {
           ref.read(appProvider.notifier).setUserRole(role);
+
+          // Start foreground notification hub connection
+          NotificationHubService().start();
 
           if (role == 'instructor' || role == 'teacher') {
             Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);

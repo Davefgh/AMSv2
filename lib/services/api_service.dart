@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import '../utils/constants.dart';
 import '../utils/id_utils.dart';
 import 'storage_service.dart';
+import 'notification_hub_service.dart';
 import '../models/user_profile.dart';
 import '../models/app_user.dart';
 import '../models/instructor_model.dart';
@@ -1377,6 +1378,7 @@ class ApiService {
   }
 
   Future<void> _handleLogout() async {
+    await NotificationHubService().stop();
     await StorageService.remove(AppConstants.storageKeyToken);
     await StorageService.remove(AppConstants.storageKeyRefreshToken);
     await StorageService.remove(AppConstants.storageKeyUser);

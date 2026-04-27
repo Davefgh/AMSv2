@@ -8,6 +8,8 @@ import '../../../models/user_profile.dart';
 import '../../../models/instructor_model.dart';
 import '../../../widgets/main_scaffold.dart';
 import '../../../providers/app_provider.dart';
+import '../../../providers/notification_provider.dart';
+import '../../../services/notification_hub_service.dart';
 import '../../../utils/sizing_utils.dart';
 import '../../../utils/constants.dart';
 import '../../../widgets/skeleton_loader.dart';
@@ -169,7 +171,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     if (confirmed != true) return;
 
+    await NotificationHubService().stop();
+    ref.read(notificationProvider.notifier).clearNotifications();
     await StorageService.remove(AppConstants.storageKeyToken);
+    await StorageService.remove(AppConstants.storageKeyRefreshToken);
+    await StorageService.remove(AppConstants.storageKeyUser);
     await StorageService.remove(AppConstants.storageKeyRole);
 
     if (mounted) {

@@ -4,9 +4,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'config/theme/app_theme.dart';
 import 'config/routes/app_routes.dart';
 import 'providers/app_provider.dart';
+import 'models/notification_model.dart';
+import 'providers/notification_provider.dart';
 import 'screens/shared/auth/login_screen.dart';
 import 'services/storage_service.dart';
 import 'services/api_service.dart';
+import 'services/notification_hub_service.dart';
 import 'utils/constants.dart';
 import 'widgets/navigation_shell.dart';
 
@@ -73,14 +76,77 @@ class MyApp extends ConsumerStatefulWidget {
   ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends ConsumerState<MyApp> {
+class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    // Initialize user role after first frame to avoid modifying provider during build
+    WidgetsBinding.instance.addObserver(this);
+
+    // Initialize user role and notification hub after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(appProvider.notifier).setUserRole(widget.initialRole);
+      _setupNotificationHub();
+      _startNotificationHub();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _startNotificationHub();
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        NotificationHubService().stop();
+        break;
+    }
+  }
+
+  void _setupNotificationHub() {
+    final hub = NotificationHubService();
+    hub.setOnNotification((notification) {
+      ref.read(notificationProvider.notifier).addNotification(notification);
+      _showForegroundSnackBar(notification);
+    });
+  }
+
+  void _startNotificationHub() {
+    final token = StorageService.getString(AppConstants.storageKeyToken);
+    final hub = NotificationHubService();
+    if (token != null &&
+        token.isNotEmpty &&
+        !hub.isConnected &&
+        !hub.isConnecting) {
+      hub.start();
+    }
+  }
+
+  void _showForegroundSnackBar(NotificationModel notification) {
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${notification.title}: ${notification.message}'),
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Dismiss',
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            },
+          ),
+        ),
+      );
+    }
   }
 
   @override

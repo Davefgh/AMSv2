@@ -7,9 +7,11 @@ import '../screens/teacher/session_dashboard_screen.dart';
 import '../screens/student/student_dashboard_screen.dart';
 import '../screens/student/student_scan_screen.dart';
 import '../screens/shared/profile/profile_screen.dart';
+import '../config/routes/app_routes.dart';
 import '../utils/responsive.dart';
 import '../utils/sizing_utils.dart';
 import '../providers/app_provider.dart';
+import '../providers/notification_provider.dart';
 import 'dart:ui';
 
 part 'navigation_shell.g.dart';
@@ -227,16 +229,56 @@ class NavigationShell extends ConsumerWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Notifications coming soon!')),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final unreadCount =
+                        ref.watch(notificationProvider).unreadCount;
+                    return Stack(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            ref
+                                .read(notificationProvider.notifier)
+                                .markAllRead();
+                            Navigator.pushNamed(
+                                context, AppRoutes.notifications);
+                          },
+                          icon: Icon(
+                            unreadCount > 0
+                                ? Icons.notifications_rounded
+                                : Icons.notifications_none_rounded,
+                            color: textColor.withValues(alpha: 0.7),
+                          ),
+                          splashRadius: 20,
+                        ),
+                        if (unreadCount > 0)
+                          Positioned(
+                            right: 4,
+                            top: 4,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF38BDF8),
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 18,
+                                minHeight: 18,
+                              ),
+                              child: Text(
+                                unreadCount > 99 ? '99+' : '$unreadCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
                     );
                   },
-                  icon: Icon(Icons.notifications_none_rounded,
-                      color: textColor.withValues(alpha: 0.7)),
-                  splashRadius: 20,
                 ),
                 const SizedBox(width: 4),
                 IconButton(
@@ -258,6 +300,56 @@ class NavigationShell extends ConsumerWidget {
                 ),
                 const SizedBox(width: 12),
               ],
+            ),
+          // Add notification icon for teachers
+          if (!isStudent)
+            Consumer(
+              builder: (context, ref, child) {
+                final unreadCount = ref.watch(notificationProvider).unreadCount;
+                return Stack(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        ref.read(notificationProvider.notifier).markAllRead();
+                        Navigator.pushNamed(
+                            context, AppRoutes.teacherNotifications);
+                      },
+                      icon: Icon(
+                        unreadCount > 0
+                            ? Icons.notifications_rounded
+                            : Icons.notifications_none_rounded,
+                        color: textColor.withValues(alpha: 0.7),
+                      ),
+                      splashRadius: 20,
+                    ),
+                    if (unreadCount > 0)
+                      Positioned(
+                        right: 4,
+                        top: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF38BDF8),
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            unreadCount > 99 ? '99+' : '$unreadCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
         ],
       ),
