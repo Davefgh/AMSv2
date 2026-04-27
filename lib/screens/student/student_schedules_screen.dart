@@ -66,7 +66,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
   @override
   Widget build(BuildContext context) {
     return _isLoading
-        ? const SkeletonDashboard()
+        ? const SkeletonListView(itemCount: 6)
         : _errorMessage != null
             ? _buildErrorState()
             : RefreshIndicator(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/routes/app_routes.dart';
 import '../../utils/sizing_utils.dart';
-import '../../widgets/skeleton_loader.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -11,64 +10,39 @@ class StudentDashboardScreen extends StatefulWidget {
 }
 
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
-  bool _isLoading = true;
   String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      // Load any necessary data for dashboard overview
-      // For now, just simulate loading
-      await Future.delayed(const Duration(milliseconds: 500));
-      setState(() {
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return _isLoading
-        ? const SkeletonDashboard()
-        : _errorMessage != null
-            ? _buildErrorState()
-            : RefreshIndicator(
-                onRefresh: _loadData,
-                color: const Color(0xFF38BDF8),
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(
-                      parent: AlwaysScrollableScrollPhysics()),
-                  padding: EdgeInsets.symmetric(
-                      horizontal: Sizing.w(24), vertical: Sizing.h(20)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildWelcomeHeader(),
-                      SizedBox(height: Sizing.h(32)),
-                      _buildFingerprintBanner(),
-                      SizedBox(height: Sizing.h(32)),
-                      _buildAttendanceStats(),
-                      SizedBox(height: Sizing.h(32)),
-                      _buildQuickActions(),
-                    ],
-                  ),
-                ),
-              );
+    return _errorMessage != null
+        ? _buildErrorState()
+        : RefreshIndicator(
+            onRefresh: () async {},
+            color: const Color(0xFF38BDF8),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
+              padding: EdgeInsets.symmetric(
+                  horizontal: Sizing.w(24), vertical: Sizing.h(20)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildWelcomeHeader(),
+                  SizedBox(height: Sizing.h(32)),
+                  _buildFingerprintBanner(),
+                  SizedBox(height: Sizing.h(32)),
+                  _buildAttendanceStats(),
+                  SizedBox(height: Sizing.h(32)),
+                  _buildQuickActions(),
+                ],
+              ),
+            ),
+          );
   }
 
   Widget _buildErrorState() {
@@ -84,18 +58,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               _errorMessage!,
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _loadData,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: const Color(0xFF0F172A),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
             ),
           ],
         ),

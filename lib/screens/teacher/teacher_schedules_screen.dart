@@ -140,7 +140,7 @@ class _TeacherSchedulesScreenState
         ),
       ),
       body: _isLoading
-          ? const SkeletonDashboard()
+          ? const SkeletonListView(itemCount: 8)
           : _errorMessage != null
               ? _buildErrorState()
               : _buildContent(),
