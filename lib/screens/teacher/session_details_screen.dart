@@ -758,7 +758,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                           Text(
                             sectionLine,
                             style: TextStyle(
-                              color: const Color(0xFF38BDF8).withValues(alpha: 0.85),
+                              color: const Color(0xFF38BDF8)
+                                  .withValues(alpha: 0.85),
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1.5,
@@ -800,7 +801,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                                 icon: Icons.meeting_room_rounded,
                                 iconColor: const Color(0xFF38BDF8),
                                 label: roomName,
-                                detail: hasRoomChanged ? 'Room updated' : 'Classroom',
+                                detail: hasRoomChanged
+                                    ? 'Room updated'
+                                    : 'Classroom',
                                 detailColor: hasRoomChanged
                                     ? const Color(0xFFFBBF24)
                                     : null,
@@ -821,7 +824,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                                 label: _session?.attendanceCutOff != null
                                     ? DateFormat('h:mm a')
                                         .format(_session!.attendanceCutOff!)
-                                    : (_schedule?.attendanceCutoffMinutes != null
+                                    : (_schedule?.attendanceCutoffMinutes !=
+                                            null
                                         ? '${_schedule!.attendanceCutoffMinutes} min'
                                         : 'Not Set'),
                                 detail: _timeRemainingText.isNotEmpty
@@ -834,10 +838,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                                 trailing: isActive
                                     ? GestureDetector(
                                         onTap: _showCutoffSelection,
-                                        child: const Icon(
-                                            Icons.edit_rounded,
-                                            size: 14,
-                                            color: Color(0xFF38BDF8)),
+                                        child: const Icon(Icons.edit_rounded,
+                                            size: 14, color: Color(0xFF38BDF8)),
                                       )
                                     : null,
                               ),
@@ -900,8 +902,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             const SizedBox(width: 6),
             if (_qrCodes.isNotEmpty)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
@@ -1108,12 +1109,13 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                     letterSpacing: -0.1,
                   ),
                 ),
-                if (detail != null) ...[  
+                if (detail != null) ...[
                   const SizedBox(height: 1),
                   Text(
                     detail,
                     style: TextStyle(
-                      color: detailColor ?? Colors.white.withValues(alpha: 0.32),
+                      color:
+                          detailColor ?? Colors.white.withValues(alpha: 0.32),
                       fontSize: 11,
                       fontWeight: detailColor != null
                           ? FontWeight.w600
@@ -1167,8 +1169,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
               ),
               child: const Icon(Icons.arrow_back_ios_new_rounded,
                   color: Colors.white, size: 15),
@@ -1205,25 +1206,6 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  // Legacy _buildInfoRow kept for any remaining references; new layout uses _buildCompactRow
-  Widget _buildInfoRow({
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    Color? iconColor,
-    String? badge,
-    bool isInstructor = false,
-    Widget? trailing,
-  }) {
-    return _buildCompactRow(
-      icon: icon,
-      iconColor: iconColor ?? Colors.white70,
-      label: title,
-      detail: subtitle,
-      trailing: trailing,
     );
   }
 
@@ -1303,8 +1285,6 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     );
   }
 
-  Widget _buildDivider() => _buildThinDivider();
-
   Widget _buildBottomActions(bool isActive, bool isEnded) {
     final bool hasSession = _session != null;
     final bool isNotStarted = !isActive && !isEnded;
@@ -1314,8 +1294,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       padding: EdgeInsets.only(
         left: 16,
         right: 16,
-        top: 10,
-        bottom: MediaQuery.of(context).padding.bottom + 10,
+        top: 12,
+        bottom: MediaQuery.of(context).padding.bottom + 12,
       ),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
@@ -1324,7 +1304,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       ),
       child: Row(
         children: [
-          if (isNotStarted && !isCancelled) ...[  
+          // ── NOT STARTED: [Start Session ──────] [🗑]
+          if (isNotStarted && !isCancelled) ...[
             Expanded(
               child: _buildPillButton(
                 onPressed: _showStartModal,
@@ -1334,40 +1315,67 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 fgColor: const Color(0xFF0F172A),
               ),
             ),
-            if (hasSession) const SizedBox(width: 8),
-          ],
-          if (isActive) ...[  
-            Expanded(
-              child: _buildPillButton(
-                onPressed: _showQRCodeDialog,
-                icon: Icons.qr_code_rounded,
-                label: 'QR Code',
-                bgColor: const Color(0xFF38BDF8),
-                fgColor: const Color(0xFF0F172A),
+            if (hasSession) ...[
+              const SizedBox(width: 10),
+              _buildSquareButton(
+                onPressed: _handleDeleteSession,
+                icon: Icons.delete_outline_rounded,
+                color: Colors.redAccent,
               ),
-            ),
-            const SizedBox(width: 8),
+            ],
+          ],
+
+          // ── ACTIVE: [⬛ End] [QR Code ──────────]
+          if (isActive) ...[
             _buildSquareButton(
               onPressed: _handleEndSession,
               icon: Icons.stop_rounded,
               color: Colors.redAccent,
             ),
-          ],
-          if ((isNotStarted || isCancelled) && hasSession) ...[  
-            _buildSquareButton(
-              onPressed: _handleDeleteSession,
-              icon: Icons.delete_outline_rounded,
-              color: Colors.redAccent,
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildPillButton(
+                onPressed: _showQRCodeDialog,
+                icon: Icons.qr_code_rounded,
+                label: 'Generate QR Code',
+                bgColor: const Color(0xFF38BDF8),
+                fgColor: const Color(0xFF0F172A),
+              ),
             ),
           ],
-          if (isEnded || isCancelled) ...[  
-            if (isEnded) const SizedBox(width: 8),
-            _buildSquareButton(
-              onPressed: () => Navigator.pop(context),
-              icon: Icons.check_rounded,
-              color: Colors.white54,
+
+          // ── CANCELLED (not ended): [🗑] [✓ Done ────]
+          if (isCancelled) ...[
+            if (hasSession) ...[
+              _buildSquareButton(
+                onPressed: _handleDeleteSession,
+                icon: Icons.delete_outline_rounded,
+                color: Colors.redAccent,
+              ),
+              const SizedBox(width: 10),
+            ],
+            Expanded(
+              child: _buildPillButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icons.check_rounded,
+                label: 'Done',
+                bgColor: Colors.white.withValues(alpha: 0.07),
+                fgColor: Colors.white,
+              ),
             ),
           ],
+
+          // ── ENDED: [✓ Done ─────────────────────]
+          if (isEnded)
+            Expanded(
+              child: _buildPillButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icons.check_rounded,
+                label: 'Done',
+                bgColor: Colors.white.withValues(alpha: 0.07),
+                fgColor: Colors.white,
+              ),
+            ),
         ],
       ),
     );
@@ -1383,23 +1391,26 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 13),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: bgColor.withValues(alpha: 0.25),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow:
+              bgColor == Colors.transparent || (bgColor.a * 255.0).round() < 30
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: bgColor.withValues(alpha: 0.22),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: fgColor, size: 16),
-            const SizedBox(width: 6),
+            const SizedBox(width: 7),
             Text(
               label,
               style: TextStyle(
@@ -1422,33 +1433,15 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        width: 44,
-        height: 44,
+        width: 46,
+        height: 46,
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.18)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Icon(icon, color: color, size: 18),
       ),
-    );
-  }
-
-  // Legacy _buildActionButton kept for any remaining internal references
-  Widget _buildActionButton({
-    required VoidCallback onPressed,
-    required IconData icon,
-    required String label,
-    required Color color,
-    required Color textColor,
-    bool isOutlined = false,
-  }) {
-    return _buildPillButton(
-      onPressed: onPressed,
-      icon: icon,
-      label: label,
-      bgColor: isOutlined ? Colors.transparent : color,
-      fgColor: textColor,
     );
   }
 
