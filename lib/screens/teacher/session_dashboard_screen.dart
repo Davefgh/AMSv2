@@ -161,8 +161,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     final TextEditingController dateController = TextEditingController(
         text: DateFormat('MM/dd/yyyy').format(selectedDate));
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => StatefulBuilder(builder: (context, setModalState) {
         bool isOffSchedule = false;
         if (selectedSchedule != null && selectedSchedule!.dayOfWeek != null) {
@@ -172,130 +174,122 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         final isReasonValid =
             !isOffSchedule || reasonController.text.trim().length >= 5;
 
-        return Dialog(
-          backgroundColor: surfaceColor,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        return Container(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 32,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+          ),
+          decoration: BoxDecoration(
+            color: surfaceColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            border: Border.all(color: dividerColor),
+          ),
           child: Theme(
             data: ThemeData.dark().copyWith(
               primaryColor: primaryBlue,
               colorScheme: const ColorScheme.dark(primary: primaryBlue),
             ),
-            child: Container(
-              width: 500,
-              padding: const EdgeInsets.all(24),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Create New Session',
-                          style: TextStyle(
-                              color: headerTextColor,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          icon:
-                              const Icon(Icons.close, color: subtitleTextColor),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                    const Divider(color: dividerColor),
-                    const SizedBox(height: 16),
-                    _buildLabel('Schedule *'),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 48,
+                      height: 5,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        border: Border.all(color: dividerColor),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<Schedule>(
-                          value: selectedSchedule,
-                          isExpanded: true,
-                          dropdownColor: surfaceColor,
-                          items: _instructorSchedules
-                              .map((s) => DropdownMenuItem(
-                                    value: s,
-                                    child: Text(
-                                      '${s.subjectCode} - Section ${s.sectionName} (${s.dayName})',
-                                      style: const TextStyle(
-                                          fontSize: 14, color: Colors.white),
-                                    ),
-                                  ))
-                              .toList(),
-                          onChanged: (val) =>
-                              setModalState(() => selectedSchedule = val),
-                        ),
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    _buildLabel('Session Date *'),
-                    GestureDetector(
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDate,
-                          firstDate: DateTime.now()
-                              .subtract(const Duration(days: 365)),
-                          lastDate:
-                              DateTime.now().add(const Duration(days: 365)),
-                          builder: (context, child) => Theme(
-                            data: ThemeData.dark().copyWith(
-                              colorScheme: const ColorScheme.dark(
-                                primary: primaryBlue,
-                                surface: surfaceColor,
-                              ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Create New Session',
+                        style: TextStyle(
+                            color: headerTextColor,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: subtitleTextColor),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const Divider(color: dividerColor),
+                  const SizedBox(height: 16),
+                  _buildLabel('Schedule *'),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      border: Border.all(color: dividerColor),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<Schedule>(
+                        value: selectedSchedule,
+                        isExpanded: true,
+                        dropdownColor: surfaceColor,
+                        items: _instructorSchedules
+                            .map((s) => DropdownMenuItem(
+                                  value: s,
+                                  child: Text(
+                                    '${s.subjectCode} - Section ${s.sectionName} (${s.dayName})',
+                                    style: const TextStyle(
+                                        fontSize: 14, color: Colors.white),
+                                  ),
+                                ))
+                            .toList(),
+                        onChanged: (val) =>
+                            setModalState(() => selectedSchedule = val),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildLabel('Session Date *'),
+                  GestureDetector(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate:
+                            DateTime.now().subtract(const Duration(days: 365)),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                        builder: (context, child) => Theme(
+                          data: ThemeData.dark().copyWith(
+                            colorScheme: const ColorScheme.dark(
+                              primary: primaryBlue,
+                              surface: surfaceColor,
                             ),
-                            child: child!,
                           ),
-                        );
-                        if (picked != null) {
-                          setModalState(() {
-                            selectedDate = picked;
-                            dateController.text =
-                                DateFormat('MM/dd/yyyy').format(picked);
-                          });
-                        }
-                      },
-                      child: AbsorbPointer(
-                        child: TextField(
-                          controller: dateController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            hintText: 'mm/dd/yyyy',
-                            hintStyle: const TextStyle(color: Colors.white24),
-                            suffixIcon: const Icon(Icons.calendar_today,
-                                size: 18, color: primaryBlue),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide:
-                                    const BorderSide(color: dividerColor)),
-                            enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide:
-                                    const BorderSide(color: dividerColor)),
-                          ),
+                          child: child!,
                         ),
-                      ),
-                    ),
-                    if (isOffSchedule) ...[
-                      const SizedBox(height: 16),
-                      _buildLabel('Reason for Off-Schedule Session *'),
-                      TextField(
-                        controller: reasonController,
-                        maxLines: 2,
+                      );
+                      if (picked != null) {
+                        setModalState(() {
+                          selectedDate = picked;
+                          dateController.text =
+                              DateFormat('MM/dd/yyyy').format(picked);
+                        });
+                      }
+                    },
+                    child: AbsorbPointer(
+                      child: TextField(
+                        controller: dateController,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          hintText: 'Required: Why this day?',
+                          hintText: 'mm/dd/yyyy',
                           hintStyle: const TextStyle(color: Colors.white24),
+                          suffixIcon: const Icon(Icons.calendar_today,
+                              size: 18, color: primaryBlue),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide:
@@ -305,17 +299,18 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                               borderSide:
                                   const BorderSide(color: dividerColor)),
                         ),
-                        onChanged: (_) => setModalState(() {}),
                       ),
-                    ],
+                    ),
+                  ),
+                  if (isOffSchedule) ...[
                     const SizedBox(height: 16),
-                    _buildLabel('Description (Optional)'),
+                    _buildLabel('Reason for Off-Schedule Session *'),
                     TextField(
-                      controller: notesController,
+                      controller: reasonController,
                       maxLines: 2,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        hintText: 'Notes...',
+                        hintText: 'Required: Why this day?',
                         hintStyle: const TextStyle(color: Colors.white24),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -324,66 +319,84 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(color: dividerColor)),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: (!isReasonValid || _isLoading)
-                                ? null
-                                : () async {
-                                    setModalState(() => _isLoading = true);
-                                    try {
-                                      await _apiService.createSession({
-                                        'scheduleId': selectedSchedule!.id,
-                                        'sessionDate':
-                                            selectedDate.toIso8601String(),
-                                        'description':
-                                            notesController.text.trim().isEmpty
-                                                ? null
-                                                : notesController.text.trim(),
-                                        if (isOffSchedule) ...{
-                                          'allowOffScheduleDate': true,
-                                          'offScheduleReason':
-                                              reasonController.text.trim(),
-                                        },
-                                      });
-                                      if (mounted) {
-                                        Navigator.pop(context);
-                                        _loadData();
-                                      }
-                                    } catch (e) {
-                                      if (mounted) {
-                                        setModalState(() => _isLoading = false);
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                                content: Text(e.toString())));
-                                      }
-                                    }
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryBlue,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                            ),
-                            child: const Text('Create Session',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel',
-                              style: TextStyle(color: subtitleTextColor)),
-                        ),
-                      ],
+                      onChanged: (_) => setModalState(() {}),
                     ),
                   ],
-                ),
+                  const SizedBox(height: 16),
+                  _buildLabel('Description (Optional)'),
+                  TextField(
+                    controller: notesController,
+                    maxLines: 2,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Notes...',
+                      hintStyle: const TextStyle(color: Colors.white24),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: dividerColor)),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: dividerColor)),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: (!isReasonValid || _isLoading)
+                              ? null
+                              : () async {
+                                  setModalState(() => _isLoading = true);
+                                  try {
+                                    await _apiService.createSession({
+                                      'scheduleId': selectedSchedule!.id,
+                                      'sessionDate':
+                                          selectedDate.toIso8601String(),
+                                      'description':
+                                          notesController.text.trim().isEmpty
+                                              ? null
+                                              : notesController.text.trim(),
+                                      if (isOffSchedule) ...{
+                                        'allowOffScheduleDate': true,
+                                        'offScheduleReason':
+                                            reasonController.text.trim(),
+                                      },
+                                    });
+                                    if (mounted) {
+                                      Navigator.pop(context);
+                                      _loadData();
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      setModalState(() => _isLoading = false);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content: Text(e.toString())));
+                                    }
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryBlue,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: const Text('Create Session',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel',
+                            style: TextStyle(color: subtitleTextColor)),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
@@ -1396,61 +1409,132 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
   void _confirmDelete(ClassSession s) {
     final TextEditingController reasonController = TextEditingController();
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => Theme(
-        data: ThemeData.dark(),
-        child: AlertDialog(
-          backgroundColor: surfaceColor,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Cancel Session'),
-          content: Column(
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 32,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+        ),
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border.all(color: dividerColor),
+        ),
+        child: Theme(
+          data: ThemeData.dark(),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
               const Text(
-                  'Are you sure you want to cancel this session? This action cannot be undone.',
-                  style: TextStyle(color: Colors.white70)),
+                'Cancel Session',
+                style: TextStyle(
+                  color: headerTextColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 16),
+              const Text(
+                'Are you sure you want to cancel this session? This action cannot be undone.',
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+              const SizedBox(height: 24),
               TextField(
                 controller: reasonController,
+                maxLines: 3,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   labelText: 'Reason',
                   labelStyle: const TextStyle(color: subtitleTextColor),
+                  hintText: 'Please provide a reason...',
+                  hintStyle: const TextStyle(color: Colors.white24),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: dividerColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: dividerColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: primaryBlue),
+                  ),
                 ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2)),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child:
+                          const Text('Go Back', style: TextStyle(fontSize: 16)),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (reasonController.text.trim().isEmpty) return;
+                        try {
+                          await _apiService.deleteSession(s.id,
+                              reason: reasonController.text.trim(),
+                              rowVersion: s.rowVersion ?? '');
+                          if (mounted) {
+                            Navigator.pop(context);
+                            _loadData();
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(e.toString())));
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: dangerRed,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text('Cancel Session',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Go Back',
-                    style: TextStyle(color: subtitleTextColor))),
-            TextButton(
-              onPressed: () async {
-                if (reasonController.text.trim().isEmpty) return;
-                try {
-                  await _apiService.deleteSession(s.id,
-                      reason: reasonController.text.trim(),
-                      rowVersion: s.rowVersion ?? '');
-                  if (mounted) {
-                    Navigator.pop(context);
-                    _loadData();
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(e.toString())));
-                  }
-                }
-              },
-              child: const Text('Cancel Session',
-                  style:
-                      TextStyle(color: dangerRed, fontWeight: FontWeight.bold)),
-            ),
-          ],
         ),
       ),
     );

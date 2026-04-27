@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../models/register_request.dart';
 import '../services/api_service.dart';
@@ -93,208 +92,221 @@ class _RegisterUserModalState extends State<RegisterUserModal> {
 
   @override
   Widget build(BuildContext context) {
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.80,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0F172A).withValues(alpha: 0.8),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1,
-          ),
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.90,
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 32,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1,
         ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Add New User',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white70),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              const SizedBox(height: 40),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    children: [
-                      if (_errorMessage != null) ...[
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.redAccent.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                                color: Colors.redAccent.withValues(alpha: 0.3)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.error_outline,
-                                  color: Colors.redAccent, size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  _errorMessage!,
-                                  style: const TextStyle(
-                                      color: Colors.redAccent, fontSize: 13),
-                                ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Add New User',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white70),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 40),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    if (_errorMessage != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                              color: Colors.redAccent.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: Colors.redAccent, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: const TextStyle(
+                                    color: Colors.redAccent, fontSize: 13),
                               ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                      CustomTextField(
-                        label: 'Username',
-                        controller: _usernameController,
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'Required' : null,
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: CustomTextField(
-                              label: 'First Name',
-                              controller: _firstNameController,
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: CustomTextField(
-                              label: 'Last Name',
-                              controller: _lastNameController,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      CustomTextField(
-                        label: 'Email Address',
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return 'Required';
-                          if (!v.contains('@')) return 'Invalid email';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedRole,
-                        dropdownColor: const Color(0xFF1E293B),
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          labelText: 'Role',
-                          labelStyle: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.6)),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                                color: Colors.white.withValues(alpha: 0.2)),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                                color: Colors.white.withValues(alpha: 0.5)),
-                          ),
+                          ],
                         ),
-                        items: _roles
-                            .map((role) => DropdownMenuItem(
-                                  value: role,
-                                  child: Text(role),
-                                ))
-                            .toList(),
-                        onChanged: (v) => setState(() => _selectedRole = v),
-                        validator: (v) => v == null ? 'Required' : null,
                       ),
-                      const SizedBox(height: 20),
-                      CustomTextField(
-                        label: _selectedRole == 'Student'
-                            ? 'Section ID (Required)'
-                            : 'Section ID (Optional)',
-                        controller: _sectionIdController,
-                        keyboardType: TextInputType.number,
-                        validator: (v) {
-                          if (_selectedRole == 'Student' &&
-                              (v == null || v.isEmpty)) {
-                            return 'Required for students';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      CustomTextField(
-                        label: 'Password',
-                        controller: _passwordController,
-                        obscureText: true,
-                        validator: (v) =>
-                            v == null || v.length < 6 ? 'Min 6 chars' : null,
-                      ),
-                      const SizedBox(height: 20),
-                      CustomTextField(
-                        label: 'Repeat Password',
-                        controller: _repeatedPasswordController,
-                        obscureText: true,
-                        validator: (v) {
-                          if (v != _passwordController.text) {
-                            return 'Passwords do not match';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 24),
                     ],
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF38BDF8),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
+                    CustomTextField(
+                      label: 'Username',
+                      controller: _usernameController,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CustomTextField(
+                            label: 'First Name',
+                            controller: _firstNameController,
                           ),
-                        )
-                      : const Text(
-                          'Add New User',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: CustomTextField(
+                            label: 'Last Name',
+                            controller: _lastNameController,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    CustomTextField(
+                      label: 'Email Address',
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Required';
+                        if (!v.contains('@')) return 'Invalid email';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedRole,
+                      dropdownColor: const Color(0xFF1E293B),
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Role',
+                        labelStyle: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6)),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.2)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.5)),
+                        ),
+                      ),
+                      items: _roles
+                          .map((role) => DropdownMenuItem(
+                                value: role,
+                                child: Text(role),
+                              ))
+                          .toList(),
+                      onChanged: (v) => setState(() => _selectedRole = v),
+                      validator: (v) => v == null ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 20),
+                    CustomTextField(
+                      label: _selectedRole == 'Student'
+                          ? 'Section ID (Required)'
+                          : 'Section ID (Optional)',
+                      controller: _sectionIdController,
+                      keyboardType: TextInputType.number,
+                      validator: (v) {
+                        if (_selectedRole == 'Student' &&
+                            (v == null || v.isEmpty)) {
+                          return 'Required for students';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    CustomTextField(
+                      label: 'Password',
+                      controller: _passwordController,
+                      obscureText: true,
+                      validator: (v) =>
+                          v == null || v.length < 6 ? 'Min 6 chars' : null,
+                    ),
+                    const SizedBox(height: 20),
+                    CustomTextField(
+                      label: 'Repeat Password',
+                      controller: _repeatedPasswordController,
+                      obscureText: true,
+                      validator: (v) {
+                        if (v != _passwordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 40),
+                  ],
                 ),
               ),
-              const SizedBox(height: 32),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF38BDF8),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Add New User',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+              ),
+            ),
+          ],
         ),
       ),
     );
