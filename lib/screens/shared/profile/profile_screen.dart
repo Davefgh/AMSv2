@@ -360,6 +360,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 dateFormat.format(profile.createdAt)),
           ] else if (profile is UserProfile) ...[
             _buildDetailTile(
+                Icons.person_outline_rounded, 'Name', profile.fullName),
+            _buildDivider(),
+            _buildDetailTile(
                 Icons.email_outlined, 'Email Address', profile.email),
             _buildDivider(),
             _buildDetailTile(Icons.calendar_month_outlined, 'Member Since',
