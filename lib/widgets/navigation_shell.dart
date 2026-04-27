@@ -187,7 +187,7 @@ class NavigationShell extends ConsumerWidget {
     final textColor = isDark ? Colors.white : Colors.black;
     final titles = isStudent
         ? ['Student Dashboard', 'Scan QR', 'Profile']
-        : ['Teacher Dashboard', 'Attendance', 'Sessions', 'Profile'];
+        : ['Instructor Dashboard', 'Attendance', 'Sessions', 'Profile'];
 
     return Padding(
       padding: EdgeInsets.symmetric(
