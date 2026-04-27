@@ -115,11 +115,36 @@ class _TeacherSchedulesScreenState
 
   @override
   Widget build(BuildContext context) {
-    return _isLoading
-        ? const SkeletonDashboard()
-        : _errorMessage != null
-            ? _buildErrorState()
-            : _buildContent();
+    final appState = ref.watch(appProvider);
+    final isDark = appState.isDarkMode;
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+
+    return Scaffold(
+      backgroundColor: bgColor,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_rounded,
+            color: isDark ? Colors.white : const Color(0xFF1E293B),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'My Weekly Schedule',
+          style: TextStyle(
+            color: isDark ? Colors.white : const Color(0xFF1E293B),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: _isLoading
+          ? const SkeletonDashboard()
+          : _errorMessage != null
+              ? _buildErrorState()
+              : _buildContent(),
+    );
   }
 
   Widget _buildContent() {
@@ -130,94 +155,90 @@ class _TeacherSchedulesScreenState
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
     final subtitleColor =
         isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
-    final bgColor = isDark ? Colors.transparent : const Color(0xFFF8FAFC);
 
-    return Container(
-      color: bgColor,
-      child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-            horizontal: Sizing.w(24), vertical: Sizing.h(20)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Header
-            Text(
-              'My Classes',
-              style: TextStyle(
-                color: textColor,
-                fontSize: Sizing.sp(28),
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.5,
-              ),
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(
+          horizontal: Sizing.w(24), vertical: Sizing.h(20)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Welcome Header
+          Text(
+            'My Classes',
+            style: TextStyle(
+              color: textColor,
+              fontSize: Sizing.sp(28),
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.5,
             ),
-            Text(
-              'Welcome, ${_profile?.fullName ?? "Instructor"}',
-              style: TextStyle(
-                color: subtitleColor,
-                fontSize: Sizing.sp(14),
-                fontWeight: FontWeight.w500,
-              ),
+          ),
+          Text(
+            'Welcome, ${_profile?.fullName ?? "Instructor"}',
+            style: TextStyle(
+              color: subtitleColor,
+              fontSize: Sizing.sp(14),
+              fontWeight: FontWeight.w500,
             ),
-            SizedBox(height: Sizing.h(32)),
+          ),
+          SizedBox(height: Sizing.h(32)),
 
-            // Stats Row
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard(
-                    'Total Sections',
-                    '${sections.length}',
-                    Icons.book_outlined,
-                    const Color(0xFF38BDF8),
-                    isDark,
-                  ),
+          // Stats Row
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Total Sections',
+                  '${sections.length}',
+                  Icons.book_outlined,
+                  const Color(0xFF38BDF8),
+                  isDark,
                 ),
-                SizedBox(width: Sizing.w(16)),
-                Expanded(
-                  child: _buildStatCard(
-                    'Total Unique Students',
-                    '$_totalUniqueStudents',
-                    Icons.people_outline,
-                    const Color(0xFF2DD4BF),
-                    isDark,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: Sizing.h(32)),
-
-            // Sections Grid
-            if (sections.isEmpty)
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: Sizing.h(60)),
-                  child: Text(
-                    'No classes found',
-                    style: TextStyle(
-                        color: subtitleColor, fontSize: Sizing.sp(16)),
-                  ),
-                ),
-              )
-            else
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: MediaQuery.of(context).size.width > 900
-                      ? 4
-                      : (MediaQuery.of(context).size.width > 600 ? 3 : 2),
-                  crossAxisSpacing: Sizing.w(16),
-                  mainAxisSpacing: Sizing.h(16),
-                  childAspectRatio: 0.82,
-                ),
-                itemCount: sections.length,
-                itemBuilder: (context, index) {
-                  final section = sections[index];
-                  return _buildSectionCard(section, isDark);
-                },
               ),
-          ],
-        ),
+              SizedBox(width: Sizing.w(16)),
+              Expanded(
+                child: _buildStatCard(
+                  'Total Unique Students',
+                  '$_totalUniqueStudents',
+                  Icons.people_outline,
+                  const Color(0xFF2DD4BF),
+                  isDark,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: Sizing.h(32)),
+
+          // Sections Grid
+          if (sections.isEmpty)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: Sizing.h(60)),
+                child: Text(
+                  'No classes found',
+                  style:
+                      TextStyle(color: subtitleColor, fontSize: Sizing.sp(16)),
+                ),
+              ),
+            )
+          else
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: MediaQuery.of(context).size.width > 900
+                    ? 4
+                    : (MediaQuery.of(context).size.width > 600 ? 3 : 2),
+                crossAxisSpacing: Sizing.w(16),
+                mainAxisSpacing: Sizing.h(16),
+                childAspectRatio: 0.82,
+              ),
+              itemCount: sections.length,
+              itemBuilder: (context, index) {
+                final section = sections[index];
+                return _buildSectionCard(section, isDark);
+              },
+            ),
+        ],
       ),
     );
   }
@@ -485,19 +506,54 @@ class _TeacherSchedulesScreenState
   }
 
   Widget _buildErrorState() {
+    final appState = ref.watch(appProvider);
+    final isDark = appState.isDarkMode;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
-          SizedBox(height: Sizing.h(16)),
-          Text(_errorMessage!, style: const TextStyle(color: Colors.white70)),
-          SizedBox(height: Sizing.h(24)),
-          ElevatedButton(
-            onPressed: _loadData,
-            child: const Text('Retry'),
-          ),
-        ],
+      child: Padding(
+        padding: EdgeInsets.all(Sizing.w(24)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline_rounded,
+                color: Colors.redAccent, size: Sizing.sp(64)),
+            SizedBox(height: Sizing.h(16)),
+            Text(
+              'Failed to load schedules',
+              style: TextStyle(
+                color: textColor,
+                fontSize: Sizing.sp(18),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: Sizing.h(8)),
+            Text(
+              _errorMessage ?? 'An error occurred',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: textColor.withValues(alpha: 0.6),
+                fontSize: Sizing.sp(14),
+              ),
+            ),
+            SizedBox(height: Sizing.h(24)),
+            ElevatedButton(
+              onPressed: _loadData,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF38BDF8),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: Sizing.w(32),
+                  vertical: Sizing.h(12),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(Sizing.r(12)),
+                ),
+              ),
+              child: const Text('Try Again'),
+            ),
+          ],
+        ),
       ),
     );
   }
