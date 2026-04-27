@@ -139,14 +139,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       child: _filteredSessions.isEmpty
                           ? _buildEmptyState()
                           : ListView.builder(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
-                                physics: const BouncingScrollPhysics(
-                                    parent: AlwaysScrollableScrollPhysics()),
-                                itemCount: _filteredSessions.length,
-                                itemBuilder: (context, index) =>
-                                    _buildSessionCard(_filteredSessions[index]),
-                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 12),
+                              physics: const BouncingScrollPhysics(
+                                  parent: AlwaysScrollableScrollPhysics()),
+                              itemCount: _filteredSessions.length,
+                              itemBuilder: (context, index) =>
+                                  _buildSessionCard(_filteredSessions[index]),
+                            ),
                     ),
         ),
       ],
@@ -166,30 +166,38 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           const SizedBox(height: 20),
 
           // Stats Row
-          Row(
-            children: [
-              _buildStatChip(
-                  '${_stats['active']} Active', const Color(0xFF34D399)),
-              const SizedBox(width: 8),
-              _buildStatChip(
-                  '${_stats['pending']} Pending', const Color(0xFFFBBF24)),
-              const SizedBox(width: 8),
-              _buildStatChip('${_stats['ended']} Ended', Colors.redAccent),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildStatChip(
+                    '${_stats['active']} Active', const Color(0xFF34D399)),
+                const SizedBox(width: 8),
+                _buildStatChip(
+                    '${_stats['pending']} Pending', const Color(0xFFFBBF24)),
+                const SizedBox(width: 8),
+                _buildStatChip('${_stats['ended']} Ended', Colors.redAccent),
+              ],
+            ),
           ),
           const SizedBox(height: 20),
 
           // Filters Row
-          Row(
-            children: [
-              Expanded(
-                child: _buildSearchField(),
-              ),
-              const SizedBox(width: 12),
-              _buildDatePicker(),
-              const SizedBox(width: 12),
-              _buildStatusDropdown(),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                ConstrainedBox(
+                  constraints:
+                      const BoxConstraints(minWidth: 200, maxWidth: 300),
+                  child: _buildSearchField(),
+                ),
+                const SizedBox(width: 12),
+                _buildDatePicker(),
+                const SizedBox(width: 12),
+                _buildStatusDropdown(),
+              ],
+            ),
           ),
         ],
       ),
