@@ -5,7 +5,6 @@ import '../../models/session_model.dart';
 import '../../models/schedule_model.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
-import 'dart:ui';
 import 'dart:async';
 import '../../widgets/skeleton_loader.dart';
 
@@ -23,6 +22,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   ClassSession? _session;
   Schedule? _schedule;
   List<Classroom> _classrooms = [];
+  List<dynamic> _qrCodes = [];
   String _selectedCategory = 'All';
   Classroom? _tempSelectedClassroom;
   bool _isLoading = false;
@@ -78,10 +78,23 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       final classrooms = await _apiService.getClassrooms();
 
       if (_session != null && _schedule == null) {
-        final schedule = await _apiService.getSchedule(_session!.scheduleId);
+        final results = await Future.wait([
+          _apiService.getSchedule(_session!.scheduleId),
+          _apiService.getQrCodesBySession(_session!.id),
+        ]);
         if (mounted) {
           setState(() {
-            _schedule = schedule;
+            _schedule = results[0] as Schedule;
+            _qrCodes = results[1] as List<dynamic>;
+            _classrooms = classrooms;
+            _isInitialLoading = false;
+          });
+        }
+      } else if (_session != null) {
+        final qrCodes = await _apiService.getQrCodesBySession(_session!.id);
+        if (mounted) {
+          setState(() {
+            _qrCodes = qrCodes;
             _classrooms = classrooms;
             _isInitialLoading = false;
           });
@@ -674,6 +687,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
         _session?.status == 'active' || _session?.status == 'started';
     final isEnded =
         _session?.status == 'ended' || _session?.status == 'completed';
+    final isCancelled = _session?.status == 'cancelled';
 
     // Room name logic
     String roomName = 'Room';
@@ -683,132 +697,167 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
       roomName = _schedule!.classroomName;
     }
 
-    // Section/Subject logic
-    String titleText = 'Session Details';
+    // Status chip
+    String statusLabel;
+    Color statusColor;
+    if (isActive) {
+      statusLabel = 'ACTIVE';
+      statusColor = const Color(0xFF34D399);
+    } else if (isEnded) {
+      statusLabel = 'ENDED';
+      statusColor = const Color(0xFF94A3B8);
+    } else if (isCancelled) {
+      statusLabel = 'CANCELLED';
+      statusColor = const Color(0xFFEF4444);
+    } else {
+      statusLabel = 'NOT STARTED';
+      statusColor = const Color(0xFFFBBF24);
+    }
+
+    // Header text
+    String subjectLine = 'Session Details';
+    String sectionLine = '';
     if (_session != null && _session!.sectionName.isNotEmpty) {
-      titleText = '${_session!.sectionName} - ${_session!.subjectName}';
+      subjectLine = _session!.subjectName;
+      sectionLine = _session!.sectionName;
     } else if (_schedule != null) {
-      titleText = '${_schedule!.sectionName} - ${_schedule!.subjectName}';
+      subjectLine = _schedule!.subjectName;
+      sectionLine = _schedule!.sectionName;
     }
 
     bool hasRoomChanged = _session?.actualRoomName != null &&
         _session?.actualRoomName != _session?.scheduledRoomName;
 
+    // Status row values
+    final Color statusRowColor = isActive
+        ? const Color(0xFF34D399)
+        : (isEnded ? const Color(0xFF94A3B8) : const Color(0xFFFBBF24));
+    final IconData statusIcon = isActive
+        ? Icons.play_circle_fill_rounded
+        : (isEnded ? Icons.stop_circle_rounded : Icons.hourglass_full_rounded);
+    final String statusTitle = isActive
+        ? 'Session Active'
+        : (isEnded ? 'Session Ended' : 'Session Not Started');
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
-          _buildBackground(),
           SafeArea(
             child: Column(
               children: [
-                _buildAppBar(),
+                _buildAppBar(statusLabel, statusColor),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 20),
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 12),
+                        // Subject + section header
+                        if (sectionLine.isNotEmpty)
+                          Text(
+                            sectionLine,
+                            style: TextStyle(
+                              color: const Color(0xFF38BDF8).withValues(alpha: 0.85),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        if (sectionLine.isNotEmpty) const SizedBox(height: 3),
                         Text(
-                          titleText,
+                          subjectLine,
                           style: const TextStyle(
-                            fontSize: 24, // Reduced from 32
-                            fontWeight: FontWeight.w900,
                             color: Colors.white,
-                            letterSpacing: -0.5,
-                            height: 1.1,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                            height: 1.15,
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 18),
 
-                        // Glass Container for Details
+                        // Compact info card
                         Container(
-                          padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.03),
-                            borderRadius: BorderRadius.circular(32),
+                            borderRadius: BorderRadius.circular(18),
                             border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.08)),
+                                color: Colors.white.withValues(alpha: 0.07)),
                           ),
                           child: Column(
                             children: [
-                              _buildInfoRow(
-                                icon: Icons.access_time_filled_rounded,
-                                title: _schedule != null
-                                    ? '${_formatTime(_schedule!.timeIn)} - ${_formatTime(_schedule!.timeOut)}'
-                                    : '10:30 AM - 12:30 PM',
-                                subtitle: _getDurationText(_schedule),
+                              _buildCompactRow(
+                                icon: Icons.access_time_rounded,
                                 iconColor: const Color(0xFF38BDF8),
+                                label: _schedule != null
+                                    ? '${_formatTime(_schedule!.timeIn)} – ${_formatTime(_schedule!.timeOut)}'
+                                    : '—',
+                                detail: _getDurationText(_schedule),
                               ),
-                              _buildDivider(),
-                              _buildInfoRow(
-                                icon: Icons.location_on_rounded,
-                                title: roomName,
-                                subtitle: 'Classroom Location',
-                                badge: hasRoomChanged ? 'Updated' : null,
+                              _buildThinDivider(),
+                              _buildCompactRow(
+                                icon: Icons.meeting_room_rounded,
                                 iconColor: const Color(0xFF38BDF8),
+                                label: roomName,
+                                detail: hasRoomChanged ? 'Room updated' : 'Classroom',
+                                detailColor: hasRoomChanged
+                                    ? const Color(0xFFFBBF24)
+                                    : null,
                               ),
-                              _buildDivider(),
-                              _buildInfoRow(
-                                icon: isActive
-                                    ? Icons.play_circle_fill_rounded
-                                    : (isEnded
-                                        ? Icons.stop_circle_rounded
-                                        : Icons.hourglass_full_rounded),
-                                title: isActive
-                                    ? 'Session Active'
-                                    : (isEnded
-                                        ? 'Session Ended'
-                                        : 'Session Not Started'),
-                                subtitle: 'Current Status',
-                                iconColor: isActive
-                                    ? const Color(0xFF34D399)
-                                    : (isEnded
-                                        ? Colors.redAccent
-                                        : const Color(0xFFFBBF24)),
+                              _buildThinDivider(),
+                              _buildCompactRow(
+                                icon: statusIcon,
+                                iconColor: statusRowColor,
+                                label: statusTitle,
+                                detail: 'Current Status',
                               ),
-                              _buildDivider(),
-                              _buildInfoRow(
+                              _buildThinDivider(),
+                              _buildCompactRow(
                                 icon: Icons.timer_rounded,
-                                title: _session?.attendanceCutOff != null
-                                    ? DateFormat('h:mm a')
-                                        .format(_session!.attendanceCutOff!)
-                                    : (_schedule?.attendanceCutoffMinutes !=
-                                            null
-                                        ? '${_schedule!.attendanceCutoffMinutes} minutes'
-                                        : 'Not Set'),
-                                subtitle: _timeRemainingText.isNotEmpty
-                                    ? _timeRemainingText
-                                    : 'Attendance Cutoff',
                                 iconColor: _timeRemainingText == 'EXPIRED'
                                     ? Colors.redAccent
                                     : const Color(0xFF38BDF8),
+                                label: _session?.attendanceCutOff != null
+                                    ? DateFormat('h:mm a')
+                                        .format(_session!.attendanceCutOff!)
+                                    : (_schedule?.attendanceCutoffMinutes != null
+                                        ? '${_schedule!.attendanceCutoffMinutes} min'
+                                        : 'Not Set'),
+                                detail: _timeRemainingText.isNotEmpty
+                                    ? _timeRemainingText
+                                    : 'Attendance Cutoff',
+                                detailColor: _timeRemainingText.isNotEmpty &&
+                                        _timeRemainingText != 'EXPIRED'
+                                    ? const Color(0xFF38BDF8)
+                                    : null,
                                 trailing: isActive
-                                    ? IconButton(
-                                        onPressed: _showCutoffSelection,
-                                        icon: const Icon(
-                                            Icons.edit_calendar_rounded,
-                                            size: 18,
+                                    ? GestureDetector(
+                                        onTap: _showCutoffSelection,
+                                        child: const Icon(
+                                            Icons.edit_rounded,
+                                            size: 14,
                                             color: Color(0xFF38BDF8)),
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
                                       )
                                     : null,
                               ),
-                              _buildDivider(),
-                              _buildInfoRow(
+                              _buildThinDivider(),
+                              _buildCompactRow(
                                 icon: Icons.person_rounded,
-                                title: 'Jovelyn Comaingking',
-                                subtitle: 'Subject Instructor',
                                 iconColor: const Color(0xFF38BDF8),
-                                isInstructor: true,
+                                label: 'Jovelyn Comaingking',
+                                detail: 'Subject Instructor',
+                                isLast: true,
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 20),
+
+                        // QR Codes section
+                        _buildQrSection(),
+
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
@@ -819,12 +868,275 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black45,
+              color: Colors.black54,
               child: const Center(
-                  child: CircularProgressIndicator(color: Color(0xFF38BDF8))),
+                  child: CircularProgressIndicator(
+                      color: Color(0xFF38BDF8), strokeWidth: 2)),
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildQrSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section header
+        Row(
+          children: [
+            const Icon(Icons.qr_code_2_rounded,
+                size: 13, color: Color(0xFF94A3B8)),
+            const SizedBox(width: 6),
+            Text(
+              'QR CODES',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.35),
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(width: 6),
+            if (_qrCodes.isNotEmpty)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${_qrCodes.length}',
+                  style: const TextStyle(
+                    color: Color(0xFF38BDF8),
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 10),
+
+        if (_qrCodes.isEmpty)
+          // Empty state
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.07),
+                  style: BorderStyle.solid),
+              color: Colors.white.withValues(alpha: 0.02),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.qr_code_rounded,
+                    size: 28, color: Colors.white.withValues(alpha: 0.12)),
+                const SizedBox(height: 8),
+                Text(
+                  'No QR codes for this session',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.28),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          // QR list
+          Column(
+            children: _qrCodes.asMap().entries.map((entry) {
+              final i = entry.key;
+              final qr = entry.value as Map<String, dynamic>;
+              final hash = (qr['qrHash'] ?? '') as String;
+              final shortHash = hash.length > 8
+                  ? hash.substring(0, 8).toUpperCase()
+                  : hash.toUpperCase();
+              final createdAt = _parseQrDate(qr['createdAt']);
+              final expiresAt = _parseQrDate(qr['expiresAt']);
+              final scanned = qr['scannedCount'] ?? 0;
+              final limit = qr['usageLimit'];
+              final isExpired = expiresAt?.isBefore(DateTime.now()) ?? false;
+              final statusColor =
+                  isExpired ? const Color(0xFFEF4444) : const Color(0xFF34D399);
+              final statusLabel = isExpired ? 'EXPIRED' : 'ACTIVE';
+              final isLast = i == _qrCodes.length - 1;
+
+              return Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 11),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.02),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.06)),
+                    ),
+                    child: Row(
+                      children: [
+                        // QR icon with status color
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: statusColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.qr_code_rounded,
+                              color: statusColor, size: 15),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '#$shortHash…',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'monospace',
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  if (createdAt != null)
+                                    Text(
+                                      DateFormat('MMM d, h:mm a')
+                                          .format(createdAt),
+                                      style: TextStyle(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.32),
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '$scanned / ${limit ?? '∞'} scans',
+                                    style: TextStyle(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.32),
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: statusColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            statusLabel,
+                            style: TextStyle(
+                              color: statusColor,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!isLast) const SizedBox(height: 8),
+                ],
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+  DateTime? _parseQrDate(dynamic value) {
+    if (value == null) return null;
+    try {
+      return DateTime.parse(value.toString());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Widget _buildCompactRow({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    String? detail,
+    Color? detailColor,
+    bool isLast = false,
+    Widget? trailing,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: iconColor, size: 15),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.1,
+                  ),
+                ),
+                if (detail != null) ...[  
+                  const SizedBox(height: 1),
+                  Text(
+                    detail,
+                    style: TextStyle(
+                      color: detailColor ?? Colors.white.withValues(alpha: 0.32),
+                      fontSize: 11,
+                      fontWeight: detailColor != null
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (trailing != null) trailing,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThinDivider() {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      indent: 58,
+      endIndent: 0,
+      color: Colors.white.withValues(alpha: 0.05),
     );
   }
 
@@ -842,88 +1154,61 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     }
   }
 
-  Widget _buildBackground() {
-    return Stack(
-      children: [
-        // Top Right Orb
-        Positioned(
-          top: -100,
-          right: -50,
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
-            ),
-          ),
-        ),
-        // Middle Left Orb
-        Positioned(
-          top: 300,
-          left: -100,
-          child: Container(
-            width: 350,
-            height: 350,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.05),
-            ),
-          ),
-        ),
-        // Bottom Right Orb
-        Positioned(
-          bottom: -50,
-          right: -80,
-          child: Container(
-            width: 250,
-            height: 250,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
-            ),
-          ),
-        ),
-        BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-          child: Container(color: Colors.transparent),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAppBar() {
+  Widget _buildAppBar(String statusLabel, Color statusColor) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08)),
+              ),
+              child: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white, size: 15),
+            ),
+          ),
+          const Expanded(
+            child: Text(
+              'Session Details',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                letterSpacing: 0.1,
+              ),
+            ),
+          ),
           Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
+              color: statusColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: statusColor.withValues(alpha: 0.22)),
             ),
-            child: IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 18),
-            ),
-          ),
-          const Text(
-            'Session Details',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              letterSpacing: 0.5,
+            child: Text(
+              statusLabel,
+              style: TextStyle(
+                color: statusColor,
+                fontSize: 9,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.8,
+              ),
             ),
           ),
-          const SizedBox(width: 48),
         ],
       ),
     );
   }
 
+  // Legacy _buildInfoRow kept for any remaining references; new layout uses _buildCompactRow
   Widget _buildInfoRow({
     required IconData icon,
     required String title,
@@ -933,95 +1218,12 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     bool isInstructor = false,
     Widget? trailing,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: (iconColor ?? Colors.white).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: (iconColor ?? Colors.white).withValues(alpha: 0.1)),
-            ),
-            child: isInstructor
-                ? Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      image: const DecorationImage(
-                        image: NetworkImage(
-                            'https://ui-avatars.com/api/?name=Jovelyn+Comaingking&background=38BDF8&color=0F172A'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  )
-                : Icon(icon, color: iconColor ?? Colors.white70, size: 24),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                    ),
-                    if (badge != null) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color:
-                              const Color(0xFFFBBF24).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          badge,
-                          style: const TextStyle(
-                              color: Color(0xFFFBBF24),
-                              fontSize: 9,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.5),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                if (subtitle != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: _timeRemainingText.contains('m')
-                            ? const Color(0xFF38BDF8)
-                            : Colors.white.withValues(alpha: 0.3),
-                        fontSize: 12,
-                        fontWeight: _timeRemainingText.contains('m')
-                            ? FontWeight.bold
-                            : FontWeight.w500,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          if (trailing != null) trailing,
-        ],
-      ),
+    return _buildCompactRow(
+      icon: icon,
+      iconColor: iconColor ?? Colors.white70,
+      label: title,
+      detail: subtitle,
+      trailing: trailing,
     );
   }
 
@@ -1101,69 +1303,69 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     );
   }
 
-  Widget _buildDivider() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 68),
-      child: Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
-    );
-  }
+  Widget _buildDivider() => _buildThinDivider();
 
   Widget _buildBottomActions(bool isActive, bool isEnded) {
+    final bool hasSession = _session != null;
+    final bool isNotStarted = !isActive && !isEnded;
+    final bool isCancelled = _session?.status == 'cancelled';
+
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.5),
-        border: Border(
-            top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 10,
+        bottom: MediaQuery.of(context).padding.bottom + 10,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        border: Border(
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
+      ),
+      child: Row(
         children: [
-          if (!isActive && !isEnded)
-            _buildActionButton(
-              onPressed: _showStartModal,
-              icon: Icons.play_arrow_rounded,
-              label: 'Start Session',
-              color: const Color(0xFF38BDF8),
-              textColor: const Color(0xFF0F172A),
+          if (isNotStarted && !isCancelled) ...[  
+            Expanded(
+              child: _buildPillButton(
+                onPressed: _showStartModal,
+                icon: Icons.play_arrow_rounded,
+                label: 'Start Session',
+                bgColor: const Color(0xFF38BDF8),
+                fgColor: const Color(0xFF0F172A),
+              ),
             ),
-          if (isActive) ...[
-            _buildActionButton(
-              onPressed: _showQRCodeDialog,
-              icon: Icons.qr_code_rounded,
-              label: 'QR Code',
-              color: const Color(0xFF38BDF8),
-              textColor: const Color(0xFF0F172A),
+            if (hasSession) const SizedBox(width: 8),
+          ],
+          if (isActive) ...[  
+            Expanded(
+              child: _buildPillButton(
+                onPressed: _showQRCodeDialog,
+                icon: Icons.qr_code_rounded,
+                label: 'QR Code',
+                bgColor: const Color(0xFF38BDF8),
+                fgColor: const Color(0xFF0F172A),
+              ),
             ),
-            const SizedBox(height: 12),
-            _buildActionButton(
+            const SizedBox(width: 8),
+            _buildSquareButton(
               onPressed: _handleEndSession,
               icon: Icons.stop_rounded,
-              label: 'End Session',
-              color: Colors.redAccent.withValues(alpha: 0.1),
-              textColor: Colors.redAccent,
-              isOutlined: true,
+              color: Colors.redAccent,
             ),
           ],
-          if (isEnded || !isActive) ...[
-            if (!isActive && _session != null) ...[
-              const SizedBox(height: 12),
-              _buildActionButton(
-                onPressed: _handleDeleteSession,
-                icon: Icons.delete_forever_rounded,
-                label: 'Delete Session',
-                color: Colors.redAccent.withValues(alpha: 0.1),
-                textColor: Colors.redAccent,
-                isOutlined: true,
-              ),
-            ],
-            const SizedBox(height: 12),
-            _buildActionButton(
+          if ((isNotStarted || isCancelled) && hasSession) ...[  
+            _buildSquareButton(
+              onPressed: _handleDeleteSession,
+              icon: Icons.delete_outline_rounded,
+              color: Colors.redAccent,
+            ),
+          ],
+          if (isEnded || isCancelled) ...[  
+            if (isEnded) const SizedBox(width: 8),
+            _buildSquareButton(
               onPressed: () => Navigator.pop(context),
               icon: Icons.check_rounded,
-              label: 'Done',
-              color: Colors.white.withValues(alpha: 0.05),
-              textColor: Colors.white,
+              color: Colors.white54,
             ),
           ],
         ],
@@ -1171,6 +1373,68 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     );
   }
 
+  Widget _buildPillButton({
+    required VoidCallback onPressed,
+    required IconData icon,
+    required String label,
+    required Color bgColor,
+    required Color fgColor,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 13),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: bgColor.withValues(alpha: 0.25),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: fgColor, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: fgColor,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSquareButton({
+    required VoidCallback onPressed,
+    required IconData icon,
+    required Color color,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.18)),
+        ),
+        child: Icon(icon, color: color, size: 18),
+      ),
+    );
+  }
+
+  // Legacy _buildActionButton kept for any remaining internal references
   Widget _buildActionButton({
     required VoidCallback onPressed,
     required IconData icon,
@@ -1179,38 +1443,12 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     required Color textColor,
     bool isOutlined = false,
   }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: isOutlined
-            ? []
-            : [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-      ),
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 20),
-        label: Text(label,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isOutlined ? Colors.transparent : color,
-          foregroundColor: textColor,
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-            side: isOutlined
-                ? BorderSide(color: color.withValues(alpha: 0.3))
-                : BorderSide.none,
-          ),
-          elevation: 0,
-        ),
-      ),
+    return _buildPillButton(
+      onPressed: onPressed,
+      icon: icon,
+      label: label,
+      bgColor: isOutlined ? Colors.transparent : color,
+      fgColor: textColor,
     );
   }
 
