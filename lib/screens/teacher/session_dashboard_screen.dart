@@ -418,57 +418,38 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Add create session button at the top
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ElevatedButton.icon(
-                onPressed: _onCreateSession,
-                icon: const Icon(Icons.add_circle_outline, size: 18),
-                label: const Text('Create Session'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryBlue,
-                  foregroundColor: Colors.black,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: _isLoading
-              ? const SkeletonSessionList()
-              : _errorMessage != null
-                  ? _buildErrorState()
-                  : RefreshIndicator(
-                      onRefresh: _loadData,
-                      color: primaryBlue,
-                      backgroundColor: surfaceColor,
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildTabContainer(),
-                              const SizedBox(height: 24),
-                              _buildTableContainer(),
-                            ],
-                          ),
-                        ),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: _isLoading
+          ? const SkeletonSessionList()
+          : _errorMessage != null
+              ? _buildErrorState()
+              : RefreshIndicator(
+                  onRefresh: _loadData,
+                  color: primaryBlue,
+                  backgroundColor: surfaceColor,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildTabContainer(),
+                          const SizedBox(height: 24),
+                          _buildTableContainer(),
+                        ],
                       ),
                     ),
-        ),
-      ],
+                  ),
+                ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _onCreateSession,
+        backgroundColor: primaryBlue,
+        foregroundColor: Colors.black,
+        elevation: 4,
+        child: const Icon(Icons.add, size: 28),
+      ),
     );
   }
 
@@ -834,22 +815,6 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     );
   }
 
-  Widget _buildSecondaryButton(
-      String label, IconData icon, VoidCallback onTap) {
-    return OutlinedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 18),
-      label: Text(label,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.white70,
-        side: const BorderSide(color: Colors.white10),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
-
   Widget _buildIconButton(IconData icon, Color color, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
@@ -900,8 +865,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       builder: (context) {
         return Dialog(
           backgroundColor: surfaceColor,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
@@ -915,19 +882,26 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('QR Codes for Session', 
-                          style: TextStyle(color: headerTextColor, fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text('${s.subjectName} - ${s.sectionName}', 
-                          style: const TextStyle(color: subtitleTextColor, fontSize: 13)),
+                        const Text('QR Codes for Session',
+                            style: TextStyle(
+                                color: headerTextColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
+                        Text('${s.subjectName} - ${s.sectionName}',
+                            style: const TextStyle(
+                                color: subtitleTextColor, fontSize: 13)),
                       ],
                     ),
-                    IconButton(icon: const Icon(Icons.close, color: subtitleTextColor), onPressed: () => Navigator.pop(context)),
+                    IconButton(
+                        icon: const Icon(Icons.close, color: subtitleTextColor),
+                        onPressed: () => Navigator.pop(context)),
                   ],
                 ),
                 const SizedBox(height: 24),
-                Text('${qrCodes.length} QR codes', style: const TextStyle(color: subtitleTextColor, fontSize: 14)),
+                Text('${qrCodes.length} QR codes',
+                    style: const TextStyle(
+                        color: subtitleTextColor, fontSize: 14)),
                 const SizedBox(height: 16),
-                
                 Flexible(
                   child: ListView.separated(
                     shrinkWrap: true,
@@ -940,10 +914,12 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                       final expiresAt = _parseDateTime(qr['expiresAt']);
                       final scanned = qr['scannedCount'] ?? 0;
                       final limit = qr['usageLimit'];
-                      
+
                       final isExpired = expiresAt.isBefore(DateTime.now());
                       final diff = expiresAt.difference(DateTime.now());
-                      final expirationText = isExpired ? 'Expired' : 'Expires in ${diff.inMinutes}m';
+                      final expirationText = isExpired
+                          ? 'Expired'
+                          : 'Expires in ${diff.inMinutes}m';
                       final statusColor = isExpired ? dangerRed : successGreen;
                       final statusLabel = isExpired ? 'EXPIRED' : 'ACTIVE';
 
@@ -961,25 +937,40 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
-                                  child: Text('QR #${hash.length > 8 ? hash.substring(0, 8) : hash}...', 
-                                    style: const TextStyle(color: headerTextColor, fontWeight: FontWeight.bold, fontSize: 15)),
+                                  child: Text(
+                                      'QR #${hash.length > 8 ? hash.substring(0, 8) : hash}...',
+                                      style: const TextStyle(
+                                          color: headerTextColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15)),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: statusColor.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: Text(statusLabel, style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  child: Text(statusLabel,
+                                      style: TextStyle(
+                                          color: statusColor,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 12),
-                            _buildQRListInfoRow(Icons.history, 'Created:', DateFormat('MMM d, y, hh:mm a').format(createdAt)),
+                            _buildQRListInfoRow(
+                                Icons.history,
+                                'Created:',
+                                DateFormat('MMM d, y, hh:mm a')
+                                    .format(createdAt)),
                             const SizedBox(height: 6),
-                            _buildQRListInfoRow(Icons.timer_outlined, 'Expiration:', expirationText),
+                            _buildQRListInfoRow(Icons.timer_outlined,
+                                'Expiration:', expirationText),
                             const SizedBox(height: 6),
-                            _buildQRListInfoRow(Icons.people_outline, 'Usage:', '$scanned / ${limit ?? 'Unlimited'}'),
+                            _buildQRListInfoRow(Icons.people_outline, 'Usage:',
+                                '$scanned / ${limit ?? 'Unlimited'}'),
                             const SizedBox(height: 16),
                             SizedBox(
                               width: double.infinity,
@@ -989,11 +980,17 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                                   _showSessionQRDetailsModal(s, qr);
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: isExpired ? Colors.white12 : const Color(0xFF4F46E5),
+                                  backgroundColor: isExpired
+                                      ? Colors.white12
+                                      : const Color(0xFF4F46E5),
                                   foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
                                 ),
-                                child: Text(isExpired ? 'View Details' : 'View QR Code', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                child: Text(
+                                    isExpired ? 'View Details' : 'View QR Code',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
                               ),
                             ),
                           ],
@@ -1006,7 +1003,10 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                 Center(
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Close', style: TextStyle(color: subtitleTextColor, fontWeight: FontWeight.bold)),
+                    child: const Text('Close',
+                        style: TextStyle(
+                            color: subtitleTextColor,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -1028,55 +1028,71 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               content = const Padding(
                 padding: EdgeInsets.all(40),
-                child: Center(child: CircularProgressIndicator(color: primaryBlue)),
+                child: Center(
+                    child: CircularProgressIndicator(color: primaryBlue)),
               );
-            } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+            } else if (snapshot.hasError ||
+                !snapshot.hasData ||
+                snapshot.data!.isEmpty) {
               content = Padding(
                 padding: const EdgeInsets.all(40),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.people_outline, size: 48, color: Colors.white.withValues(alpha: 0.1)),
+                    Icon(Icons.people_outline,
+                        size: 48, color: Colors.white.withValues(alpha: 0.1)),
                     const SizedBox(height: 16),
-                    const Text('No scans recorded yet', style: TextStyle(color: subtitleTextColor)),
+                    const Text('No scans recorded yet',
+                        style: TextStyle(color: subtitleTextColor)),
                   ],
                 ),
               );
             } else {
               final scans = snapshot.data!;
               content = ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
+                constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.6),
                 child: ListView.separated(
                   shrinkWrap: true,
                   padding: const EdgeInsets.all(20),
                   itemCount: scans.length,
-                  separatorBuilder: (_, __) => const Divider(color: dividerColor, height: 24),
+                  separatorBuilder: (_, __) =>
+                      const Divider(color: dividerColor, height: 24),
                   itemBuilder: (context, index) {
                     final scan = scans[index];
                     final student = scan['student'] ?? {};
                     final name = student['fullName'] ?? 'Unknown Student';
                     final studentId = student['studentNumber'] ?? 'N/A';
-                    final scanTime = DateTime.parse(scan['scannedAt'] ?? DateTime.now().toIso8601String());
+                    final scanTime = DateTime.parse(
+                        scan['scannedAt'] ?? DateTime.now().toIso8601String());
 
                     return Row(
                       children: [
                         CircleAvatar(
                           backgroundColor: primaryBlue.withValues(alpha: 0.1),
-                          child: Text(name.isNotEmpty ? name[0] : '?', 
-                              style: const TextStyle(color: primaryBlue, fontWeight: FontWeight.bold)),
+                          child: Text(name.isNotEmpty ? name[0] : '?',
+                              style: const TextStyle(
+                                  color: primaryBlue,
+                                  fontWeight: FontWeight.bold)),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(name, style: const TextStyle(color: headerTextColor, fontWeight: FontWeight.bold)),
-                              Text('ID: $studentId', style: const TextStyle(color: subtitleTextColor, fontSize: 12)),
+                              Text(name,
+                                  style: const TextStyle(
+                                      color: headerTextColor,
+                                      fontWeight: FontWeight.bold)),
+                              Text('ID: $studentId',
+                                  style: const TextStyle(
+                                      color: subtitleTextColor, fontSize: 12)),
                             ],
                           ),
                         ),
-                        Text(DateFormat('hh:mm a').format(scanTime), 
-                            style: const TextStyle(color: subtitleTextColor, fontSize: 12)),
+                        Text(DateFormat('hh:mm a').format(scanTime),
+                            style: const TextStyle(
+                                color: subtitleTextColor, fontSize: 12)),
                       ],
                     );
                   },
@@ -1086,7 +1102,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
             return Dialog(
               backgroundColor: surfaceColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24)),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1095,16 +1112,25 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Scan History', style: TextStyle(color: headerTextColor, fontSize: 18, fontWeight: FontWeight.bold)),
-                        IconButton(icon: const Icon(Icons.close, color: subtitleTextColor), onPressed: () => Navigator.pop(context)),
+                        const Text('Scan History',
+                            style: TextStyle(
+                                color: headerTextColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
+                        IconButton(
+                            icon: const Icon(Icons.close,
+                                color: subtitleTextColor),
+                            onPressed: () => Navigator.pop(context)),
                       ],
                     ),
                   ),
                   content,
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: TextButton(onPressed: () => Navigator.pop(context), 
-                        child: const Text('Close', style: TextStyle(color: subtitleTextColor))),
+                    child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Close',
+                            style: TextStyle(color: subtitleTextColor))),
                   ),
                 ],
               ),
@@ -1120,9 +1146,14 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       children: [
         Icon(icon, color: subtitleTextColor, size: 14),
         const SizedBox(width: 8),
-        Text(label, style: const TextStyle(color: subtitleTextColor, fontSize: 12)),
+        Text(label,
+            style: const TextStyle(color: subtitleTextColor, fontSize: 12)),
         const SizedBox(width: 4),
-        Text(value, style: const TextStyle(color: headerTextColor, fontSize: 12, fontWeight: FontWeight.w500)),
+        Text(value,
+            style: const TextStyle(
+                color: headerTextColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w500)),
       ],
     );
   }
@@ -1342,7 +1373,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                                   child: CircularProgressIndicator(
                                       strokeWidth: 2, color: Colors.white))
                               : const Icon(Icons.play_arrow, size: 18),
-                          label: Text(_isLoading ? 'Starting...' : 'Start Session',
+                          label: Text(
+                              _isLoading ? 'Starting...' : 'Start Session',
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 15)),
                           style: ElevatedButton.styleFrom(
@@ -1551,8 +1583,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child:
-                  const Text('Cancel', style: TextStyle(color: Colors.white38))),
+              child: const Text('Cancel',
+                  style: TextStyle(color: Colors.white38))),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
@@ -1678,11 +1710,13 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                           child: Column(
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('Course',
                                       style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.45),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.45),
                                           fontSize: 12)),
                                   Flexible(
                                     child: Text(
@@ -1697,17 +1731,20 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                                 ],
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
                                 child: Divider(
                                     color: Colors.white.withValues(alpha: 0.06),
                                     height: 1),
                               ),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('Date',
                                       style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.45),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.45),
                                           fontSize: 12)),
                                   Text(
                                       DateFormat('EEE, MMM d, y')
@@ -1887,32 +1924,28 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                             Expanded(
                               flex: 3,
                               child: ElevatedButton(
-                                onPressed:
-                                    (selectedRoomId == null || isUpdating)
-                                        ? null
-                                        : () async {
-                                            setModalState(
-                                                () => isUpdating = true);
-                                            try {
-                                              await _apiService
-                                                  .updateSessionRoom(s.id,
-                                                      actualRoomId:
-                                                          selectedRoomId!,
-                                                      rowVersion:
-                                                          s.rowVersion ?? '');
-                                              if (mounted) {
-                                                Navigator.pop(context);
-                                                _loadData();
-                                              }
-                                            } catch (e) {
-                                              setModalState(
-                                                  () => isUpdating = false);
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(SnackBar(
-                                                      content:
-                                                          Text(e.toString())));
-                                            }
-                                          },
+                                onPressed: (selectedRoomId == null ||
+                                        isUpdating)
+                                    ? null
+                                    : () async {
+                                        setModalState(() => isUpdating = true);
+                                        try {
+                                          await _apiService.updateSessionRoom(
+                                              s.id,
+                                              actualRoomId: selectedRoomId!,
+                                              rowVersion: s.rowVersion ?? '');
+                                          if (mounted) {
+                                            Navigator.pop(context);
+                                            _loadData();
+                                          }
+                                        } catch (e) {
+                                          setModalState(
+                                              () => isUpdating = false);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                                  content: Text(e.toString())));
+                                        }
+                                      },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: primaryBlue,
                                   foregroundColor: Colors.white,
@@ -2026,7 +2059,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     int? maxUsage;
     String uniqueHash = const Uuid().v4().substring(0, 8);
     final TextEditingController usageController = TextEditingController();
-    final TextEditingController hashController = TextEditingController(text: uniqueHash);
+    final TextEditingController hashController =
+        TextEditingController(text: uniqueHash);
     bool modalLoading = false;
 
     showDialog(
@@ -2035,7 +2069,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         builder: (context, setModalState) => Dialog(
           backgroundColor: surfaceColor,
           insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
           child: Container(
             width: double.infinity,
             clipBehavior: Clip.antiAlias,
@@ -2048,41 +2083,51 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     children: [
                       // Blue Header
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 20),
                         color: const Color(0xFF1E40AF),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
                               children: const [
-                                Icon(Icons.qr_code_2_rounded, color: Colors.white, size: 24),
+                                Icon(Icons.qr_code_2_rounded,
+                                    color: Colors.white, size: 24),
                                 SizedBox(width: 12),
-                                Text('Generate QR Code', 
-                                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                                Text('Generate QR Code',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold)),
                               ],
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close, color: Colors.white70),
+                              icon: const Icon(Icons.close,
+                                  color: Colors.white70),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ],
                         ),
                       ),
-                      
+
                       Padding(
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Generate a QR code for students to scan. They can use their mobile app to record attendance.',
-                              style: TextStyle(color: subtitleTextColor, fontSize: 14)),
+                            const Text(
+                                'Generate a QR code for students to scan. They can use their mobile app to record attendance.',
+                                style: TextStyle(
+                                    color: subtitleTextColor, fontSize: 14)),
                             const SizedBox(height: 24),
-                            
+
                             // Expiration Time
-                            _buildModalLabel('Expiration Time', isRequired: true),
+                            _buildModalLabel('Expiration Time',
+                                isRequired: true),
                             const SizedBox(height: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.03),
                                 border: Border.all(color: dividerColor),
@@ -2093,45 +2138,63 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                                   value: expirationMinutes,
                                   isExpanded: true,
                                   dropdownColor: surfaceColor,
-                                  icon: const Icon(Icons.keyboard_arrow_down, color: subtitleTextColor),
-                                  items: [15, 30, 60, 120].map((m) => 
-                                    DropdownMenuItem(value: m, child: Text('$m Minutes ${m == 30 ? "(Default)" : ""}', 
-                                      style: const TextStyle(color: Colors.white, fontSize: 14)))
-                                  ).toList(),
-                                  onChanged: (val) => setModalState(() => expirationMinutes = val ?? 30),
+                                  icon: const Icon(Icons.keyboard_arrow_down,
+                                      color: subtitleTextColor),
+                                  items: [15, 30, 60, 120]
+                                      .map((m) => DropdownMenuItem(
+                                          value: m,
+                                          child: Text(
+                                              '$m Minutes ${m == 30 ? "(Default)" : ""}',
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14))))
+                                      .toList(),
+                                  onChanged: (val) => setModalState(
+                                      () => expirationMinutes = val ?? 30),
                                 ),
                               ),
                             ),
-                            const Text('How long the QR code remains valid.', 
-                              style: TextStyle(color: subtitleTextColor, fontSize: 11)),
-                            
+                            const Text('How long the QR code remains valid.',
+                                style: TextStyle(
+                                    color: subtitleTextColor, fontSize: 11)),
+
                             const SizedBox(height: 20),
-                            
+
                             // Max Usage
-                            _buildModalLabel('Max Usage Limit', isOptional: true),
+                            _buildModalLabel('Max Usage Limit',
+                                isOptional: true),
                             const SizedBox(height: 8),
                             TextField(
                               controller: usageController,
                               keyboardType: TextInputType.number,
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
-                              decoration: _modalInputDecoration('Unlimited', Icons.tag),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 14),
+                              decoration:
+                                  _modalInputDecoration('Unlimited', Icons.tag),
                               onChanged: (val) => maxUsage = int.tryParse(val),
                             ),
-                            const Text('Limit the total number of scans allowed.', 
-                              style: TextStyle(color: subtitleTextColor, fontSize: 11)),
+                            const Text(
+                                'Limit the total number of scans allowed.',
+                                style: TextStyle(
+                                    color: subtitleTextColor, fontSize: 11)),
 
                             const SizedBox(height: 20),
 
                             // Unique Hash
-                            _buildModalLabel('Unique Identifier Hash', isRequired: true),
+                            _buildModalLabel('Unique Identifier Hash',
+                                isRequired: true),
                             const SizedBox(height: 8),
                             Row(
                               children: [
                                 Expanded(
                                   child: TextField(
                                     controller: hashController,
-                                    style: const TextStyle(color: Colors.white, fontSize: 14, fontFamily: 'monospace'),
-                                    decoration: _modalInputDecoration('', Icons.fingerprint),
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontFamily: 'monospace'),
+                                    decoration: _modalInputDecoration(
+                                        '', Icons.fingerprint),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -2141,17 +2204,21 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: IconButton(
-                                    icon: const Icon(Icons.refresh, color: Colors.white),
+                                    icon: const Icon(Icons.refresh,
+                                        color: Colors.white),
                                     onPressed: () => setModalState(() {
-                                      uniqueHash = const Uuid().v4().substring(0, 8);
+                                      uniqueHash =
+                                          const Uuid().v4().substring(0, 8);
                                       hashController.text = uniqueHash;
                                     }),
                                   ),
                                 ),
                               ],
                             ),
-                            const Text('Client-side signature identifier for this QR code.', 
-                              style: TextStyle(color: subtitleTextColor, fontSize: 11)),
+                            const Text(
+                                'Client-side signature identifier for this QR code.',
+                                style: TextStyle(
+                                    color: subtitleTextColor, fontSize: 11)),
 
                             const SizedBox(height: 32),
 
@@ -2160,48 +2227,76 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                               children: [
                                 Expanded(
                                   child: ElevatedButton(
-                                    onPressed: modalLoading ? null : () async {
-                                      setModalState(() => modalLoading = true);
-                                      try {
-                                        final result = await _apiService.generateQrCode(
-                                          s.id,
-                                          expirationMinutes: expirationMinutes,
-                                          maxUsage: maxUsage,
-                                          qrHash: hashController.text,
-                                        );
-                                        if (mounted) {
-                                          Navigator.pop(context);
-                                          _showSessionQRDetailsModal(s, result);
-                                        }
-                                      } catch (e) {
-                                        if (mounted) {
-                                          setModalState(() => modalLoading = false);
-                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-                                        }
-                                      }
-                                    },
+                                    onPressed: modalLoading
+                                        ? null
+                                        : () async {
+                                            setModalState(
+                                                () => modalLoading = true);
+                                            try {
+                                              final result = await _apiService
+                                                  .generateQrCode(
+                                                s.id,
+                                                expirationMinutes:
+                                                    expirationMinutes,
+                                                maxUsage: maxUsage,
+                                                qrHash: hashController.text,
+                                              );
+                                              if (mounted) {
+                                                Navigator.pop(context);
+                                                _showSessionQRDetailsModal(
+                                                    s, result);
+                                              }
+                                            } catch (e) {
+                                              if (mounted) {
+                                                setModalState(
+                                                    () => modalLoading = false);
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(SnackBar(
+                                                        content: Text(
+                                                            e.toString())));
+                                              }
+                                            }
+                                          },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF1E40AF),
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12)),
                                     ),
-                                    child: modalLoading 
-                                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                      : const Text('Generate QR Code', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    child: modalLoading
+                                        ? const SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                                color: Colors.white,
+                                                strokeWidth: 2))
+                                        : const Text('Generate QR Code',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold)),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: OutlinedButton(
-                                    onPressed: modalLoading ? null : () => Navigator.pop(context),
+                                    onPressed: modalLoading
+                                        ? null
+                                        : () => Navigator.pop(context),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: headerTextColor,
-                                      side: const BorderSide(color: dividerColor),
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      side:
+                                          const BorderSide(color: dividerColor),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12)),
                                     ),
-                                    child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    child: const Text('Cancel',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
                                   ),
                                 ),
                               ],
@@ -2216,7 +2311,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                   Positioned.fill(
                     child: Container(
                       color: Colors.black26,
-                      child: const Center(child: CircularProgressIndicator(color: primaryBlue)),
+                      child: const Center(
+                          child: CircularProgressIndicator(color: primaryBlue)),
                     ),
                   ),
               ],
@@ -2252,7 +2348,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
             return Dialog(
               backgroundColor: surfaceColor,
               insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28)),
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -2261,11 +2358,18 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Session QR Code', style: TextStyle(color: headerTextColor, fontSize: 18, fontWeight: FontWeight.bold)),
-                        IconButton(icon: const Icon(Icons.close, color: subtitleTextColor), onPressed: () {
-                          modalTimer?.cancel();
-                          Navigator.pop(context);
-                        }),
+                        const Text('Session QR Code',
+                            style: TextStyle(
+                                color: headerTextColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
+                        IconButton(
+                            icon: const Icon(Icons.close,
+                                color: subtitleTextColor),
+                            onPressed: () {
+                              modalTimer?.cancel();
+                              Navigator.pop(context);
+                            }),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -2281,8 +2385,12 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                         data: qrHash,
                         version: QrVersions.auto,
                         size: 200,
-                        eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF0F172A)),
-                        dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: Color(0xFF0F172A)),
+                        eyeStyle: const QrEyeStyle(
+                            eyeShape: QrEyeShape.square,
+                            color: Color(0xFF0F172A)),
+                        dataModuleStyle: const QrDataModuleStyle(
+                            dataModuleShape: QrDataModuleShape.square,
+                            color: Color(0xFF0F172A)),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -2291,9 +2399,14 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.access_time_rounded, color: Color(0xFF38BDF8), size: 28),
+                        const Icon(Icons.access_time_rounded,
+                            color: Color(0xFF38BDF8), size: 28),
                         const SizedBox(width: 8),
-                        Text(timeText, style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 32, fontWeight: FontWeight.w900)),
+                        Text(timeText,
+                            style: const TextStyle(
+                                color: Color(0xFF38BDF8),
+                                fontSize: 32,
+                                fontWeight: FontWeight.w900)),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -2302,7 +2415,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                       onTap: () => _showScanHistoryModal(qrData['id'] ?? ''),
                       borderRadius: BorderRadius.circular(40),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.03),
                           borderRadius: BorderRadius.circular(40),
@@ -2312,15 +2426,33 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.people_alt_outlined, color: subtitleTextColor, size: 20),
+                              const Icon(Icons.people_alt_outlined,
+                                  color: subtitleTextColor, size: 20),
                               const SizedBox(width: 12),
-                              Text('$scannedCount', style: const TextStyle(color: headerTextColor, fontSize: 18, fontWeight: FontWeight.bold)),
+                              Text('$scannedCount',
+                                  style: const TextStyle(
+                                      color: headerTextColor,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
                               const SizedBox(width: 6),
-                              const Text('SCANNED', style: TextStyle(color: subtitleTextColor, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                              const Text('SCANNED',
+                                  style: TextStyle(
+                                      color: subtitleTextColor,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5)),
                               const SizedBox(width: 16),
-                              const VerticalDivider(color: Colors.white24, thickness: 1, width: 1),
+                              const VerticalDivider(
+                                  color: Colors.white24,
+                                  thickness: 1,
+                                  width: 1),
                               const SizedBox(width: 16),
-                              Text(limit?.toString() ?? 'LIMIT', style: const TextStyle(color: subtitleTextColor, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                              Text(limit?.toString() ?? 'LIMIT',
+                                  style: const TextStyle(
+                                      color: subtitleTextColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5)),
                             ],
                           ),
                         ),
@@ -2328,15 +2460,18 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                     ),
 
                     const SizedBox(height: 24),
-                    const Text('Students should scan this code using the mobile app.', 
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: subtitleTextColor, fontSize: 13)),
-                    
+                    const Text(
+                        'Students should scan this code using the mobile app.',
+                        textAlign: TextAlign.center,
+                        style:
+                            TextStyle(color: subtitleTextColor, fontSize: 13)),
+
                     const SizedBox(height: 32),
 
                     Row(
                       children: [
-                        _buildQRActionButton(Icons.history, 'History', () => _showScanHistoryModal(qrData['id'] ?? '')),
+                        _buildQRActionButton(Icons.history, 'History',
+                            () => _showScanHistoryModal(qrData['id'] ?? '')),
                         const SizedBox(width: 8),
                         _buildQRActionButton(Icons.download, 'Download', () {}),
                         const SizedBox(width: 8),
@@ -2346,7 +2481,8 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
                             modalTimer?.cancel();
                             if (mounted) Navigator.pop(context);
                           } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(e.toString())));
                           }
                         }, isDanger: true),
                       ],
@@ -2361,14 +2497,18 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
     );
   }
 
-  Widget _buildQRActionButton(IconData icon, String label, VoidCallback onTap, {bool isDanger = false}) {
+  Widget _buildQRActionButton(IconData icon, String label, VoidCallback onTap,
+      {bool isDanger = false}) {
     return Expanded(
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          side: BorderSide(color: isDanger ? dangerRed.withValues(alpha: 0.2) : dividerColor),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          side: BorderSide(
+              color:
+                  isDanger ? dangerRed.withValues(alpha: 0.2) : dividerColor),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           foregroundColor: isDanger ? dangerRed : headerTextColor,
         ),
         child: Column(
@@ -2376,19 +2516,30 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
           children: [
             Icon(icon, size: 20),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+            Text(label,
+                style:
+                    const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildModalLabel(String text, {bool isRequired = false, bool isOptional = false}) {
+  Widget _buildModalLabel(String text,
+      {bool isRequired = false, bool isOptional = false}) {
     return Row(
       children: [
-        Text(text, style: const TextStyle(color: headerTextColor, fontWeight: FontWeight.bold, fontSize: 14)),
+        Text(text,
+            style: const TextStyle(
+                color: headerTextColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 14)),
         if (isRequired) const Text(' *', style: TextStyle(color: dangerRed)),
-        if (isOptional) Text(' (Optional)', style: TextStyle(color: subtitleTextColor.withValues(alpha: 0.7), fontSize: 12)),
+        if (isOptional)
+          Text(' (Optional)',
+              style: TextStyle(
+                  color: subtitleTextColor.withValues(alpha: 0.7),
+                  fontSize: 12)),
       ],
     );
   }
@@ -2401,9 +2552,15 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
       filled: true,
       fillColor: Colors.white.withValues(alpha: 0.03),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: dividerColor)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: dividerColor)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: primaryBlue)),
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: dividerColor)),
+      enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: dividerColor)),
+      focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primaryBlue)),
     );
   }
 
