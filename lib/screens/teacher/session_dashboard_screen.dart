@@ -8,6 +8,7 @@ import '../../models/classroom_model.dart';
 import '../../models/schedule_model.dart';
 import '../../models/session_model.dart';
 import '../../widgets/skeleton_loader.dart';
+import 'session_details_screen.dart';
 
 class SessionDashboardScreen extends StatefulWidget {
   const SessionDashboardScreen({super.key});
@@ -831,6 +832,23 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
   }
 
   void _openDetails(ClassSession s) async {
+    final status = s.status.toLowerCase();
+    final isActive = status == 'active' || status == 'started';
+
+    // For ended/cancelled sessions, navigate to the dedicated details screen
+    if (!isActive) {
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SessionDetailsScreen(session: s),
+          ),
+        ).then((_) => _loadData());
+      }
+      return;
+    }
+
+    // For active sessions, show the QR list / generate QR flow
     setState(() => _isLoading = true);
     try {
       final qrList = await _apiService.getQrCodesBySession(s.id);
