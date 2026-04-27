@@ -542,105 +542,113 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
 
   Widget _buildSessionCard(ClassSession s) {
     final status = s.status.toLowerCase();
+    final actionButtons = _buildActionButtons(s, status);
+    final hasActions = actionButtons is! SizedBox;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: surfaceColor.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: dividerColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Top Section: Info & Status
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            s.subjectCode,
-                            style: const TextStyle(
-                              color: primaryBlue,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
+    return InkWell(
+      onTap: () => _openDetails(s),
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: surfaceColor.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: dividerColor),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Top Section: Info & Status
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              s.subjectCode,
+                              style: const TextStyle(
+                                color: primaryBlue,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            s.subjectName,
-                            style: const TextStyle(
-                              color: headerTextColor,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                            const SizedBox(height: 4),
+                            Text(
+                              s.subjectName,
+                              style: const TextStyle(
+                                color: headerTextColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    _buildStatusPill(status),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    _buildInfoItem(
-                        Icons.calendar_today,
-                        DateFormat('MMM d')
-                            .format(s.sessionDate ?? DateTime.now())),
-                    const SizedBox(width: 16),
-                    _buildInfoItem(Icons.door_front_door_outlined,
-                        s.actualRoomName ?? s.scheduledRoomName),
-                    const SizedBox(width: 16),
-                    _buildInfoItem(
-                        Icons.access_time,
-                        s.actualStartTime != null
-                            ? DateFormat('h:mm a').format(s.actualStartTime!)
-                            : _formatTime(s.scheduledTimeIn)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Section: ${s.sectionName}',
-                  style:
-                      const TextStyle(color: subtitleTextColor, fontSize: 13),
-                ),
-              ],
+                      _buildStatusPill(status),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      _buildInfoItem(
+                          Icons.calendar_today,
+                          DateFormat('MMM d')
+                              .format(s.sessionDate ?? DateTime.now())),
+                      const SizedBox(width: 16),
+                      _buildInfoItem(Icons.door_front_door_outlined,
+                          s.actualRoomName ?? s.scheduledRoomName),
+                      const SizedBox(width: 16),
+                      _buildInfoItem(
+                          Icons.access_time,
+                          s.actualStartTime != null
+                              ? DateFormat('h:mm a').format(s.actualStartTime!)
+                              : _formatTime(s.scheduledTimeIn)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Section: ${s.sectionName}',
+                    style:
+                        const TextStyle(color: subtitleTextColor, fontSize: 13),
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          // Bottom Section: Actions
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
-              borderRadius:
-                  const BorderRadius.vertical(bottom: Radius.circular(24)),
-              border: const Border(top: BorderSide(color: dividerColor)),
-            ),
-            child: Row(
-              children: [
-                _buildActionButtons(s, status),
-              ],
-            ),
-          ),
-        ],
+            // Bottom Section: Actions (only show if there are actions)
+            if (hasActions)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.03),
+                  borderRadius:
+                      const BorderRadius.vertical(bottom: Radius.circular(24)),
+                  border: const Border(top: BorderSide(color: dividerColor)),
+                ),
+                child: Row(
+                  children: [
+                    actionButtons,
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -750,16 +758,7 @@ class _SessionDashboardScreenState extends State<SessionDashboardScreen> {
         ),
       );
     } else {
-      return Row(
-        children: [
-          _buildCompactButton(
-            icon: Icons.visibility_outlined,
-            label: 'View Details',
-            color: subtitleTextColor,
-            onTap: () => _openDetails(s),
-          ),
-        ],
-      );
+      return const SizedBox.shrink();
     }
   }
 
