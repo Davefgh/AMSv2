@@ -183,40 +183,44 @@ class _TeacherReportsScreenState extends ConsumerState<TeacherReportsScreen> {
           ..a += a;
       }
 
-      setState(() {
-        // Use summary API if it returned data, else aggregate from sessions
-        if (totalStudents > 0 || presentCount > 0 || absentCount > 0) {
-          _totalStudents = totalStudents;
-          _presentCount = presentCount;
-          _absentCount = absentCount;
-          _attendanceRate = rate;
-        } else {
-          // Aggregate from session rows
-          int tp = 0, ta = 0;
-          for (final s in filtered) {
-            tp += (s['presentCount'] ?? s['present'] ?? 0) as int;
-            ta += (s['absentCount'] ?? s['absent'] ?? 0) as int;
+      if (mounted) {
+        setState(() {
+          // Use summary API if it returned data, else aggregate from sessions
+          if (totalStudents > 0 || presentCount > 0 || absentCount > 0) {
+            _totalStudents = totalStudents;
+            _presentCount = presentCount;
+            _absentCount = absentCount;
+            _attendanceRate = rate;
+          } else {
+            // Aggregate from session rows
+            int tp = 0, ta = 0;
+            for (final s in filtered) {
+              tp += (s['presentCount'] ?? s['present'] ?? 0) as int;
+              ta += (s['absentCount'] ?? s['absent'] ?? 0) as int;
+            }
+            _presentCount = tp;
+            _absentCount = ta;
+            // tp+ta = total attendance records ≈ unique students in this period
+            _totalStudents = tp + ta;
+            _attendanceRate = (tp + ta) == 0 ? 0 : tp / (tp + ta);
           }
-          _presentCount = tp;
-          _absentCount = ta;
-          // tp+ta = total attendance records ≈ unique students in this period
-          _totalStudents = tp + ta;
-          _attendanceRate = (tp + ta) == 0 ? 0 : tp / (tp + ta);
-        }
-        _dayStats = dayMap.entries
-            .map((e) => _DayStat(e.key, e.value.p, e.value.a))
-            .toList();
-        _sectionStats = secMap.entries
-            .map((e) => _SectionStat(e.key, e.value.p, e.value.a))
-            .toList()
-          ..sort((a, b) => b.rate.compareTo(a.rate));
-        _isLoading = false;
-      });
+          _dayStats = dayMap.entries
+              .map((e) => _DayStat(e.key, e.value.p, e.value.a))
+              .toList();
+          _sectionStats = secMap.entries
+              .map((e) => _SectionStat(e.key, e.value.p, e.value.a))
+              .toList()
+            ..sort((a, b) => b.rate.compareTo(a.rate));
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
