@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/device_model.dart';
 import '../models/student_model.dart';
@@ -22,17 +23,31 @@ class FingerprintEnrollmentModal extends StatefulWidget {
 class _FingerprintEnrollmentModalState
     extends State<FingerprintEnrollmentModal> {
   final ApiService _apiService = ApiService();
-  
+
   List<FingerprintDevice> _devices = [];
   FingerprintDevice? _selectedDevice;
   bool _isLoadingDevices = true;
   bool _isEnrolling = false;
+  bool _isCancelling = false;
   String? _errorMessage;
+
+  // Monitoring state
+  bool _isMonitoring = false;
+  Timer? _pollingTimer;
+  String? _currentSessionId;
+  String _currentStatus = 'Pending';
+  List<Map<String, dynamic>> _statusTimeline = [];
 
   @override
   void initState() {
     super.initState();
     _loadDevices();
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadDevices() async {
@@ -70,27 +85,41 @@ class _FingerprintEnrollmentModalState
     setState(() {
       _isEnrolling = true;
       _errorMessage = null;
+      _statusTimeline = [
+        {
+          'status': 'Session created',
+          'timestamp': DateTime.now(),
+          'icon': Icons.check_circle,
+        }
+      ];
     });
 
     try {
       final session = await _apiService.createFingerprintEnrollmentSession(
         studentId: widget.student.id,
-        deviceId: _selectedDevice!.id,
+        deviceId: _selectedDevice!.deviceIdentifier,
       );
 
       if (mounted) {
         if (session.success) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(session.message ?? 'Enrollment session created'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          widget.onEnrollmentComplete?.call();
+          setState(() {
+            _isEnrolling = false;
+            _isMonitoring = true;
+            _currentSessionId = session.enrollmentSessionId;
+            _currentStatus = session.status ?? 'Pending';
+            _statusTimeline.add({
+              'status': 'Waiting for student scan...',
+              'timestamp': DateTime.now(),
+              'icon': Icons.hourglass_empty,
+            });
+          });
+
+          // Start polling
+          _startPolling(session.enrollmentSessionId);
         } else {
           setState(() {
-            _errorMessage = session.message ?? 'Failed to create enrollment session';
+            _errorMessage =
+                session.message ?? 'Failed to create enrollment session';
             _isEnrolling = false;
           });
         }
@@ -105,13 +134,139 @@ class _FingerprintEnrollmentModalState
     }
   }
 
+  void _startPolling(String? enrollmentSessionId) {
+    _pollingTimer?.cancel();
+    if (enrollmentSessionId == null || enrollmentSessionId.isEmpty) {
+      setState(() {
+        _errorMessage = 'Enrollment session id missing';
+        _currentStatus = 'Failed';
+        _currentSessionId = null;
+      });
+      return;
+    }
+
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      try {
+        final session = await _apiService.getEnrollmentSession(
+          enrollmentSessionId,
+        );
+
+        if (!mounted) return;
+
+        final newStatus = session.status ?? 'Pending';
+        if (newStatus != _currentStatus) {
+          setState(() {
+            _currentStatus = newStatus;
+
+            // Add to timeline based on status
+            if (newStatus == 'InProgress') {
+              _statusTimeline.add({
+                'status': 'Fingerprint scan in progress...',
+                'timestamp': DateTime.now(),
+                'icon': Icons.fingerprint,
+              });
+            } else if (newStatus == 'Completed') {
+              _statusTimeline.add({
+                'status': 'Enrollment completed successfully!',
+                'timestamp': DateTime.now(),
+                'icon': Icons.check_circle,
+              });
+              timer.cancel();
+            } else if (newStatus == 'Failed') {
+              _statusTimeline.add({
+                'status': session.message ?? 'Enrollment failed',
+                'timestamp': DateTime.now(),
+                'icon': Icons.error,
+              });
+              timer.cancel();
+            } else if (newStatus == 'Expired') {
+              _statusTimeline.add({
+                'status': 'Enrollment session expired',
+                'timestamp': DateTime.now(),
+                'icon': Icons.access_time,
+              });
+              timer.cancel();
+            } else if (newStatus == 'Cancelled') {
+              _statusTimeline.add({
+                'status': 'Enrollment cancelled',
+                'timestamp': DateTime.now(),
+                'icon': Icons.cancel,
+              });
+              timer.cancel();
+            }
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _errorMessage = 'Polling error: $e';
+          });
+          timer.cancel();
+        }
+      }
+    });
+  }
+
+  bool get _isFinalState {
+    return _currentStatus == 'Completed' ||
+        _currentStatus == 'Failed' ||
+        _currentStatus == 'Expired' ||
+        _currentStatus == 'Cancelled';
+  }
+
+  Future<void> _handleClose() async {
+    if (_isMonitoring && _currentSessionId != null && !_isFinalState) {
+      setState(() {
+        _isCancelling = true;
+        _errorMessage = null;
+      });
+
+      try {
+        await _apiService.cancelEnrollmentSession(_currentSessionId!);
+        if (mounted) {
+          setState(() {
+            _currentStatus = 'Cancelled';
+            _statusTimeline.add({
+              'status': 'Enrollment cancelled',
+              'timestamp': DateTime.now(),
+              'icon': Icons.cancel,
+            });
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _errorMessage = 'Failed to cancel enrollment: $e';
+            _isCancelling = false;
+          });
+        }
+        return;
+      }
+    }
+
+    _pollingTimer?.cancel();
+    if (!mounted) return;
+    Navigator.pop(context);
+
+    // If enrollment was successful, trigger callback
+    if (_currentStatus == 'Completed') {
+      widget.onEnrollmentComplete?.call();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
     final subtitleColor = isDark ? Colors.white70 : const Color(0xFF64748B);
-    final borderColor = isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200;
+    final borderColor =
+        isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -175,7 +330,7 @@ class _FingerprintEnrollmentModalState
                     ),
                   ),
                   IconButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: _isCancelling ? null : _handleClose,
                     icon: Icon(Icons.close, color: subtitleColor),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -208,7 +363,8 @@ class _FingerprintEnrollmentModalState
                             width: Sizing.w(48),
                             height: Sizing.w(48),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                              color: const Color(0xFF6366F1)
+                                  .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(
@@ -343,7 +499,8 @@ class _FingerprintEnrollmentModalState
                           child: DropdownButton<FingerprintDevice>(
                             isExpanded: true,
                             value: _selectedDevice,
-                            padding: EdgeInsets.symmetric(horizontal: Sizing.w(16)),
+                            padding:
+                                EdgeInsets.symmetric(horizontal: Sizing.w(16)),
                             borderRadius: BorderRadius.circular(12),
                             dropdownColor: backgroundColor,
                             hint: Text(
@@ -357,16 +514,20 @@ class _FingerprintEnrollmentModalState
                               return DropdownMenuItem<FingerprintDevice>(
                                 value: device,
                                 child: Padding(
-                                  padding: EdgeInsets.symmetric(vertical: Sizing.h(8)),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: Sizing.h(8)),
                                   child: Row(
                                     children: [
                                       Container(
                                         padding: EdgeInsets.all(Sizing.w(8)),
                                         decoration: BoxDecoration(
                                           color: device.isOnline
-                                              ? Colors.green.withValues(alpha: 0.1)
-                                              : Colors.grey.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(8),
+                                              ? Colors.green
+                                                  .withValues(alpha: 0.1)
+                                              : Colors.grey
+                                                  .withValues(alpha: 0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
                                         child: Icon(
                                           Icons.devices_rounded,
@@ -391,16 +552,15 @@ class _FingerprintEnrollmentModalState
                                                 color: textColor,
                                               ),
                                             ),
-                                            if (device.location != null) ...[
-                                              SizedBox(height: Sizing.h(2)),
-                                              Text(
-                                                device.location!,
-                                                style: TextStyle(
-                                                  fontSize: Sizing.sp(12),
-                                                  color: subtitleColor,
-                                                ),
+                                            SizedBox(height: Sizing.h(2)),
+                                            Text(
+                                              device.location ??
+                                                  device.deviceIdentifier,
+                                              style: TextStyle(
+                                                fontSize: Sizing.sp(12),
+                                                color: subtitleColor,
                                               ),
-                                            ],
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -411,8 +571,10 @@ class _FingerprintEnrollmentModalState
                                             vertical: Sizing.h(4),
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Colors.green.withValues(alpha: 0.15),
-                                            borderRadius: BorderRadius.circular(6),
+                                            color: Colors.green
+                                                .withValues(alpha: 0.15),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
                                           ),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -451,6 +613,136 @@ class _FingerprintEnrollmentModalState
                           ),
                         ),
                       ),
+
+                    // Monitoring Panel
+                    if (_isMonitoring) ...[
+                      SizedBox(height: Sizing.h(24)),
+                      Container(
+                        padding: EdgeInsets.all(Sizing.w(20)),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: borderColor),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.timeline,
+                                  color: const Color(0xFF6366F1),
+                                  size: Sizing.sp(20),
+                                ),
+                                SizedBox(width: Sizing.w(8)),
+                                Text(
+                                  'Enrollment Progress',
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: Sizing.sp(15),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: Sizing.h(16)),
+                            // Status Timeline
+                            ..._statusTimeline.map((item) {
+                              final isLast = item == _statusTimeline.last;
+                              final icon = item['icon'] as IconData;
+                              final status = item['status'] as String;
+                              final isLoading = !_isFinalState && isLast;
+
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: isLast ? 0 : Sizing.h(12)),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: Sizing.w(32),
+                                      height: Sizing.w(32),
+                                      decoration: BoxDecoration(
+                                        color: isLoading
+                                            ? const Color(0xFF6366F1)
+                                                .withValues(alpha: 0.1)
+                                            : (_currentStatus == 'Completed' &&
+                                                    isLast
+                                                ? Colors.green
+                                                    .withValues(alpha: 0.1)
+                                                : (_currentStatus == 'Failed' ||
+                                                            _currentStatus ==
+                                                                'Expired' ||
+                                                            _currentStatus ==
+                                                                'Cancelled') &&
+                                                        isLast
+                                                    ? Colors.red
+                                                        .withValues(alpha: 0.1)
+                                                    : Colors.grey.withValues(
+                                                        alpha: 0.1)),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: isLoading
+                                            ? SizedBox(
+                                                width: Sizing.w(16),
+                                                height: Sizing.w(16),
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                          Color>(
+                                                    const Color(0xFF6366F1),
+                                                  ),
+                                                ),
+                                              )
+                                            : Icon(
+                                                icon,
+                                                size: Sizing.sp(16),
+                                                color: _currentStatus ==
+                                                            'Completed' &&
+                                                        isLast
+                                                    ? Colors.green
+                                                    : (_currentStatus ==
+                                                                    'Failed' ||
+                                                                _currentStatus ==
+                                                                    'Expired' ||
+                                                                _currentStatus ==
+                                                                    'Cancelled') &&
+                                                            isLast
+                                                        ? Colors.red
+                                                        : subtitleColor,
+                                              ),
+                                      ),
+                                    ),
+                                    SizedBox(width: Sizing.w(12)),
+                                    Expanded(
+                                      child: Padding(
+                                        padding:
+                                            EdgeInsets.only(top: Sizing.h(6)),
+                                        child: Text(
+                                          status,
+                                          style: TextStyle(
+                                            color: textColor,
+                                            fontSize: Sizing.sp(13),
+                                            fontWeight: isLast
+                                                ? FontWeight.w600
+                                                : FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                    ],
 
                     if (_errorMessage != null) ...[
                       SizedBox(height: Sizing.h(16)),
@@ -499,74 +791,131 @@ class _FingerprintEnrollmentModalState
                   top: BorderSide(color: borderColor),
                 ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _isEnrolling ? null : () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: textColor,
-                        side: BorderSide(color: borderColor),
-                        padding: EdgeInsets.symmetric(vertical: Sizing.h(14)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontSize: Sizing.sp(14),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: Sizing.w(12)),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton(
-                      onPressed: _isEnrolling || _selectedDevice == null
-                          ? null
-                          : _startEnrollment,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6366F1),
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: Colors.grey.shade300,
-                        disabledForegroundColor: Colors.grey.shade500,
-                        padding: EdgeInsets.symmetric(vertical: Sizing.h(14)),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: _isEnrolling
-                          ? SizedBox(
-                              width: Sizing.w(20),
-                              height: Sizing.w(20),
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.play_arrow_rounded, size: Sizing.sp(20)),
-                                SizedBox(width: Sizing.w(8)),
-                                Text(
-                                  'Start Enrollment',
-                                  style: TextStyle(
-                                    fontSize: Sizing.sp(14),
-                                    fontWeight: FontWeight.w600,
-                                  ),
+              child: _isMonitoring
+                  ? Row(
+                      children: [
+                        if (!_isFinalState)
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _isCancelling ? null : _handleClose,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: textColor,
+                                side: BorderSide(color: borderColor),
+                                padding: EdgeInsets.symmetric(
+                                    vertical: Sizing.h(14)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                              ],
+                              ),
+                              child: Text(
+                                _isCancelling ? 'Cancelling...' : 'Cancel',
+                                style: TextStyle(
+                                  fontSize: Sizing.sp(14),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
+                          ),
+                        if (_isFinalState)
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _isCancelling ? null : _handleClose,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF6366F1),
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                    vertical: Sizing.h(14)),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text(
+                                'Done',
+                                style: TextStyle(
+                                  fontSize: Sizing.sp(14),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _isEnrolling
+                                ? null
+                                : () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: textColor,
+                              side: BorderSide(color: borderColor),
+                              padding:
+                                  EdgeInsets.symmetric(vertical: Sizing.h(14)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                fontSize: Sizing.sp(14),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: Sizing.w(12)),
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton(
+                            onPressed: _isEnrolling ||
+                                    _selectedDevice == null ||
+                                    _isMonitoring
+                                ? null
+                                : _startEnrollment,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6366F1),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: Colors.grey.shade300,
+                              disabledForegroundColor: Colors.grey.shade500,
+                              padding:
+                                  EdgeInsets.symmetric(vertical: Sizing.h(14)),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: _isEnrolling
+                                ? SizedBox(
+                                    width: Sizing.w(20),
+                                    height: Sizing.w(20),
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.play_arrow_rounded,
+                                          size: Sizing.sp(20)),
+                                      SizedBox(width: Sizing.w(8)),
+                                      Text(
+                                        'Start Enrollment',
+                                        style: TextStyle(
+                                          fontSize: Sizing.sp(14),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),

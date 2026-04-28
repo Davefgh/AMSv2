@@ -39,6 +39,19 @@ class ApiException implements Exception {
   }
 }
 
+List<FingerprintInfo> parseStudentFingerprintsResponse(dynamic response) {
+  if (response is List) {
+    return response
+        .map((f) => FingerprintInfo.fromJson(f as Map<String, dynamic>))
+        .toList();
+  }
+  if (response is Map<String, dynamic>) {
+    if (response.isEmpty) return [];
+    return [FingerprintInfo.fromJson(response)];
+  }
+  return [];
+}
+
 class ApiService {
   static String get baseUrl => AppConstants.apiBaseUrl;
   final Logger _logger = Logger();
@@ -1170,17 +1183,30 @@ class ApiService {
     }
   }
 
-  /// GET /api/Fingerprint/devices/{deviceId}/enrollment-session
-  /// Gets the active enrollment session for a device.
-  Future<EnrollmentSession?> getDeviceEnrollmentSession(String deviceId) async {
-    validateId(deviceId, 'Device');
+  /// GET /api/Fingerprint/enrollment-sessions/{sessionId}
+  /// Gets an enrollment session by public session ID for UI monitoring.
+  Future<EnrollmentSession> getEnrollmentSession(String sessionId) async {
+    validateId(sessionId, 'Enrollment session');
     try {
       final response =
-          await get('/api/Fingerprint/devices/$deviceId/enrollment-session');
-      if (response == null) return null;
+          await get('/api/Fingerprint/enrollment-sessions/$sessionId');
       return EnrollmentSession.fromJson(response as Map<String, dynamic>);
     } catch (e) {
-      _logger.e('getDeviceEnrollmentSession Error: $e');
+      _logger.e('getEnrollmentSession Error: $e');
+      rethrow;
+    }
+  }
+
+  /// DELETE /api/Fingerprint/enrollment-sessions/{sessionId}
+  /// Cancels an active enrollment session and releases the selected device.
+  Future<EnrollmentSession> cancelEnrollmentSession(String sessionId) async {
+    validateId(sessionId, 'Enrollment session');
+    try {
+      final response =
+          await delete('/api/Fingerprint/enrollment-sessions/$sessionId');
+      return EnrollmentSession.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      _logger.e('cancelEnrollmentSession Error: $e');
       rethrow;
     }
   }
@@ -1227,11 +1253,9 @@ class ApiService {
     validateId(studentId, 'Student');
     try {
       final response = await get('/api/Fingerprint/student/$studentId');
-      if (response is List) {
-        return response.map((f) => FingerprintInfo.fromJson(f)).toList();
-      }
-      return [];
+      return parseStudentFingerprintsResponse(response);
     } catch (e) {
+      if (e is ApiException && e.statusCode == 404) return [];
       _logger.e('getFingerprintsByStudent Error: $e');
       rethrow;
     }
@@ -1330,8 +1354,9 @@ class ApiService {
       if (email != null) data['email'] = email;
       if (currentPassword != null) data['currentPassword'] = currentPassword;
       if (newPassword != null) data['newPassword'] = newPassword;
-      if (confirmNewPassword != null)
+      if (confirmNewPassword != null) {
         data['confirmNewPassword'] = confirmNewPassword;
+      }
 
       await patch('/api/account/profile', data);
     } catch (e) {
