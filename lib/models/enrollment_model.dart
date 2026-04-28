@@ -37,7 +37,8 @@ class Enrollment {
 
   factory Enrollment.fromJson(Map<String, dynamic> json) {
     return Enrollment(
-      id: json['id']?.toString() ?? '',
+      // Backend's EnrollmentSummaryDto uses 'enrollmentId', fallback to 'id'
+      id: json['enrollmentId']?.toString() ?? json['id']?.toString() ?? '',
       studentId: json['studentId']?.toString() ?? '',
       sectionId: json['sectionId']?.toString() ?? '',
       subjectId: json['subjectId']?.toString() ?? '',

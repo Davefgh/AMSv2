@@ -87,8 +87,9 @@ class ApiService {
       // Fallback: Get schedule, then get students by section
       _logger.i('Fetching schedule details');
       final schedule = await getSchedule(scheduleId);
-      _logger.i('Schedule sectionId: ${schedule.sectionId}, subjectId: ${schedule.subjectId}');
-      
+      _logger.i(
+          'Schedule sectionId: ${schedule.sectionId}, subjectId: ${schedule.subjectId}');
+
       if (schedule.sectionId != null && schedule.sectionId!.isNotEmpty) {
         _logger.i('Getting students by sectionId: ${schedule.sectionId}');
         final students = await getStudentsBySection(schedule.sectionId!);
@@ -124,7 +125,8 @@ class ApiService {
       // Fallback: Get session, then use schedule to get students
       _logger.i('Fetching session details to get schedule');
       final session = await getSessionById(sessionId);
-      _logger.i('Session scheduleId: ${session.scheduleId}, sectionId: ${session.sectionId}, subjectId: ${session.subjectId}');
+      _logger.i(
+          'Session scheduleId: ${session.scheduleId}, sectionId: ${session.sectionId}, subjectId: ${session.subjectId}');
       return await getStudentsBySchedule(session.scheduleId);
     } catch (e) {
       _logger.e('getStudentsBySession Error: $e');
@@ -367,11 +369,30 @@ class ApiService {
       _logger.i('Enrollment response type: ${response.runtimeType}');
       // NOTE: full response body intentionally not logged (contains PII)
 
-      if (response is List) {
-        _logger.i('Response is a list with ${response.length} items');
-        return response.map((e) => Enrollment.fromJson(e)).toList();
+      // Backend returns StudentSectionsResponseDto with nested 'enrollments' array
+      if (response is Map<String, dynamic>) {
+        final enrollmentsData = response['enrollments'];
+        if (enrollmentsData is List) {
+          _logger.i('Response contains ${enrollmentsData.length} enrollments');
+          return enrollmentsData
+              .map((e) => Enrollment.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
+        _logger.w('Response object does not contain enrollments list');
+        return [];
       }
-      _logger.w('Response is not a list, returning empty');
+
+      // Legacy fallback: if response is already a list (shouldn't happen with current backend)
+      if (response is List) {
+        _logger.i(
+            'Response is a list with ${response.length} items (legacy format)');
+        return response
+            .map((e) => Enrollment.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+
+      _logger.w(
+          'Response is neither an object with enrollments nor a list, returning empty');
       return [];
     } catch (e) {
       _logger.e('getEnrollmentsByStudent Error: $e');
@@ -711,7 +732,8 @@ class ApiService {
 
   // --- QR Code Methods ---
 
-  Future<Map<String, dynamic>> generateQrCode(String sessionId, {int? expirationMinutes, int? maxUsage, String? qrHash}) async {
+  Future<Map<String, dynamic>> generateQrCode(String sessionId,
+      {int? expirationMinutes, int? maxUsage, String? qrHash}) async {
     validateId(sessionId, 'Session');
     try {
       final response = await post('/api/QrCode/generate', {
@@ -925,7 +947,8 @@ class ApiService {
   }
 
   /// GET /api/reports/session-attendance/{id}
-  Future<Map<String, dynamic>> getReportSessionAttendance(String sessionId) async {
+  Future<Map<String, dynamic>> getReportSessionAttendance(
+      String sessionId) async {
     validateId(sessionId, 'Session');
     try {
       final res = await get('/api/reports/session-attendance/$sessionId');
@@ -1085,7 +1108,6 @@ class ApiService {
       rethrow;
     }
   }
-
 
   Future<List<dynamic>> getQrCodesBySession(String sessionId) async {
     validateId(sessionId, 'Session');
@@ -1284,7 +1306,7 @@ class ApiService {
   }
 
   /// Updates teacher account profile
-  /// 
+  ///
   /// Parameters:
   /// - [firstname]: Optional first name
   /// - [lastname]: Optional last name
@@ -1302,14 +1324,15 @@ class ApiService {
   }) async {
     try {
       final data = <String, dynamic>{};
-      
+
       if (firstname != null) data['firstname'] = firstname;
       if (lastname != null) data['lastname'] = lastname;
       if (email != null) data['email'] = email;
       if (currentPassword != null) data['currentPassword'] = currentPassword;
       if (newPassword != null) data['newPassword'] = newPassword;
-      if (confirmNewPassword != null) data['confirmNewPassword'] = confirmNewPassword;
-      
+      if (confirmNewPassword != null)
+        data['confirmNewPassword'] = confirmNewPassword;
+
       await patch('/api/account/profile', data);
     } catch (e) {
       _logger.e('updateTeacherProfile Error: $e');
