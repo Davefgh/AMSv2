@@ -4,6 +4,9 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../services/api_service.dart';
 import '../../models/student_model.dart';
 
+import 'package:flutter_windowmanager/flutter_windowmanager.dart';
+import 'dart:io' show Platform;
+
 enum _ScanState { idle, scanning, processing, success, error }
 
 class StudentScanScreen extends StatefulWidget {
@@ -57,6 +60,11 @@ class _StudentScanScreenState extends State<StudentScanScreen>
         CurvedAnimation(parent: _resultCtrl, curve: Curves.elasticOut);
 
     _loadStudentProfile();
+    
+    // Enable protection if initially visible
+    if (widget.isVisible) {
+      _enableScreenshotProtection();
+    }
   }
 
   @override
@@ -66,18 +74,41 @@ class _StudentScanScreenState extends State<StudentScanScreen>
     if (widget.isVisible != oldWidget.isVisible) {
       if (widget.isVisible) {
         _cameraController.start();
+        _enableScreenshotProtection();
       } else {
         _cameraController.stop();
+        _disableScreenshotProtection();
       }
     }
   }
 
   @override
   void dispose() {
+    _disableScreenshotProtection();
     _cameraController.dispose();
     _scanLineCtrl.dispose();
     _resultCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _enableScreenshotProtection() async {
+    if (Platform.isAndroid) {
+      try {
+        await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+      } catch (e) {
+        debugPrint('Failed to enable screenshot protection: $e');
+      }
+    }
+  }
+
+  Future<void> _disableScreenshotProtection() async {
+    if (Platform.isAndroid) {
+      try {
+        await FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_SECURE);
+      } catch (e) {
+        debugPrint('Failed to disable screenshot protection: $e');
+      }
+    }
   }
 
   Future<void> _loadStudentProfile() async {
@@ -347,7 +378,43 @@ class _StudentScanScreenState extends State<StudentScanScreen>
           right: 16,
           child: _buildTopControls(),
         ),
+
+        // ── Security indicator ──
+        Positioned(
+          top: 12,
+          left: 16,
+          child: _buildSecurityIndicator(),
+        ),
       ],
+    );
+  }
+
+  Widget _buildSecurityIndicator() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.lock_rounded, color: Color(0xFFEF4444), size: 14),
+          const SizedBox(width: 6),
+          Text(
+            'Security Active',
+            style: TextStyle(
+              color: const Color(0xFFEF4444),
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
