@@ -408,5 +408,25 @@ void main() {
       expect(
           device.toJson()['deviceIdentifier'], equals('esp32-attendance-01'));
     });
+
+    test('Verify: Fingerprint device parses current backend web contract', () {
+      final json = {
+        'id': '550e8400-e29b-41d4-a716-446655440000',
+        'deviceIdentifier': 'esp32-attendance-01',
+        'name': '',
+        'location': '',
+        'isActive': true,
+        'lastSeenAt': '2026-04-28T10:00:00Z',
+      };
+
+      final device = FingerprintDevice.fromJson(json);
+
+      expect(device.name, equals('Unnamed Device'));
+      expect(device.location, isNull);
+      expect(device.status, equals('active'));
+      expect(device.isOnline, isTrue);
+      expect(device.toJson()['isActive'], isTrue);
+      expect(device.toJson()['lastSeenAt'], equals('2026-04-28T10:00:00Z'));
+    });
   });
 }
