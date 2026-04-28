@@ -35,14 +35,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   _buildWelcomeHeader(),
                   SizedBox(height: Sizing.h(32)),
                   _buildFingerprintBanner(),
-                  SizedBox(height: Sizing.h(32)),
-                  _buildAttendanceStats(),
-                  SizedBox(height: Sizing.h(32)),
-                  _buildQuickActions(),
                 ],
               ),
             ),
           );
+
   }
 
   Widget _buildErrorState() {
@@ -231,82 +228,4 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget _buildAttendanceStats() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Attendance Overview',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: Sizing.sp(18),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: Sizing.h(16)),
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                'Present',
-                '0',
-                Colors.greenAccent,
-                Icons.check_circle_outline_rounded,
-              ),
-            ),
-            SizedBox(width: Sizing.w(16)),
-            Expanded(
-              child: _buildStatCard(
-                'Absent',
-                '0',
-                Colors.redAccent,
-                Icons.cancel_outlined,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(
-      String label, String value, Color color, IconData icon) {
-    return Container(
-      padding: EdgeInsets.all(Sizing.w(20)),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(Sizing.r(24)),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(Sizing.w(8)),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: Sizing.sp(20)),
-          ),
-          SizedBox(height: Sizing.h(16)),
-          Text(
-            value,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: Sizing.sp(24),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5),
-              fontSize: Sizing.sp(13),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

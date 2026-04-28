@@ -12,7 +12,9 @@ class ClassSession {
   final DateTime? attendanceCutOff;
   final String subjectCode;
   final String subjectName;
+  final String? subjectId;
   final String sectionName;
+  final String? sectionId;
   final String scheduledRoomName;
   final String? actualRoomName;
   final String scheduledTimeIn;
@@ -37,7 +39,9 @@ class ClassSession {
     this.attendanceCutOff,
     this.subjectCode = '',
     this.subjectName = '',
+    this.subjectId,
     this.sectionName = '',
+    this.sectionId,
     this.scheduledRoomName = '',
     this.actualRoomName,
     this.scheduledTimeIn = '',
@@ -84,7 +88,9 @@ class ClassSession {
       attendanceCutOff: parseDate(json['attendanceCutOff']),
       subjectCode: json['subjectCode'] ?? '',
       subjectName: json['subjectName'] ?? '',
+      subjectId: parseString(json['subjectId']),
       sectionName: json['sectionName'] ?? '',
+      sectionId: parseString(json['sectionId']),
       scheduledRoomName: json['scheduledRoomName'] ?? '',
       actualRoomName:
           json['actualRoomName'] ?? json['actualRoom'] ?? json['room'],

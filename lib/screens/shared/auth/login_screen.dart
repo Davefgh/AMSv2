@@ -88,13 +88,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (e is ApiException) {
           if (e.statusCode == 401 || e.statusCode == 400) {
             _errorMessage = 'Incorrect Username or Password. Please try again.';
+          } else if (e.statusCode == 404) {
+            _errorMessage =
+                'API endpoint not found. Please check if your backend server is running.\nURL: ${AppConstants.apiBaseUrl}/api/account/login';
           } else {
             _errorMessage =
-                'Server Error (${e.statusCode}): Failed to connect to server.';
+                'Server Error (${e.statusCode}): ${e.message}';
           }
         } else {
           _errorMessage =
-              'Failed to connect to server. Please check your connection or .env configuration.';
+              'Failed to connect to server. Please check your connection or .env configuration.\nError: $e';
         }
       });
     } finally {

@@ -8,6 +8,7 @@ import '../../widgets/main_scaffold.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../utils/sizing_utils.dart';
 import '../../providers/app_provider.dart';
+import 'student_details_screen.dart';
 
 class SectionStudentsScreen extends ConsumerStatefulWidget {
   final String sectionId;
@@ -599,91 +600,105 @@ class _SectionStudentsScreenState extends ConsumerState<SectionStudentsScreen> {
   Widget _buildStudentCard(Student student, bool isDark) {
     return Padding(
       padding: EdgeInsets.only(bottom: Sizing.h(12)),
-      child: _GlassCard(
-        isDark: isDark,
-        child: Row(
-          children: [
-            Container(
-              width: Sizing.w(46),
-              height: Sizing.w(46),
-              decoration: BoxDecoration(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.2)),
-              ),
-              child: Center(
-                child: Text(
-                  student.firstname.isNotEmpty
-                      ? student.firstname[0].toUpperCase()
-                      : '?',
-                  style: TextStyle(
-                    color: const Color(0xFF38BDF8),
-                    fontSize: Sizing.sp(18),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => StudentDetailsScreen(
+                studentId: student.id,
+                sectionName: widget.sectionName,
               ),
             ),
-            SizedBox(width: Sizing.w(16)),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    student.fullName,
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: _GlassCard(
+          isDark: isDark,
+          child: Row(
+            children: [
+              Container(
+                width: Sizing.w(46),
+                height: Sizing.w(46),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.2)),
+                ),
+                child: Center(
+                  child: Text(
+                    student.firstname.isNotEmpty
+                        ? student.firstname[0].toUpperCase()
+                        : '?',
                     style: TextStyle(
-                      color: isDark ? Colors.white : const Color(0xFF1E293B),
-                      fontSize: Sizing.sp(15),
+                      color: const Color(0xFF38BDF8),
+                      fontSize: Sizing.sp(18),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: Sizing.h(4)),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: student.isRegular
-                              ? Colors.green.withValues(alpha: 0.1)
-                              : Colors.orange.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          student.isRegular ? 'REGULAR' : 'IRREGULAR',
-                          style: TextStyle(
-                            color: student.isRegular
-                                ? Colors.greenAccent
-                                : Colors.orangeAccent,
-                            fontSize: Sizing.sp(9),
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: Sizing.w(8)),
-                      Expanded(
-                        child: Text(
-                          'ID: ${student.id.length > 8 ? "${student.id.substring(0, 8)}..." : student.id}',
-                          style: TextStyle(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.3)
-                                : Colors.black.withValues(alpha: 0.3),
-                            fontSize: Sizing.sp(10),
-                            fontWeight: FontWeight.w500,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
-            ),
-            Icon(Icons.info_outline_rounded,
-                color: isDark ? Colors.white10 : Colors.black12,
-                size: Sizing.sp(20)),
-          ],
+              SizedBox(width: Sizing.w(16)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      student.fullName,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                        fontSize: Sizing.sp(15),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: Sizing.h(4)),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: student.isRegular
+                                ? Colors.green.withValues(alpha: 0.1)
+                                : Colors.orange.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            student.isRegular ? 'REGULAR' : 'IRREGULAR',
+                            style: TextStyle(
+                              color: student.isRegular
+                                  ? Colors.greenAccent
+                                  : Colors.orangeAccent,
+                              fontSize: Sizing.sp(9),
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: Sizing.w(8)),
+                        Expanded(
+                          child: Text(
+                            'ID: ${student.id.length > 8 ? "${student.id.substring(0, 8)}..." : student.id}',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.3)
+                                  : Colors.black.withValues(alpha: 0.3),
+                              fontSize: Sizing.sp(10),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.info_outline_rounded,
+                  color: isDark ? Colors.white10 : Colors.black12,
+                  size: Sizing.sp(20)),
+            ],
+          ),
         ),
       ),
     );

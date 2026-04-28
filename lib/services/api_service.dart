@@ -20,6 +20,7 @@ import '../models/health_status.dart';
 import '../models/attendance_model.dart';
 import '../models/session_model.dart';
 import '../models/fingerprint_model.dart';
+import '../models/device_model.dart';
 import '../main.dart' show navigatorKey;
 
 class ApiException implements Exception {
@@ -62,6 +63,71 @@ class ApiService {
       return allStudents.where((s) => s.sectionId == sectionId).toList();
     } catch (e) {
       _logger.e('getStudentsBySection Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Student>> getStudentsBySchedule(String scheduleId) async {
+    validateId(scheduleId, 'Schedule');
+    try {
+      // Try the API endpoint first
+      try {
+        _logger.i('Trying /api/schedules/$scheduleId/students');
+        final response = await get('/api/schedules/$scheduleId/students');
+        if (response is List) {
+          _logger.i('Got ${response.length} students from schedule endpoint');
+          return response
+              .map((s) => Student.fromJson(s as Map<String, dynamic>))
+              .toList();
+        }
+      } catch (e) {
+        _logger.w('getStudentsBySchedule API endpoint not available: $e');
+      }
+
+      // Fallback: Get schedule, then get students by section
+      _logger.i('Fetching schedule details');
+      final schedule = await getSchedule(scheduleId);
+      _logger.i('Schedule sectionId: ${schedule.sectionId}, subjectId: ${schedule.subjectId}');
+      
+      if (schedule.sectionId != null && schedule.sectionId!.isNotEmpty) {
+        _logger.i('Getting students by sectionId: ${schedule.sectionId}');
+        final students = await getStudentsBySection(schedule.sectionId!);
+        _logger.i('Got ${students.length} students from section');
+        return students;
+      }
+
+      _logger.w('Schedule has no sectionId');
+      return [];
+    } catch (e) {
+      _logger.e('getStudentsBySchedule Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Student>> getStudentsBySession(String sessionId) async {
+    validateId(sessionId, 'Session');
+    try {
+      // Try the direct API endpoint first
+      try {
+        _logger.i('Trying /api/sessions/$sessionId/students');
+        final response = await get('/api/sessions/$sessionId/students');
+        if (response is List) {
+          _logger.i('Got ${response.length} students from session endpoint');
+          return response
+              .map((s) => Student.fromJson(s as Map<String, dynamic>))
+              .toList();
+        }
+      } catch (e) {
+        _logger.w('getStudentsBySession API endpoint not available: $e');
+      }
+
+      // Fallback: Get session, then use schedule to get students
+      _logger.i('Fetching session details to get schedule');
+      final session = await getSessionById(sessionId);
+      _logger.i('Session scheduleId: ${session.scheduleId}, sectionId: ${session.sectionId}, subjectId: ${session.subjectId}');
+      return await getStudentsBySchedule(session.scheduleId);
+    } catch (e) {
+      _logger.e('getStudentsBySession Error: $e');
       rethrow;
     }
   }
@@ -296,10 +362,16 @@ class ApiService {
   Future<List<Enrollment>> getEnrollmentsByStudent(String studentId) async {
     validateId(studentId, 'Student');
     try {
+      _logger.i('Fetching enrollments for student: $studentId');
       final response = await get('/api/StudentEnrollment/student/$studentId');
+      _logger.i('Enrollment response type: ${response.runtimeType}');
+      // NOTE: full response body intentionally not logged (contains PII)
+
       if (response is List) {
+        _logger.i('Response is a list with ${response.length} items');
         return response.map((e) => Enrollment.fromJson(e)).toList();
       }
+      _logger.w('Response is not a list, returning empty');
       return [];
     } catch (e) {
       _logger.e('getEnrollmentsByStudent Error: $e');
@@ -815,6 +887,55 @@ class ApiService {
     }
   }
 
+  // --- Reports APIs ---
+
+  /// GET /api/reports/attendance-summary
+  Future<Map<String, dynamic>> getReportAttendanceSummary() async {
+    try {
+      final res = await get('/api/reports/attendance-summary');
+      return res as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('getReportAttendanceSummary Error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/reports/instructor-sessions/{id}
+  Future<List<dynamic>> getReportInstructorSessions(String instructorId) async {
+    validateId(instructorId, 'Instructor');
+    try {
+      final res = await get('/api/reports/instructor-sessions/$instructorId');
+      return res as List<dynamic>? ?? [];
+    } catch (e) {
+      _logger.e('getReportInstructorSessions Error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/reports/class-attendance/{id}
+  Future<Map<String, dynamic>> getReportClassAttendance(String classId) async {
+    validateId(classId, 'Class');
+    try {
+      final res = await get('/api/reports/class-attendance/$classId');
+      return res as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('getReportClassAttendance Error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/reports/session-attendance/{id}
+  Future<Map<String, dynamic>> getReportSessionAttendance(String sessionId) async {
+    validateId(sessionId, 'Session');
+    try {
+      final res = await get('/api/reports/session-attendance/$sessionId');
+      return res as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('getReportSessionAttendance Error: $e');
+      rethrow;
+    }
+  }
+
   // --- Session APIs ---
 
   Future<List<ClassSession>> getSessions() async {
@@ -991,6 +1112,21 @@ class ApiService {
   }
 
   // --- Fingerprint APIs ---
+
+  /// GET /api/Fingerprint/devices
+  /// Gets all available fingerprint devices
+  Future<List<FingerprintDevice>> getFingerprintDevices() async {
+    try {
+      final response = await get('/api/Fingerprint/devices');
+      if (response is List) {
+        return response.map((d) => FingerprintDevice.fromJson(d)).toList();
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getFingerprintDevices Error: $e');
+      rethrow;
+    }
+  }
 
   /// POST /api/Fingerprint/enrollment-sessions
   /// Creates an enrollment session for a student on a device.

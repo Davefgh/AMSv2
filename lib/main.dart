@@ -182,6 +182,8 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
             AppRoutes.routes[AppRoutes.teacherSchedules]!(context),
         AppRoutes.studentFingerprint: (context) =>
             AppRoutes.routes[AppRoutes.studentFingerprint]!(context),
+        AppRoutes.teacherReports: (context) =>
+            AppRoutes.routes[AppRoutes.teacherReports]!(context),
       },
       debugShowCheckedModeBanner: false,
     );

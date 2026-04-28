@@ -47,18 +47,15 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
       _errorMessage = null;
     });
     try {
-      // 1. Fetch the Schedule to get the sectionId
-      final schedule = await _apiService.getSchedule(widget.session.scheduleId);
-      final sectionId = schedule.sectionId;
+      // Try to get students for this session
+      // This will try multiple API endpoints and fallback strategies
+      final students = await _apiService.getStudentsBySession(widget.session.id);
 
-      if (sectionId == null) {
-        throw Exception('This session has no associated section.');
+      if (students.isEmpty) {
+        throw Exception('No students found for this session. Please ensure students are enrolled in this subject/section.');
       }
 
-      // 2. Fetch Students for the section
-      final students = await _apiService.getStudentsBySection(sectionId);
-
-      // 3. Fetch Attendance Records for the session
+      // Fetch Attendance Records for the session
       final records =
           await _apiService.getAttendanceBySession(widget.session.id);
 

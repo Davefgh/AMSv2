@@ -27,6 +27,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isRegular = true;
   bool _isLoading = false;
   bool _isFetching = true;
+  bool _isStudent = false;
 
   @override
   void initState() {
@@ -51,13 +52,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final profile = await _apiService.getMe();
       setState(() {
         _emailController.text = profile.email;
-        // Split username as fallback for first/last if needed or leave empty for user to fill
+        
+        // Load student profile data if available
+        if (profile.studentProfile != null) {
+          _isStudent = true;
+          _firstNameController.text = profile.studentProfile!.firstname ?? '';
+          _lastNameController.text = profile.studentProfile!.lastname ?? '';
+          _sectionIdController.text = profile.studentProfile!.sectionId;
+          _isRegular = profile.studentProfile!.isRegular;
+        }
+        // Load instructor profile data if available
+        else if (profile.instructorProfile != null) {
+          _isStudent = false;
+          _firstNameController.text = profile.instructorProfile!.firstname ?? '';
+          _lastNameController.text = profile.instructorProfile!.lastname ?? '';
+        }
+        
         _isFetching = false;
       });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: $e')),
+          SnackBar(
+            content: Text('Error loading profile: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
         );
         setState(() => _isFetching = false);
       }
@@ -70,17 +89,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final Map<String, dynamic> updateData = {
-        'firstname': _firstNameController.text.trim(),
-        'lastname': _lastNameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'sectionId': _sectionIdController.text.trim(),
-        'isRegular': _isRegular,
-      };
+      final Map<String, dynamic> updateData = {};
 
-      // Add passwords only if provided
+      // Add basic fields only if they have values
+      if (_firstNameController.text.trim().isNotEmpty) {
+        updateData['firstname'] = _firstNameController.text.trim();
+      }
+      if (_lastNameController.text.trim().isNotEmpty) {
+        updateData['lastname'] = _lastNameController.text.trim();
+      }
+      if (_emailController.text.trim().isNotEmpty) {
+        updateData['email'] = _emailController.text.trim();
+      }
+      if (_sectionIdController.text.trim().isNotEmpty) {
+        updateData['sectionId'] = _sectionIdController.text.trim();
+      }
+      
+      // isRegular is a student-only field
+      if (_isStudent) {
+        updateData['isRegular'] = _isRegular;
+      }
+
+      // Add passwords only if current password is provided
       if (_currentPasswordController.text.isNotEmpty) {
         updateData['currentPassword'] = _currentPasswordController.text;
+        
         if (_newPasswordController.text.isNotEmpty) {
           updateData['newPassword'] = _newPasswordController.text;
           updateData['confirmNewPassword'] = _confirmPasswordController.text;
@@ -91,14 +124,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 12),
+                Text('Profile updated successfully!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         );
         Navigator.pop(context, true); // Return true to indicate update
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update profile: $e')),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text('Failed to update profile: $e'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         );
       }
     } finally {
@@ -209,30 +270,70 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       child: Column(
         children: [
           CustomTextField(
-              label: 'First Name', controller: _firstNameController),
-          const SizedBox(height: 20),
-          CustomTextField(label: 'Last Name', controller: _lastNameController),
-          const SizedBox(height: 20),
-          CustomTextField(
-              label: 'Email Address',
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress),
-          const SizedBox(height: 20),
-          CustomTextField(
-              label: 'Section ID', controller: _sectionIdController),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Regular Student',
-                  style: TextStyle(color: Colors.white, fontSize: 16)),
-              Switch.adaptive(
-                value: _isRegular,
-                onChanged: (v) => setState(() => _isRegular = v),
-                activeTrackColor: const Color(0xFF38BDF8),
-              ),
-            ],
+            label: 'First Name',
+            controller: _firstNameController,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) {
+                return 'First name is required';
+              }
+              return null;
+            },
           ),
+          const SizedBox(height: 20),
+          CustomTextField(
+            label: 'Last Name',
+            controller: _lastNameController,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) {
+                return 'Last name is required';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 20),
+          CustomTextField(
+            label: 'Email Address',
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) {
+                return 'Email is required';
+              }
+              if (!v.contains('@')) {
+                return 'Please enter a valid email';
+              }
+              return null;
+            },
+          ),
+          // Student-specific fields
+          if (_isStudent) ...[
+            const SizedBox(height: 20),
+            CustomTextField(
+              label: 'Section ID',
+              controller: _sectionIdController,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) {
+                  return 'Section ID is required';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Regular Student',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                Switch.adaptive(
+                  value: _isRegular,
+                  onChanged: (v) => setState(() => _isRegular = v),
+                  activeTrackColor: const Color(0xFF38BDF8),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -242,15 +343,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return _GlassCard(
       child: Column(
         children: [
-          CustomTextField(
-              label: 'Current Password',
-              controller: _currentPasswordController,
-              obscureText: true),
+          const Text(
+            'Leave password fields empty if you don\'t want to change your password',
+            style: TextStyle(
+              color: Colors.white60,
+              fontSize: 13,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
           const SizedBox(height: 20),
           CustomTextField(
-              label: 'New Password',
-              controller: _newPasswordController,
-              obscureText: true),
+            label: 'Current Password',
+            controller: _currentPasswordController,
+            obscureText: true,
+            validator: (v) {
+              // If new password is provided, current password is required
+              if (_newPasswordController.text.isNotEmpty && 
+                  (v == null || v.isEmpty)) {
+                return 'Current password is required to set a new password';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 20),
+          CustomTextField(
+            label: 'New Password',
+            controller: _newPasswordController,
+            obscureText: true,
+            validator: (v) {
+              if (v != null && v.isNotEmpty && v.length < 6) {
+                return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
+          ),
           const SizedBox(height: 20),
           CustomTextField(
             label: 'Confirm New Password',
