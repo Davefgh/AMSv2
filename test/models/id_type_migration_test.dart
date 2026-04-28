@@ -10,6 +10,7 @@ import 'package:amsv2/models/course_model.dart';
 import 'package:amsv2/models/classroom_model.dart';
 import 'package:amsv2/models/schedule_model.dart';
 import 'package:amsv2/models/user_profile.dart';
+import 'package:amsv2/models/device_model.dart';
 
 /// Bug Condition Exploration Test - Post-Fix Verification
 ///
@@ -387,6 +388,25 @@ void main() {
       expect(schedule.classroomId, equals('classroom-789'));
       expect(schedule.sectionId, equals('section-012'));
       expect(schedule.instructorId, equals('instructor-345'));
+    });
+
+    test('Verify: Fingerprint device preserves API id and device identifier',
+        () {
+      final json = {
+        'id': '550e8400-e29b-41d4-a716-446655440000',
+        'deviceIdentifier': 'esp32-attendance-01',
+        'name': 'Front Desk Scanner',
+        'location': 'Lab 1',
+        'status': 'active',
+        'isOnline': true,
+      };
+
+      final device = FingerprintDevice.fromJson(json);
+
+      expect(device.id, equals('550e8400-e29b-41d4-a716-446655440000'));
+      expect(device.deviceIdentifier, equals('esp32-attendance-01'));
+      expect(
+          device.toJson()['deviceIdentifier'], equals('esp32-attendance-01'));
     });
   });
 }
