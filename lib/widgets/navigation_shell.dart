@@ -42,7 +42,7 @@ class NavigationShell extends ConsumerWidget {
     final currentIndex = ref.watch(navigationIndexProvider);
     final appState = ref.watch(appProvider);
     final isDark = appState.isDarkMode;
-    final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF0F5FF);
 
     // Define screens for each tab
     final List<Widget> screens = isStudent
@@ -75,7 +75,20 @@ class NavigationShell extends ConsumerWidget {
 
   Widget _buildBackground(bool isDark) {
     if (!isDark) {
-      return Container(color: Colors.white);
+      // Light mode: soft blue gradient background
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFEAF0FF),
+              Color(0xFFF5F8FF),
+              Color(0xFFFFFFFF),
+            ],
+          ),
+        ),
+      );
     }
 
     return Stack(
@@ -186,12 +199,14 @@ class NavigationShell extends ConsumerWidget {
 
   Widget _buildHeader(
       BuildContext context, bool isDark, int currentIndex, WidgetRef ref) {
-    final textColor = isDark ? Colors.white : Colors.black;
+    final textColor = isDark ? Colors.white : Colors.white; // white on navy header
+    final headerBg = isDark ? Colors.transparent : const Color(0xFF001F3F);
     final titles = isStudent
         ? ['Student Dashboard', 'Schedules', 'Scan QR', 'Profile']
         : ['Instructor Dashboard', 'Attendance', 'Sessions', 'Profile'];
 
-    return Padding(
+    return Container(
+      color: headerBg,
       padding: EdgeInsets.symmetric(
         horizontal: Sizing.w(24),
         vertical: Sizing.h(16),
@@ -226,6 +241,8 @@ class NavigationShell extends ConsumerWidget {
               ],
             ),
           ),
+          // Dark / Light mode toggle
+          _ThemeToggleButton(isDark: isDark),
           // Add actions based on current screen if needed
           if (isStudent && currentIndex == 0)
             Row(
@@ -347,8 +364,14 @@ class NavigationShell extends ConsumerWidget {
 
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
-        : Colors.black.withValues(alpha: 0.1);
-    final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+        : const Color(0xFF001F3F).withValues(alpha: 0.12);
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFF001F3F);
+    final railIconColor = isDark
+        ? Colors.white.withValues(alpha: 0.4)
+        : Colors.white.withValues(alpha: 0.5);
+    final railLabelColor = isDark
+        ? Colors.white.withValues(alpha: 0.4)
+        : Colors.white.withValues(alpha: 0.5);
 
     return Container(
       decoration: BoxDecoration(
@@ -366,19 +389,12 @@ class NavigationShell extends ConsumerWidget {
         },
         indicatorColor: const Color(0xFF38BDF8).withValues(alpha: 0.2),
         selectedIconTheme: const IconThemeData(color: Color(0xFF38BDF8)),
-        unselectedIconTheme: IconThemeData(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.4)
-                : Colors.black.withValues(alpha: 0.4)),
+        unselectedIconTheme: IconThemeData(color: railIconColor),
         selectedLabelTextStyle: const TextStyle(
           color: Color(0xFF38BDF8),
           fontWeight: FontWeight.bold,
         ),
-        unselectedLabelTextStyle: TextStyle(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.4)
-              : Colors.black.withValues(alpha: 0.4),
-        ),
+        unselectedLabelTextStyle: TextStyle(color: railLabelColor),
         leading: extended
             ? Padding(
                 padding:
@@ -446,14 +462,21 @@ class NavigationShell extends ConsumerWidget {
     final destinations =
         isStudent ? _studentDestinations : _teacherDestinations;
 
-    final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFF001F3F);
     final borderColor =
-        isDark ? const Color(0xFF1E293B) : Colors.black.withValues(alpha: 0.1);
+        isDark ? const Color(0xFF1E293B) : const Color(0xFF00172E);
 
     return Container(
       decoration: BoxDecoration(
         color: bgColor,
         border: Border(top: BorderSide(color: borderColor, width: 1)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF001F3F).withValues(alpha: isDark ? 0.0 : 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          )
+        ],
       ),
       child: BottomNavigationBar(
         currentIndex: currentIndex,
@@ -463,7 +486,7 @@ class NavigationShell extends ConsumerWidget {
         selectedItemColor: const Color(0xFF38BDF8),
         unselectedItemColor: isDark
             ? Colors.white.withValues(alpha: 0.4)
-            : Colors.black.withValues(alpha: 0.4),
+            : Colors.white.withValues(alpha: 0.55),
         showUnselectedLabels: true,
         selectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
@@ -488,4 +511,60 @@ class _NavDestination {
   final String label;
 
   const _NavDestination(this.icon, this.label);
+}
+
+/// Animated dark/light mode toggle button shown in the header
+class _ThemeToggleButton extends ConsumerWidget {
+  final bool isDark;
+  const _ThemeToggleButton({required this.isDark});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Tooltip(
+      message: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+      child: GestureDetector(
+        onTap: () => ref.read(appProvider.notifier).toggleDarkMode(),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          width: 44,
+          height: 26,
+          margin: EdgeInsets.only(right: Sizing.w(4)),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(13),
+            color: isDark
+                ? const Color(0xFF38BDF8).withValues(alpha: 0.25)
+                : Colors.white.withValues(alpha: 0.2),
+            border: Border.all(
+              color: isDark
+                  ? const Color(0xFF38BDF8).withValues(alpha: 0.5)
+                  : Colors.white.withValues(alpha: 0.7),
+              width: 1.2,
+            ),
+          ),
+          child: Stack(
+            children: [
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                left: isDark ? 20 : 2,
+                top: 3,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, anim) =>
+                      RotationTransition(turns: anim, child: child),
+                  child: Icon(
+                    isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                    key: ValueKey(isDark),
+                    size: 18,
+                    color: isDark ? const Color(0xFF38BDF8) : Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

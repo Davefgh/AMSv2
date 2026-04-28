@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/api_service.dart';
 import '../../models/session_model.dart';
 import 'dart:ui';
 import 'package:intl/intl.dart';
 import 'record_attendance_screen.dart';
 import '../../widgets/skeleton_loader.dart';
+import '../../providers/app_provider.dart';
 
-class AttendanceScreen extends StatefulWidget {
+class AttendanceScreen extends ConsumerStatefulWidget {
   const AttendanceScreen({super.key});
 
   @override
-  State<AttendanceScreen> createState() => _AttendanceScreenState();
+  ConsumerState<AttendanceScreen> createState() => _AttendanceScreenState();
 }
 
-class _AttendanceScreenState extends State<AttendanceScreen> {
+class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
   String? _errorMessage;
@@ -44,6 +46,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -51,11 +54,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     try {
       final sessions = await _apiService.getMySessions();
 
-      // Calculate stats
-      int active = 0;
-      int pending = 0;
-      int ended = 0;
-
+      int active = 0, pending = 0, ended = 0;
       for (var s in sessions) {
         final status = s.status.toLowerCase();
         if (status == 'active' || status == 'started') {
@@ -67,21 +66,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         }
       }
 
-      setState(() {
-        _sessions = sessions;
-        _stats = {
-          'active': active,
-          'pending': pending,
-          'ended': ended,
-        };
-        _isLoading = false;
-        _applyFilters();
-      });
+      if (mounted) {
+        setState(() {
+          _sessions = sessions;
+          _stats = {'active': active, 'pending': pending, 'ended': ended};
+          _isLoading = false;
+          _applyFilters();
+        });
+      }
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -89,12 +88,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredSessions = _sessions.where((s) {
-        // Search
         final matchesSearch = s.subjectName.toLowerCase().contains(query) ||
             s.subjectCode.toLowerCase().contains(query) ||
             s.sectionName.toLowerCase().contains(query);
 
-        // Status filter
         bool matchesStatus = true;
         if (_statusFilter == 'Active') {
           matchesStatus = s.status.toLowerCase() == 'active' ||
@@ -109,7 +106,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               s.status.toLowerCase() != 'completed';
         }
 
-        // Date filter (Simplified for now - can be expanded)
         bool matchesDate = true;
         if (s.sessionDate != null) {
           matchesDate = s.sessionDate!.day == _selectedDate.day &&
@@ -124,20 +120,22 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = ref.watch(appProvider).isDarkMode;
     return Column(
       children: [
-        _buildHeader(),
+        _buildHeader(isDark),
         Expanded(
           child: _isLoading
               ? const SkeletonSessionList()
               : _errorMessage != null
-                  ? _buildErrorState()
+                  ? _buildErrorState(isDark)
                   : RefreshIndicator(
                       color: const Color(0xFF38BDF8),
-                      backgroundColor: const Color(0xFF1E293B),
+                      backgroundColor:
+                          isDark ? const Color(0xFF1E293B) : Colors.white,
                       onRefresh: _loadData,
                       child: _filteredSessions.isEmpty
-                          ? _buildEmptyState()
+                          ? _buildEmptyState(isDark)
                           : ListView.builder(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 24, vertical: 12),
@@ -145,7 +143,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   parent: AlwaysScrollableScrollPhysics()),
                               itemCount: _filteredSessions.length,
                               itemBuilder: (context, index) =>
-                                  _buildSessionCard(_filteredSessions[index]),
+                                  _buildSessionCard(
+                                      _filteredSessions[index], isDark),
                             ),
                     ),
         ),
@@ -153,19 +152,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isDark) {
+    final subtitleColor =
+        isDark ? Colors.white54 : const Color(0xFF001F3F).withOpacity(0.5);
+
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Select a session to record or view attendance',
-            style: TextStyle(color: Colors.white54, fontSize: 13),
+            style: TextStyle(color: subtitleColor, fontSize: 13),
           ),
           const SizedBox(height: 20),
-
-          // Stats Row
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -181,8 +181,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
           ),
           const SizedBox(height: 20),
-
-          // Filters Row
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -190,12 +188,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ConstrainedBox(
                   constraints:
                       const BoxConstraints(minWidth: 200, maxWidth: 300),
-                  child: _buildSearchField(),
+                  child: _buildSearchField(isDark),
                 ),
                 const SizedBox(width: 12),
-                _buildDatePicker(),
+                _buildDatePicker(isDark),
                 const SizedBox(width: 12),
-                _buildStatusDropdown(),
+                _buildStatusDropdown(isDark),
               ],
             ),
           ),
@@ -210,32 +208,49 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         label,
-        style:
-            TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(bool isDark) {
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : const Color(0xFF001F3F).withOpacity(0.15);
+    final bgColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF001F3F);
+    final hintColor = isDark
+        ? Colors.white.withValues(alpha: 0.3)
+        : const Color(0xFF001F3F).withOpacity(0.35);
+
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: borderColor),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                    color: const Color(0xFF001F3F).withOpacity(0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2))
+              ],
       ),
       child: TextField(
         controller: _searchController,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: TextStyle(color: textColor, fontSize: 14),
         decoration: InputDecoration(
           hintText: 'Search sessions...',
-          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-          prefixIcon: Icon(Icons.search,
-              color: Colors.white.withValues(alpha: 0.3), size: 20),
+          hintStyle: TextStyle(color: hintColor),
+          prefixIcon: Icon(Icons.search, color: hintColor, size: 20),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
@@ -243,7 +258,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildDatePicker() {
+  Widget _buildDatePicker(bool isDark) {
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : const Color(0xFF001F3F).withOpacity(0.15);
+    final bgColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.white;
+    final textColor = isDark ? Colors.white70 : const Color(0xFF001F3F);
+    final iconColor = isDark
+        ? Colors.white.withValues(alpha: 0.3)
+        : const Color(0xFF001F3F).withOpacity(0.4);
+
     return GestureDetector(
       onTap: () async {
         final date = await showDatePicker(
@@ -253,11 +279,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           lastDate: DateTime.now().add(const Duration(days: 365)),
           builder: (context, child) => Theme(
             data: Theme.of(context).copyWith(
-              colorScheme: const ColorScheme.dark(
-                primary: Color(0xFF38BDF8),
-                onPrimary: Color(0xFF0F172A),
-                surface: Color(0xFF1E293B),
-              ),
+              colorScheme: isDark
+                  ? const ColorScheme.dark(
+                      primary: Color(0xFF38BDF8),
+                      onPrimary: Color(0xFF0F172A),
+                      surface: Color(0xFF1E293B),
+                    )
+                  : const ColorScheme.light(
+                      primary: Color(0xFF001F3F),
+                      onPrimary: Colors.white,
+                    ),
             ),
             child: child!,
           ),
@@ -271,18 +302,25 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          color: bgColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          border: Border.all(color: borderColor),
+          boxShadow: isDark
+              ? []
+              : [
+                  BoxShadow(
+                      color: const Color(0xFF001F3F).withOpacity(0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2))
+                ],
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today,
-                color: Colors.white.withValues(alpha: 0.3), size: 18),
+            Icon(Icons.calendar_today, color: iconColor, size: 18),
             const SizedBox(width: 8),
             Text(
               DateFormat('MM/dd/yyyy').format(_selectedDate),
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              style: TextStyle(color: textColor, fontSize: 13),
             ),
           ],
         ),
@@ -290,22 +328,41 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildStatusDropdown() {
+  Widget _buildStatusDropdown(bool isDark) {
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : const Color(0xFF001F3F).withOpacity(0.15);
+    final bgColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.white;
+    final textColor = isDark ? Colors.white70 : const Color(0xFF001F3F);
+    final iconColor = isDark
+        ? Colors.white.withValues(alpha: 0.3)
+        : const Color(0xFF001F3F).withOpacity(0.4);
+
     return Container(
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: borderColor),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                    color: const Color(0xFF001F3F).withOpacity(0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2))
+              ],
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _statusFilter,
-          dropdownColor: const Color(0xFF1E293B),
-          icon: Icon(Icons.filter_list,
-              color: Colors.white.withValues(alpha: 0.3), size: 18),
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
+          dropdownColor:
+              isDark ? const Color(0xFF1E293B) : Colors.white,
+          icon: Icon(Icons.filter_list, color: iconColor, size: 18),
+          style: TextStyle(color: textColor, fontSize: 13),
           items: ['All', 'Active', 'Pending', 'Ended'].map((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -321,7 +378,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildSessionCard(ClassSession session) {
+  Widget _buildSessionCard(ClassSession session, bool isDark) {
     final status = session.status.toLowerCase();
     final isActive = status == 'active' || status == 'started';
     final isEnded = status == 'ended' || status == 'completed';
@@ -329,6 +386,23 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final statusColor = isActive
         ? const Color(0xFF34D399)
         : (isEnded ? Colors.redAccent : const Color(0xFFFBBF24));
+
+    final titleColor = isDark ? Colors.white : const Color(0xFF001F3F);
+    final subColor = isDark
+        ? Colors.white70
+        : const Color(0xFF001F3F).withOpacity(0.55);
+    final infoColor = isDark
+        ? Colors.white.withValues(alpha: 0.5)
+        : const Color(0xFF001F3F).withOpacity(0.45);
+    final iconColor = isDark
+        ? Colors.white.withValues(alpha: 0.3)
+        : const Color(0xFF001F3F).withOpacity(0.3);
+    final dividerColor = isDark
+        ? Colors.white10
+        : const Color(0xFF001F3F).withOpacity(0.08);
+    final chevronColor = isDark
+        ? Colors.white.withValues(alpha: 0.2)
+        : const Color(0xFF001F3F).withOpacity(0.2);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -341,8 +415,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
           );
         },
-        child: _GlassCard(
-          padding: const EdgeInsets.all(20),
+        child: _ThemedCard(
+          isDark: isDark,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -361,8 +435,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       ),
                       Text(
                         session.sectionName,
-                        style: const TextStyle(
-                            color: Colors.white70, fontSize: 11),
+                        style: TextStyle(color: subColor, fontSize: 11),
                       ),
                     ],
                   ),
@@ -372,40 +445,42 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               const SizedBox(height: 12),
               Text(
                 session.subjectName,
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: titleColor,
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.5),
               ),
               const SizedBox(height: 16),
-              _buildCardInfoRow(
-                  Icons.calendar_today_rounded,
+              _buildInfoRow(Icons.calendar_today_rounded,
                   DateFormat('EEE, MMM d')
-                      .format(session.sessionDate ?? DateTime.now())),
+                      .format(session.sessionDate ?? DateTime.now()),
+                  infoColor, iconColor),
               if (session.actualStartTime != null)
-                _buildCardInfoRow(Icons.access_time_rounded,
-                    'Started: ${DateFormat('HH:mm').format(session.actualStartTime!)}'),
+                _buildInfoRow(Icons.access_time_rounded,
+                    'Started: ${DateFormat('HH:mm').format(session.actualStartTime!)}',
+                    infoColor, iconColor),
               if (session.attendanceCutOff != null)
-                _buildCardInfoRow(Icons.timer_off_rounded,
-                    'Cut-off: ${DateFormat('HH:mm').format(session.attendanceCutOff!)}'),
-              _buildCardInfoRow(Icons.location_on_rounded,
-                  session.actualRoomName ?? session.scheduledRoomName),
+                _buildInfoRow(Icons.timer_off_rounded,
+                    'Cut-off: ${DateFormat('HH:mm').format(session.attendanceCutOff!)}',
+                    infoColor, iconColor),
+              _buildInfoRow(Icons.location_on_rounded,
+                  session.actualRoomName ?? session.scheduledRoomName,
+                  infoColor, iconColor),
               const SizedBox(height: 16),
-              const Divider(color: Colors.white10),
+              Divider(color: dividerColor),
               const SizedBox(height: 12),
               Row(
                 children: [
                   Text(
                     session.startedByName ?? 'Unknown Instructor',
-                    style: const TextStyle(
-                        color: Colors.white70,
+                    style: TextStyle(
+                        color: subColor,
                         fontSize: 13,
                         fontWeight: FontWeight.w500),
                   ),
                   const Spacer(),
-                  Icon(Icons.chevron_right_rounded,
-                      color: Colors.white.withValues(alpha: 0.2)),
+                  Icon(Icons.chevron_right_rounded, color: chevronColor),
                 ],
               ),
             ],
@@ -415,22 +490,23 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildCardInfoRow(IconData icon, String label) {
+  Widget _buildInfoRow(
+      IconData icon, String label, Color textColor, Color iconColor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Icon(icon, size: 14, color: Colors.white.withValues(alpha: 0.3)),
+          Icon(icon, size: 14, color: iconColor),
           const SizedBox(width: 8),
-          Text(label,
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
+          Text(label, style: TextStyle(color: textColor, fontSize: 12)),
         ],
       ),
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildErrorState(bool isDark) {
+    final textColor =
+        isDark ? Colors.white70 : const Color(0xFF001F3F).withOpacity(0.6);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -439,7 +515,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           const SizedBox(height: 16),
           Text(_errorMessage!,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70)),
+              style: TextStyle(color: textColor)),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _loadData,
@@ -447,7 +523,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             label: const Text('Retry'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF38BDF8),
-              foregroundColor: const Color(0xFF0F172A),
+              foregroundColor: Colors.white,
             ),
           ),
         ],
@@ -455,7 +531,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(bool isDark) {
+    final textColor =
+        isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF001F3F).withOpacity(0.4);
+    final iconColor =
+        isDark ? Colors.white.withValues(alpha: 0.2) : const Color(0xFF001F3F).withOpacity(0.15);
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       child: Container(
@@ -464,11 +544,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.event_busy_rounded,
-                size: 48, color: Colors.white.withValues(alpha: 0.2)),
+            Icon(Icons.event_busy_rounded, size: 48, color: iconColor),
             const SizedBox(height: 12),
             Text('No sessions found for this filters.',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
+                style: TextStyle(color: textColor)),
           ],
         ),
       ),
@@ -476,29 +555,49 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 }
 
-class _GlassCard extends StatelessWidget {
+class _ThemedCard extends StatelessWidget {
   final Widget child;
-  final EdgeInsetsGeometry padding;
+  final bool isDark;
 
-  const _GlassCard(
-      {required this.child, this.padding = const EdgeInsets.all(20)});
+  const _ThemedCard({required this.child, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+    if (isDark) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(20),
+              border:
+                  Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            ),
+            child: child,
           ),
-          child: child,
         ),
+      );
+    }
+    // Light mode: clean white card with navy shadow
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: const Color(0xFF001F3F).withOpacity(0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF001F3F).withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
+      child: child,
     );
   }
 }

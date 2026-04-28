@@ -153,12 +153,13 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = ref.watch(appProvider).isDarkMode;
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'AMSv2',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
       initialRoute: widget.initialRoute,
       routes: {
         '/': (context) => const LoginScreen(),
