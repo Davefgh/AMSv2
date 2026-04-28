@@ -67,7 +67,8 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
         _existingRecords = recordsMap;
         // Initialize modified statuses with existing or default
         _modifiedStatuses = {
-          for (var s in students) s.id: recordsMap[s.id]?.status ?? 'absent'
+          for (var s in students)
+            s.id: (recordsMap[s.id]?.status ?? 'absent').toLowerCase()
         };
         _isLoading = false;
       });
@@ -506,7 +507,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: currentStatus,
+          value: currentStatus.toLowerCase(),
           dropdownColor: const Color(0xFF1E293B),
           icon: const Icon(Icons.arrow_drop_down, color: Colors.white24),
           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),

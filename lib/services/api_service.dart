@@ -80,44 +80,6 @@ class ApiService {
     }
   }
 
-  Future<List<Student>> getStudentsBySchedule(String scheduleId) async {
-    validateId(scheduleId, 'Schedule');
-    try {
-      // Try the API endpoint first
-      try {
-        _logger.i('Trying /api/schedules/$scheduleId/students');
-        final response = await get('/api/schedules/$scheduleId/students');
-        if (response is List) {
-          _logger.i('Got ${response.length} students from schedule endpoint');
-          return response
-              .map((s) => Student.fromJson(s as Map<String, dynamic>))
-              .toList();
-        }
-      } catch (e) {
-        _logger.w('getStudentsBySchedule API endpoint not available: $e');
-      }
-
-      // Fallback: Get schedule, then get students by section
-      _logger.i('Fetching schedule details');
-      final schedule = await getSchedule(scheduleId);
-      _logger.i(
-          'Schedule sectionId: ${schedule.sectionId}, subjectId: ${schedule.subjectId}');
-
-      if (schedule.sectionId != null && schedule.sectionId!.isNotEmpty) {
-        _logger.i('Getting students by sectionId: ${schedule.sectionId}');
-        final students = await getStudentsBySection(schedule.sectionId!);
-        _logger.i('Got ${students.length} students from section');
-        return students;
-      }
-
-      _logger.w('Schedule has no sectionId');
-      return [];
-    } catch (e) {
-      _logger.e('getStudentsBySchedule Error: $e');
-      rethrow;
-    }
-  }
-
   Future<List<Student>> getStudentsBySession(String sessionId) async {
     validateId(sessionId, 'Session');
     try {
@@ -140,9 +102,105 @@ class ApiService {
       final session = await getSessionById(sessionId);
       _logger.i(
           'Session scheduleId: ${session.scheduleId}, sectionId: ${session.sectionId}, subjectId: ${session.subjectId}');
-      return await getStudentsBySchedule(session.scheduleId);
+      return await getStudentsBySchedule(session.scheduleId,
+          sectionId: session.sectionId, subjectId: session.subjectId);
     } catch (e) {
       _logger.e('getStudentsBySession Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Student>> getStudentsBySchedule(String scheduleId,
+      {String? sectionId, String? subjectId}) async {
+    validateId(scheduleId, 'Schedule');
+    try {
+      // Try the API endpoint first
+      try {
+        _logger.i('Trying /api/schedules/$scheduleId/students');
+        final response = await get('/api/schedules/$scheduleId/students');
+        if (response is List) {
+          _logger.i('Got ${response.length} students from schedule endpoint');
+          return response
+              .map((s) => Student.fromJson(s as Map<String, dynamic>))
+              .toList();
+        }
+      } catch (e) {
+        _logger.w('getStudentsBySchedule API endpoint not available: $e');
+      }
+
+      // Use provided IDs or try to fetch them
+      String? targetSectionId = sectionId;
+      String? targetSubjectId = subjectId;
+
+      if (targetSectionId == null || targetSubjectId == null) {
+        _logger.i('Fetching schedule details to find missing IDs');
+        final schedule = await getSchedule(scheduleId);
+        targetSectionId ??= schedule.sectionId;
+        targetSubjectId ??= schedule.subjectId;
+        _logger.i('Found IDs from schedule - Section: $targetSectionId, Subject: $targetSubjectId');
+      }
+
+      // Fallback 1: Try /api/StudentEnrollment/schedule/$scheduleId
+      try {
+        _logger.i('Trying /api/StudentEnrollment/schedule/$scheduleId');
+        final response = await get('/api/StudentEnrollment/schedule/$scheduleId');
+        if (response is List) {
+          return response.map((s) => Student.fromJson(s as Map<String, dynamic>)).toList();
+        }
+      } catch (_) {}
+
+      // Fallback 1.5: Try /api/StudentEnrollment/subject/$targetSubjectId
+      if (targetSubjectId != null && targetSubjectId.isNotEmpty) {
+        try {
+          _logger.i('Trying /api/StudentEnrollment/subject/$targetSubjectId');
+          final response = await get('/api/StudentEnrollment/subject/$targetSubjectId');
+          if (response is List && response.isNotEmpty) {
+            _logger.i('Got ${response.length} students from subject enrollment');
+            return response.map((s) => Student.fromJson(s as Map<String, dynamic>)).toList();
+          }
+        } catch (_) {}
+      }
+
+      // Fallback 2: Get students by section
+      if (targetSectionId != null && targetSectionId.isNotEmpty) {
+        _logger.i('Getting students by sectionId: $targetSectionId');
+        final students = await getStudentsBySection(targetSectionId);
+        if (students.isNotEmpty) return students;
+      }
+
+      // Fallback 3: Last resort - Filter all enrollments by subjectId
+      if (targetSubjectId != null && targetSubjectId.isNotEmpty) {
+        _logger.i('Last resort: Filtering all enrollments by subjectId: $targetSubjectId');
+        try {
+           final allEnrollments = await getEnrollments();
+           final filteredEnrollments = allEnrollments.where((e) => e.subjectId == targetSubjectId).toList();
+           if (filteredEnrollments.isNotEmpty) {
+             _logger.i('Found ${filteredEnrollments.length} enrollments via manual filtering');
+             List<Student> students = [];
+             for (var e in filteredEnrollments) {
+               if (e.studentName != null) {
+                  students.add(Student(
+                    id: e.studentId,
+                    firstname: e.studentName!.split(' ').first,
+                    lastname: e.studentName!.contains(' ') ? e.studentName!.split(' ').last : '',
+                    isRegular: true,
+                    userId: '',
+                    sectionId: e.sectionId,
+                    createdAt: DateTime.now(),
+                    updatedAt: DateTime.now(),
+                  ));
+               }
+             }
+             if (students.isNotEmpty) return students;
+           }
+        } catch (e) {
+          _logger.w('Manual enrollment filtering failed: $e');
+        }
+      }
+
+      return [];
+    } catch (e) {
+      _logger.e('getStudentsBySchedule Error: $e');
       rethrow;
     }
   }
