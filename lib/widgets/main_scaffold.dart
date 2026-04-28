@@ -31,7 +31,7 @@ class MainScaffold extends ConsumerWidget {
     Sizing.init(context);
     final appState = ref.watch(appProvider);
     final isDark = appState.isDarkMode;
-    final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF0F5FF);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -49,7 +49,20 @@ class MainScaffold extends ConsumerWidget {
 
   Widget _buildBackground(bool isDark) {
     if (!isDark) {
-      return Container(color: Colors.white);
+      // Light mode: soft blue gradient matching navigation_shell
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFEAF0FF),
+              Color(0xFFF5F8FF),
+              Color(0xFFFFFFFF),
+            ],
+          ),
+        ),
+      );
     }
 
     return Stack(
@@ -149,9 +162,11 @@ class MainScaffold extends ConsumerWidget {
 
   Widget _buildHeader(BuildContext context, bool isDark,
       {bool showLogo = true}) {
-    final textColor = isDark ? Colors.white : Colors.black;
+    final textColor = Colors.white; // always white — header is navy in both modes
+    final headerBg = isDark ? Colors.transparent : const Color(0xFF001F3F);
 
-    return Padding(
+    return Container(
+      color: headerBg,
       padding: EdgeInsets.symmetric(
         horizontal: Sizing.w(24),
         vertical: Sizing.h(16),
@@ -221,8 +236,14 @@ class MainScaffold extends ConsumerWidget {
 
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
-        : Colors.black.withValues(alpha: 0.1);
-    final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+        : const Color(0xFF001F3F).withValues(alpha: 0.12);
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFF001F3F);
+    final railIconColor = isDark
+        ? Colors.white.withValues(alpha: 0.4)
+        : Colors.white.withValues(alpha: 0.5);
+    final railLabelColor = isDark
+        ? Colors.white.withValues(alpha: 0.4)
+        : Colors.white.withValues(alpha: 0.5);
 
     return Container(
       decoration: BoxDecoration(
@@ -241,19 +262,12 @@ class MainScaffold extends ConsumerWidget {
         onDestinationSelected: (index) => _onNavigate(context, index),
         indicatorColor: const Color(0xFF38BDF8).withValues(alpha: 0.2),
         selectedIconTheme: const IconThemeData(color: Color(0xFF38BDF8)),
-        unselectedIconTheme: IconThemeData(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.4)
-                : Colors.black.withValues(alpha: 0.4)),
+        unselectedIconTheme: IconThemeData(color: railIconColor),
         selectedLabelTextStyle: const TextStyle(
           color: Color(0xFF38BDF8),
           fontWeight: FontWeight.bold,
         ),
-        unselectedLabelTextStyle: TextStyle(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.4)
-              : Colors.black.withValues(alpha: 0.4),
-        ),
+        unselectedLabelTextStyle: TextStyle(color: railLabelColor),
         leading: extended
             ? Padding(
                 padding:
@@ -264,15 +278,14 @@ class MainScaffold extends ConsumerWidget {
                       'assets/aclc_logo.png',
                       height: 32,
                       width: 32,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.shield,
-                          color: isDark ? Colors.white : Colors.black),
+                      errorBuilder: (context, error, stackTrace) =>
+                          Icon(Icons.shield, color: Colors.white),
                     ),
                     const SizedBox(width: 12),
                     Text(
                       'AMSv2',
                       style: TextStyle(
-                        color: isDark ? Colors.white : Colors.black,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -286,9 +299,8 @@ class MainScaffold extends ConsumerWidget {
                   'assets/aclc_logo.png',
                   height: 32,
                   width: 32,
-                  errorBuilder: (context, error, stackTrace) => Icon(
-                      Icons.shield,
-                      color: isDark ? Colors.white : Colors.black),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Icon(Icons.shield, color: Colors.white),
                 ),
               ),
         destinations: destinations
@@ -328,19 +340,25 @@ class MainScaffold extends ConsumerWidget {
       destinations = _teacherDestinations;
     }
 
-    // Always use dark blue for bottom navbar regardless of theme
-    const bgColor = Color(0xFF0F172A);
-    const borderColor = Color(0xFF1E293B);
+    // Navy bottom nav in both modes — consistent brand look
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFF001F3F);
+    final borderColor =
+        isDark ? const Color(0xFF1E293B) : const Color(0xFF00172E);
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: bgColor,
         border: Border(
-          top: BorderSide(
-            color: borderColor,
-            width: 1,
-          ),
+          top: BorderSide(color: borderColor, width: 1),
         ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                const Color(0xFF001F3F).withValues(alpha: isDark ? 0.0 : 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          )
+        ],
       ),
       child: BottomNavigationBar(
         currentIndex: currentIndex,
@@ -348,7 +366,7 @@ class MainScaffold extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         selectedItemColor: const Color(0xFF38BDF8),
-        unselectedItemColor: Colors.white.withValues(alpha: 0.4),
+        unselectedItemColor: Colors.white.withValues(alpha: 0.5),
         showUnselectedLabels: true,
         selectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
