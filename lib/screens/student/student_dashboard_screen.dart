@@ -12,10 +12,12 @@ class StudentDashboardScreen extends ConsumerStatefulWidget {
   const StudentDashboardScreen({super.key});
 
   @override
-  ConsumerState<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
+  ConsumerState<StudentDashboardScreen> createState() =>
+      _StudentDashboardScreenState();
 }
 
-class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen> {
+class _StudentDashboardScreenState
+    extends ConsumerState<StudentDashboardScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
   String? _errorMessage;
@@ -29,7 +31,7 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
 
   Future<void> _loadDashboardData() async {
     if (!mounted) return;
-    
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -37,13 +39,14 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
 
     try {
       final subjects = await _apiService.getStudentSubjects();
-      
+
       // Get current day of week (Monday, Tuesday, etc.)
       final todayName = DateFormat('EEEE').format(DateTime.now());
-      
+
       // Filter for today's classes
       final filtered = subjects.where((s) {
-        return s.schedule.displayDay.trim().toLowerCase() == todayName.toLowerCase();
+        return s.schedule.displayDay.trim().toLowerCase() ==
+            todayName.toLowerCase();
       }).toList();
 
       // Sort by time
@@ -69,7 +72,8 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
   Widget build(BuildContext context) {
     final isDark = ref.watch(appProvider).isDarkMode;
     final titleColor = isDark ? Colors.white : const Color(0xFF001F3F);
-    final subtitleColor = isDark ? Colors.white60 : const Color(0xFF001F3F).withOpacity(0.5);
+    final subtitleColor =
+        isDark ? Colors.white60 : const Color(0xFF001F3F).withOpacity(0.5);
 
     if (_errorMessage != null) {
       return _buildErrorState(titleColor, subtitleColor);
@@ -88,7 +92,7 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
           children: [
             _buildWelcomeHeader(titleColor, subtitleColor),
             SizedBox(height: Sizing.h(32)),
-            
+
             // Current Schedule Section (Only if classes exist today)
             if (_isLoading)
               const SkeletonListView(itemCount: 1)
@@ -99,8 +103,6 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
               SizedBox(height: Sizing.h(32)),
             ],
 
-            _buildFingerprintBanner(isDark, titleColor, subtitleColor),
-            SizedBox(height: Sizing.h(32)),
             _buildQuickActions(isDark, titleColor),
             SizedBox(height: Sizing.h(80)), // Space for bottom nav
           ],
@@ -175,7 +177,8 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
           ),
         ),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: Sizing.w(10), vertical: Sizing.h(4)),
+          padding: EdgeInsets.symmetric(
+              horizontal: Sizing.w(10), vertical: Sizing.h(4)),
           decoration: BoxDecoration(
             color: const Color(0xFF38BDF8).withOpacity(0.1),
             borderRadius: BorderRadius.circular(Sizing.r(8)),
@@ -195,9 +198,12 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
 
   Widget _buildSubjectCard(StudentSubjectDetail detail, bool isDark) {
     final cardBg = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
-    final borderColor = isDark ? Colors.white.withOpacity(0.1) : const Color(0xFF001F3F).withOpacity(0.08);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.1)
+        : const Color(0xFF001F3F).withOpacity(0.08);
     final titleColor = isDark ? Colors.white : const Color(0xFF001F3F);
-    final subtitleColor = isDark ? Colors.white60 : const Color(0xFF001F3F).withOpacity(0.5);
+    final subtitleColor =
+        isDark ? Colors.white60 : const Color(0xFF001F3F).withOpacity(0.5);
 
     return Container(
       margin: EdgeInsets.only(bottom: Sizing.h(16)),
@@ -207,13 +213,15 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
         color: cardBg,
         borderRadius: BorderRadius.circular(Sizing.r(24)),
         border: Border.all(color: borderColor),
-        boxShadow: isDark ? [] : [
-          BoxShadow(
-            color: const Color(0xFF001F3F).withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          )
-        ],
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: const Color(0xFF001F3F).withOpacity(0.05),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                )
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,11 +286,14 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
   }
 
   Widget _buildInfoChip(IconData icon, String text, bool isDark) {
-    final chipBg = isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF0F5FF);
-    final textColor = isDark ? Colors.white70 : const Color(0xFF001F3F).withOpacity(0.7);
+    final chipBg =
+        isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF0F5FF);
+    final textColor =
+        isDark ? Colors.white70 : const Color(0xFF001F3F).withOpacity(0.7);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: Sizing.w(10), vertical: Sizing.h(6)),
+      padding:
+          EdgeInsets.symmetric(horizontal: Sizing.w(10), vertical: Sizing.h(6)),
       decoration: BoxDecoration(
         color: chipBg,
         borderRadius: BorderRadius.circular(Sizing.r(10)),
@@ -290,7 +301,9 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: Sizing.sp(14), color: const Color(0xFF38BDF8).withOpacity(0.7)),
+          Icon(icon,
+              size: Sizing.sp(14),
+              color: const Color(0xFF38BDF8).withOpacity(0.7)),
           SizedBox(width: Sizing.w(6)),
           Flexible(
             child: Text(
@@ -304,68 +317,6 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFingerprintBanner(bool isDark, Color titleColor, Color subtitleColor) {
-    final cardBg = isDark ? const Color(0xFF38BDF8).withOpacity(0.08) : Colors.white;
-    final borderColor = isDark ? const Color(0xFF38BDF8).withOpacity(0.25) : const Color(0xFF38BDF8).withOpacity(0.2);
-
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, AppRoutes.studentFingerprint),
-      child: Container(
-        padding: EdgeInsets.all(Sizing.w(16)),
-        decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(Sizing.r(16)),
-          border: Border.all(color: borderColor),
-          boxShadow: isDark ? [] : [
-            BoxShadow(
-              color: const Color(0xFF38BDF8).withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(Sizing.w(10)),
-              decoration: BoxDecoration(
-                color: const Color(0xFF38BDF8).withOpacity(0.15),
-                borderRadius: BorderRadius.circular(Sizing.r(12)),
-              ),
-              child: Icon(Icons.fingerprint_rounded,
-                  color: const Color(0xFF38BDF8), size: Sizing.sp(24)),
-            ),
-            SizedBox(width: Sizing.w(14)),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'My Fingerprints',
-                    style: TextStyle(
-                      color: titleColor,
-                      fontSize: Sizing.sp(14),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'View your enrolled fingerprint records',
-                    style: TextStyle(
-                      color: subtitleColor,
-                      fontSize: Sizing.sp(12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.arrow_forward_ios_rounded,
-                color: const Color(0xFF38BDF8).withOpacity(0.5), size: 14),
-          ],
-        ),
       ),
     );
   }
@@ -419,9 +370,12 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
   Widget _buildActionCard(String title, String subtitle, IconData icon,
       Color color, bool isDark, VoidCallback onTap) {
     final cardBg = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
-    final borderColor = isDark ? Colors.white.withOpacity(0.1) : const Color(0xFF001F3F).withOpacity(0.08);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.1)
+        : const Color(0xFF001F3F).withOpacity(0.08);
     final titleColor = isDark ? Colors.white : const Color(0xFF001F3F);
-    final subtitleColor = isDark ? Colors.white60 : const Color(0xFF001F3F).withOpacity(0.5);
+    final subtitleColor =
+        isDark ? Colors.white60 : const Color(0xFF001F3F).withOpacity(0.5);
 
     return GestureDetector(
       onTap: onTap,
@@ -431,13 +385,15 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
           color: cardBg,
           borderRadius: BorderRadius.circular(Sizing.r(24)),
           border: Border.all(color: borderColor),
-          boxShadow: isDark ? [] : [
-            BoxShadow(
-              color: const Color(0xFF001F3F).withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            )
-          ],
+          boxShadow: isDark
+              ? []
+              : [
+                  BoxShadow(
+                    color: const Color(0xFF001F3F).withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  )
+                ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
