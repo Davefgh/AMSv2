@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/api_service.dart';
 import '../../utils/sizing_utils.dart';
 import '../../models/student_subject_detail.dart';
 import '../../widgets/skeleton_loader.dart';
+import '../../providers/app_provider.dart';
 
-class StudentSchedulesScreen extends StatefulWidget {
+class StudentSchedulesScreen extends ConsumerStatefulWidget {
   const StudentSchedulesScreen({super.key});
 
   @override
-  State<StudentSchedulesScreen> createState() => _StudentSchedulesScreenState();
+  ConsumerState<StudentSchedulesScreen> createState() => _StudentSchedulesScreenState();
 }
 
-class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
+class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
   String? _errorMessage;
@@ -36,6 +38,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -43,15 +46,19 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
 
     try {
       final subjects = await _apiService.getStudentSubjects();
-      setState(() {
-        _subjects = subjects;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _subjects = subjects;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -65,10 +72,14 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = ref.watch(appProvider).isDarkMode;
+    final titleColor = isDark ? Colors.white : const Color(0xFF001F3F);
+    final subtitleColor = isDark ? Colors.white60 : const Color(0xFF001F3F).withOpacity(0.5);
+
     return _isLoading
         ? const SkeletonListView(itemCount: 6)
         : _errorMessage != null
-            ? _buildErrorState()
+            ? _buildErrorState(titleColor)
             : RefreshIndicator(
                 onRefresh: _loadData,
                 color: const Color(0xFF38BDF8),
@@ -80,18 +91,19 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildHeader(),
+                      _buildHeader(titleColor, subtitleColor),
                       SizedBox(height: Sizing.h(24)),
-                      _buildDayFilter(),
+                      _buildDayFilter(isDark),
                       SizedBox(height: Sizing.h(24)),
-                      _buildScheduleList(),
+                      _buildScheduleList(isDark, titleColor, subtitleColor),
+                      SizedBox(height: Sizing.h(80)),
                     ],
                   ),
                 ),
               );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildErrorState(Color titleColor) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -103,7 +115,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
             Text(
               _errorMessage!,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70),
+              style: TextStyle(color: titleColor),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -112,7 +124,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: const Color(0xFF0F172A),
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
@@ -123,14 +135,14 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(Color titleColor, Color subtitleColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'My Schedules',
           style: TextStyle(
-            color: Colors.white,
+            color: titleColor,
             fontSize: Sizing.sp(24),
             fontWeight: FontWeight.bold,
             letterSpacing: -0.5,
@@ -140,7 +152,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
         Text(
           '${_subjects.length} ${_subjects.length == 1 ? 'Subject' : 'Subjects'} Enrolled',
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
+            color: subtitleColor,
             fontSize: Sizing.sp(14),
           ),
         ),
@@ -148,7 +160,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
     );
   }
 
-  Widget _buildDayFilter() {
+  Widget _buildDayFilter(bool isDark) {
     return SizedBox(
       height: Sizing.h(40),
       child: ListView.builder(
@@ -173,21 +185,28 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? const Color(0xFF38BDF8)
-                      : Colors.white.withValues(alpha: 0.05),
+                      : (isDark ? Colors.white.withOpacity(0.05) : Colors.white),
                   borderRadius: BorderRadius.circular(Sizing.r(12)),
                   border: Border.all(
                     color: isSelected
                         ? const Color(0xFF38BDF8)
-                        : Colors.white.withValues(alpha: 0.1),
+                        : (isDark ? Colors.white.withOpacity(0.1) : const Color(0xFF001F3F).withOpacity(0.08)),
                   ),
+                  boxShadow: isSelected || isDark ? [] : [
+                    BoxShadow(
+                      color: const Color(0xFF001F3F).withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
                 ),
                 child: Center(
                   child: Text(
                     day,
                     style: TextStyle(
                       color: isSelected
-                          ? const Color(0xFF0F172A)
-                          : Colors.white.withValues(alpha: 0.7),
+                          ? Colors.white
+                          : (isDark ? Colors.white.withOpacity(0.7) : const Color(0xFF001F3F).withOpacity(0.7)),
                       fontSize: Sizing.sp(13),
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.normal,
@@ -202,26 +221,23 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
     );
   }
 
-  Widget _buildScheduleList() {
+  Widget _buildScheduleList(bool isDark, Color titleColor, Color subtitleColor) {
     final filteredSubjects = _filteredSubjects;
 
     if (filteredSubjects.isEmpty) {
-      return _buildEmptyState();
+      return _buildEmptyState(isDark, titleColor, subtitleColor);
     }
 
-    // Group subjects by day for better organization
     final groupedByDay = <String, List<StudentSubjectDetail>>{};
     for (var subject in filteredSubjects) {
       final day = subject.schedule.displayDay;
       groupedByDay.putIfAbsent(day, () => []).add(subject);
     }
 
-    // Sort subjects within each day by time
     for (var subjects in groupedByDay.values) {
       subjects.sort((a, b) => a.schedule.timeIn.compareTo(b.schedule.timeIn));
     }
 
-    // Sort days
     final sortedDays = groupedByDay.keys.toList()
       ..sort((a, b) {
         final dayOrder = [
@@ -240,14 +256,14 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (_selectedDay == 'All')
-          ...sortedDays.map((day) => _buildDaySection(day, groupedByDay[day]!))
+          ...sortedDays.map((day) => _buildDaySection(day, groupedByDay[day]!, isDark, titleColor, subtitleColor))
         else
-          ...filteredSubjects.map((s) => _buildSubjectCard(s)),
+          ...filteredSubjects.map((s) => _buildSubjectCard(s, isDark, titleColor, subtitleColor)),
       ],
     );
   }
 
-  Widget _buildDaySection(String day, List<StudentSubjectDetail> subjects) {
+  Widget _buildDaySection(String day, List<StudentSubjectDetail> subjects, bool isDark, Color titleColor, Color subtitleColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -267,7 +283,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
               Text(
                 day,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: titleColor,
                   fontSize: Sizing.sp(16),
                   fontWeight: FontWeight.bold,
                 ),
@@ -276,28 +292,38 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
               Text(
                 '${subjects.length} ${subjects.length == 1 ? 'class' : 'classes'}',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4),
+                  color: subtitleColor,
                   fontSize: Sizing.sp(13),
                 ),
               ),
             ],
           ),
         ),
-        ...subjects.map((s) => _buildSubjectCard(s)),
+        ...subjects.map((s) => _buildSubjectCard(s, isDark, titleColor, subtitleColor)),
         SizedBox(height: Sizing.h(24)),
       ],
     );
   }
 
-  Widget _buildSubjectCard(StudentSubjectDetail detail) {
+  Widget _buildSubjectCard(StudentSubjectDetail detail, bool isDark, Color titleColor, Color subtitleColor) {
+    final cardBg = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
+    final borderColor = isDark ? Colors.white.withOpacity(0.1) : const Color(0xFF001F3F).withOpacity(0.08);
+
     return Container(
       margin: EdgeInsets.only(bottom: Sizing.h(16)),
       width: double.infinity,
       padding: EdgeInsets.all(Sizing.w(20)),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: cardBg,
         borderRadius: BorderRadius.circular(Sizing.r(24)),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: borderColor),
+        boxShadow: isDark ? [] : [
+          BoxShadow(
+            color: const Color(0xFF001F3F).withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,7 +333,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
               Container(
                 padding: EdgeInsets.all(Sizing.w(10)),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                  color: const Color(0xFF38BDF8).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(Sizing.r(12)),
                 ),
                 child: Icon(Icons.book_rounded,
@@ -321,7 +347,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
                     Text(
                       detail.subject.name,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: titleColor,
                         fontSize: Sizing.sp(16),
                         fontWeight: FontWeight.bold,
                       ),
@@ -329,7 +355,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
                     Text(
                       detail.subject.code,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: subtitleColor,
                         fontSize: Sizing.sp(12),
                       ),
                     ),
@@ -341,7 +367,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
                   padding: EdgeInsets.symmetric(
                       horizontal: Sizing.w(10), vertical: Sizing.h(4)),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                    color: const Color(0xFF38BDF8).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(Sizing.r(8)),
                   ),
                   child: Text(
@@ -361,12 +387,14 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
               _buildInfoChip(
                 Icons.access_time_rounded,
                 '${detail.schedule.timeIn.substring(0, 5)} - ${detail.schedule.timeOut.substring(0, 5)}',
+                isDark,
               ),
               SizedBox(width: Sizing.w(12)),
               Flexible(
                 child: _buildInfoChip(
                   Icons.room_rounded,
                   detail.classroom.name,
+                  isDark,
                 ),
               ),
             ],
@@ -377,19 +405,19 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
               Container(
                 padding: EdgeInsets.all(Sizing.w(6)),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF0F5FF),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.person_outline_rounded,
                     size: Sizing.sp(14),
-                    color: Colors.white.withValues(alpha: 0.5)),
+                    color: const Color(0xFF38BDF8).withOpacity(0.7)),
               ),
               SizedBox(width: Sizing.w(8)),
               Expanded(
                 child: Text(
                   'Instructor: ${detail.instructor.fullName}',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: subtitleColor,
                     fontSize: Sizing.sp(13),
                   ),
                 ),
@@ -401,19 +429,22 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text) {
+  Widget _buildInfoChip(IconData icon, String text, bool isDark) {
+    final chipBg = isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF0F5FF);
+    final textColor = isDark ? Colors.white70 : const Color(0xFF001F3F).withOpacity(0.7);
+
     return Container(
       padding:
           EdgeInsets.symmetric(horizontal: Sizing.w(10), vertical: Sizing.h(6)),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: chipBg,
         borderRadius: BorderRadius.circular(Sizing.r(10)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon,
-              size: Sizing.sp(14), color: Colors.white.withValues(alpha: 0.4)),
+              size: Sizing.sp(14), color: const Color(0xFF38BDF8).withOpacity(0.7)),
           SizedBox(width: Sizing.w(6)),
           Flexible(
             child: Text(
@@ -421,7 +452,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: textColor,
                 fontSize: Sizing.sp(12),
               ),
             ),
@@ -431,21 +462,31 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(bool isDark, Color titleColor, Color subtitleColor) {
+    final cardBg = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
+    final borderColor = isDark ? Colors.white.withOpacity(0.1) : const Color(0xFF001F3F).withOpacity(0.08);
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(Sizing.w(32)),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: cardBg,
         borderRadius: BorderRadius.circular(Sizing.r(24)),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: borderColor),
+        boxShadow: isDark ? [] : [
+          BoxShadow(
+            color: const Color(0xFF001F3F).withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          )
+        ],
       ),
       child: Column(
         children: [
           Icon(
             Icons.calendar_today_rounded,
             size: Sizing.sp(48),
-            color: Colors.white.withValues(alpha: 0.2),
+            color: const Color(0xFF38BDF8).withOpacity(0.3),
           ),
           SizedBox(height: Sizing.h(16)),
           Text(
@@ -453,7 +494,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
                 ? 'No schedules found'
                 : 'No classes on $_selectedDay',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: titleColor,
               fontSize: Sizing.sp(16),
               fontWeight: FontWeight.w500,
             ),
@@ -464,7 +505,7 @@ class _StudentSchedulesScreenState extends State<StudentSchedulesScreen> {
                 ? 'Your class schedules will appear here.'
                 : 'Try selecting a different day.',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.4),
+              color: subtitleColor,
               fontSize: Sizing.sp(13),
             ),
           ),

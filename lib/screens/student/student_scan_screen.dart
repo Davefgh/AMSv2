@@ -4,6 +4,9 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../services/api_service.dart';
 import '../../models/student_model.dart';
 
+import 'package:flutter_windowmanager/flutter_windowmanager.dart';
+import 'dart:io' show Platform;
+
 enum _ScanState { idle, scanning, processing, success, error }
 
 class StudentScanScreen extends StatefulWidget {
@@ -57,6 +60,11 @@ class _StudentScanScreenState extends State<StudentScanScreen>
         CurvedAnimation(parent: _resultCtrl, curve: Curves.elasticOut);
 
     _loadStudentProfile();
+    
+    // Enable protection if initially visible
+    if (widget.isVisible) {
+      _enableScreenshotProtection();
+    }
   }
 
   @override
@@ -66,18 +74,41 @@ class _StudentScanScreenState extends State<StudentScanScreen>
     if (widget.isVisible != oldWidget.isVisible) {
       if (widget.isVisible) {
         _cameraController.start();
+        _enableScreenshotProtection();
       } else {
         _cameraController.stop();
+        _disableScreenshotProtection();
       }
     }
   }
 
   @override
   void dispose() {
+    _disableScreenshotProtection();
     _cameraController.dispose();
     _scanLineCtrl.dispose();
     _resultCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _enableScreenshotProtection() async {
+    if (Platform.isAndroid) {
+      try {
+        await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+      } catch (e) {
+        debugPrint('Failed to enable screenshot protection: $e');
+      }
+    }
+  }
+
+  Future<void> _disableScreenshotProtection() async {
+    if (Platform.isAndroid) {
+      try {
+        await FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_SECURE);
+      } catch (e) {
+        debugPrint('Failed to disable screenshot protection: $e');
+      }
+    }
   }
 
   Future<void> _loadStudentProfile() async {
@@ -89,6 +120,9 @@ class _StudentScanScreenState extends State<StudentScanScreen>
     }
   }
 
+  // Track hashes already successfully scanned in this screen session
+  final Set<String> _scannedHashes = {};
+
   // ── QR detected ─────────────────────────────────────────────────────────────
   Future<void> _onDetect(BarcodeCapture capture) async {
     if (_scanState == _ScanState.processing ||
@@ -99,6 +133,19 @@ class _StudentScanScreenState extends State<StudentScanScreen>
     final barcode = capture.barcodes.firstOrNull;
     final rawValue = barcode?.rawValue;
     if (rawValue == null || rawValue.isEmpty) return;
+
+    // Local check: if we already successfully scanned this specific hash in this session
+    if (_scannedHashes.contains(rawValue)) {
+      await _cameraController.stop();
+      setState(() {
+        _scanState = _ScanState.error;
+        _statusMessage = 'Already Scanned';
+        _errorDetail = "You've already scanned this code! No need to scan again.";
+      });
+      _resultCtrl.forward(from: 0);
+      _autoReset();
+      return;
+    }
 
     await _cameraController.stop();
     setState(() {
@@ -117,23 +164,24 @@ class _StudentScanScreenState extends State<StudentScanScreen>
         throw Exception('Invalid Student ID. Please log in again.');
       }
 
-      debugPrint('Scanning QR for student ID: $scanStudentId');
-
-      debugPrint(
-          'Sending QR scan request: qrHash=$rawValue, studentId=$scanStudentId');
-
       final result = await _apiService.scanQrCode(
         qrHash: rawValue,
         studentId: scanStudentId,
       );
 
-      debugPrint('QR scan response: $result');
-
       if (result['success'] == false) {
-        throw ApiException(400, result['message'] ?? 'Check-in failed');
+        String msg = result['message'] ?? 'Check-in failed';
+        if (msg.toLowerCase().contains('already')) {
+          msg = "Sorry, you can't scan again because you've already recorded your attendance!";
+        }
+        throw ApiException(400, msg);
       }
 
       if (!mounted) return;
+
+      // Success! Add to local cache to prevent re-scan of same hash
+      _scannedHashes.add(rawValue);
+
       setState(() {
         _scanState = _ScanState.success;
         _statusMessage = result['message'] ?? 'Attendance recorded!';
@@ -143,17 +191,24 @@ class _StudentScanScreenState extends State<StudentScanScreen>
       _autoReset();
     } on ApiException catch (e) {
       if (!mounted) return;
-      debugPrint('ApiException during scan: ${e.message}');
+      
+      String friendlyMsg = e.message;
+      String statusTitle = 'Scan Failed';
+
+      if (friendlyMsg.toLowerCase().contains('already')) {
+        statusTitle = 'Already Recorded';
+        friendlyMsg = "Sorry, you can't scan again because you've already recorded your attendance for this session!";
+      }
+
       setState(() {
         _scanState = _ScanState.error;
-        _statusMessage = 'Check-in failed';
-        _errorDetail = e.message;
+        _statusMessage = statusTitle;
+        _errorDetail = friendlyMsg;
       });
       _resultCtrl.forward(from: 0);
       _autoReset();
     } catch (e) {
       if (!mounted) return;
-      debugPrint('Exception during scan: $e');
       setState(() {
         _scanState = _ScanState.error;
         _statusMessage = 'Something went wrong';
@@ -323,7 +378,43 @@ class _StudentScanScreenState extends State<StudentScanScreen>
           right: 16,
           child: _buildTopControls(),
         ),
+
+        // ── Security indicator ──
+        Positioned(
+          top: 12,
+          left: 16,
+          child: _buildSecurityIndicator(),
+        ),
       ],
+    );
+  }
+
+  Widget _buildSecurityIndicator() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.lock_rounded, color: Color(0xFFEF4444), size: 14),
+          const SizedBox(width: 6),
+          Text(
+            'Security Active',
+            style: TextStyle(
+              color: const Color(0xFFEF4444),
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
