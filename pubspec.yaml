@@ -26,7 +26,7 @@ dependencies:
   mobile_scanner: ^7.2.0
   flutter_dotenv: ^6.0.1
   signalr_netcore: ^1.4.4
-  flutter_windowmanager: ^0.2.0
+  flutter_windowmanager_plus: ^1.0.1
 
 dev_dependencies:
   flutter_test:

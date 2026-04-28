@@ -4,7 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../services/api_service.dart';
 import '../../models/student_model.dart';
 
-import 'package:flutter_windowmanager/flutter_windowmanager.dart';
+import 'package:flutter_windowmanager_plus/flutter_windowmanager_plus.dart';
 import 'dart:io' show Platform;
 
 enum _ScanState { idle, scanning, processing, success, error }
@@ -94,7 +94,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
   Future<void> _enableScreenshotProtection() async {
     if (Platform.isAndroid) {
       try {
-        await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+        await FlutterWindowManagerPlus.addFlags(FlutterWindowManagerPlus.FLAG_SECURE);
       } catch (e) {
         debugPrint('Failed to enable screenshot protection: $e');
       }
@@ -104,7 +104,7 @@ class _StudentScanScreenState extends State<StudentScanScreen>
   Future<void> _disableScreenshotProtection() async {
     if (Platform.isAndroid) {
       try {
-        await FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_SECURE);
+        await FlutterWindowManagerPlus.clearFlags(FlutterWindowManagerPlus.FLAG_SECURE);
       } catch (e) {
         debugPrint('Failed to disable screenshot protection: $e');
       }
