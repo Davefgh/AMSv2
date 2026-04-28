@@ -23,6 +23,7 @@ class ClassSession {
   final String? startedByName;
   final String? endedBy;
   final String? endedByName;
+  final String? instructorName;
   final String? rowVersion;
   final String? description;
   final String? offScheduleReason;
@@ -50,6 +51,7 @@ class ClassSession {
     this.startedByName,
     this.endedBy,
     this.endedByName,
+    this.instructorName,
     this.rowVersion,
     this.description,
     this.offScheduleReason,
@@ -88,9 +90,15 @@ class ClassSession {
       attendanceCutOff: parseDate(json['attendanceCutOff']),
       subjectCode: json['subjectCode'] ?? '',
       subjectName: json['subjectName'] ?? '',
-      subjectId: parseString(json['subjectId']),
+      subjectId: parseString(json['subjectId']) ?? (json['subject'] is Map ? parseString(json['subject']['id']) : null),
+      instructorName: json['instructorName'] ??
+          json['instructorFullName'] ??
+          (json['instructor'] is Map
+              ? json['instructor']['fullName'] ?? json['instructor']['name']
+              : (json['instructor'] is String ? json['instructor'] : null)) ??
+          json['startedByName'],
       sectionName: json['sectionName'] ?? '',
-      sectionId: parseString(json['sectionId']),
+      sectionId: parseString(json['sectionId']) ?? (json['section'] is Map ? parseString(json['section']['id']) : null),
       scheduledRoomName: json['scheduledRoomName'] ?? '',
       actualRoomName:
           json['actualRoomName'] ?? json['actualRoom'] ?? json['room'],

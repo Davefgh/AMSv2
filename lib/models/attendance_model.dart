@@ -32,7 +32,7 @@ class AttendanceRecord {
       id: json['id']?.toString() ?? '',
       sessionId: json['sessionId']?.toString() ?? '',
       studentId: json['studentId']?.toString() ?? '',
-      status: json['status'] ?? 'absent',
+      status: (json['status']?.toString() ?? 'absent').toLowerCase(),
       remarks: json['remarks'],
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,

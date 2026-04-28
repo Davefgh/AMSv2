@@ -19,6 +19,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   String? _errorMessage;
   List<ClassSession> _sessions = [];
   List<ClassSession> _filteredSessions = [];
+  String? _cachedUserName;
 
   Map<String, int> _stats = {
     'active': 0,
@@ -34,7 +35,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   void initState() {
     super.initState();
     _loadData();
+    _loadCachedUser();
     _searchController.addListener(_applyFilters);
+  }
+
+  Future<void> _loadCachedUser() async {
+    final name = await ApiService.getCachedUserName();
+    if (mounted) {
+      setState(() => _cachedUserName = name);
+    }
   }
 
   @override
@@ -397,7 +406,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               Row(
                 children: [
                   Text(
-                    session.startedByName ?? 'Unknown Instructor',
+                    session.instructorName ?? _cachedUserName ?? 'Unknown Instructor',
                     style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
