@@ -226,6 +226,8 @@ class NavigationShell extends ConsumerWidget {
               ],
             ),
           ),
+          // Dark / Light mode toggle
+          _ThemeToggleButton(isDark: isDark),
           // Add actions based on current screen if needed
           if (isStudent && currentIndex == 0)
             Row(
@@ -488,4 +490,60 @@ class _NavDestination {
   final String label;
 
   const _NavDestination(this.icon, this.label);
+}
+
+/// Animated dark/light mode toggle button shown in the header
+class _ThemeToggleButton extends ConsumerWidget {
+  final bool isDark;
+  const _ThemeToggleButton({required this.isDark});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Tooltip(
+      message: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+      child: GestureDetector(
+        onTap: () => ref.read(appProvider.notifier).toggleDarkMode(),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          width: 44,
+          height: 26,
+          margin: EdgeInsets.only(right: Sizing.w(4)),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(13),
+            color: isDark
+                ? const Color(0xFF38BDF8).withValues(alpha: 0.25)
+                : Colors.amber.withValues(alpha: 0.2),
+            border: Border.all(
+              color: isDark
+                  ? const Color(0xFF38BDF8).withValues(alpha: 0.5)
+                  : Colors.amber.withValues(alpha: 0.6),
+              width: 1.2,
+            ),
+          ),
+          child: Stack(
+            children: [
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                left: isDark ? 20 : 2,
+                top: 3,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, anim) =>
+                      RotationTransition(turns: anim, child: child),
+                  child: Icon(
+                    isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                    key: ValueKey(isDark),
+                    size: 18,
+                    color: isDark ? const Color(0xFF38BDF8) : Colors.amber,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
