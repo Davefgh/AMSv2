@@ -487,107 +487,126 @@ class _TeacherReportsScreenState extends ConsumerState<TeacherReportsScreen> {
   }
 
   Widget _buildBarChart(bool isDark, Color sub) {
-    // Use present as the max scale reference
     final maxVal = _dayStats
         .map((d) => d.present > d.absent ? d.present : d.absent)
         .fold(0, (a, b) => a > b ? a : b);
-    final scale = maxVal == 0 ? 1 : maxVal; // avoid divide-by-zero
-    const double barH = 120;
+    final scale = maxVal == 0 ? 5 : maxVal + (maxVal * 0.2).toInt();
+    const double chartHeight = 160;
 
-    return Column(children: [
-      // Legend
-      Row(children: [
-        _legend('Present', const Color(0xFF0EA5E9)),
-        SizedBox(width: Sizing.w(16)),
-        _legend('Absent', const Color(0xFFEF4444)),
-      ]),
-      SizedBox(height: Sizing.h(20)),
-      SizedBox(
-        height: Sizing.h(barH + 36),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: _dayStats.map((d) {
-            final pFrac = d.present / scale;
-            final aFrac = d.absent / scale;
-            return Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // Value labels
-                  if (d.present > 0 || d.absent > 0)
-                    Padding(
-                      padding: EdgeInsets.only(bottom: Sizing.h(4)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
+      children: [
+        // Legend
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            _legend('Present', const Color(0xFF0EA5E9)),
+            SizedBox(width: Sizing.w(16)),
+            _legend('Absent', const Color(0xFFEF4444)),
+          ],
+        ),
+        SizedBox(height: Sizing.h(24)),
+        
+        // Chart Area
+        SizedBox(
+          height: Sizing.h(chartHeight + 70),
+          child: Stack(
+            children: [
+              // Background Grid Lines
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(4, (index) => Container(
+                  height: 1,
+                  color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+                )),
+              ),
+              
+              // Bars
+              Positioned.fill(
+                bottom: Sizing.h(20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: _dayStats.map((d) {
+                    final pHeight = (d.present / scale) * chartHeight;
+                    final aHeight = (d.absent / scale) * chartHeight;
+                    
+                    return Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text('${d.present}',
-                              style: TextStyle(
-                                  color: const Color(0xFF0EA5E9),
-                                  fontSize: Sizing.sp(9),
-                                  fontWeight: FontWeight.w700)),
-                          Text('/',
-                              style: TextStyle(
-                                  color: sub.withValues(alpha: 0.4),
-                                  fontSize: Sizing.sp(9))),
-                          Text('${d.absent}',
-                              style: TextStyle(
-                                  color: const Color(0xFFEF4444),
-                                  fontSize: Sizing.sp(9),
-                                  fontWeight: FontWeight.w700)),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildBar(d.present, pHeight, const Color(0xFF0EA5E9), isDark),
+                              SizedBox(width: Sizing.w(4)),
+                              _buildBar(d.absent, aHeight, const Color(0xFFEF4444), isDark),
+                            ],
+                          ),
+                          SizedBox(height: Sizing.h(12)),
+                          Text(
+                            d.label,
+                            style: TextStyle(
+                              color: sub,
+                              fontSize: Sizing.sp(10),
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                  // Side-by-side bars
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Present bar
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 600),
-                        curve: Curves.easeOut,
-                        width: Sizing.w(10),
-                        height: pFrac == 0
-                            ? Sizing.h(3)
-                            : Sizing.h(barH) * pFrac,
-                        decoration: BoxDecoration(
-                            color: pFrac == 0
-                                ? const Color(0xFF0EA5E9).withValues(alpha: 0.2)
-                                : const Color(0xFF0EA5E9),
-                            borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(4))),
-                      ),
-                      SizedBox(width: Sizing.w(3)),
-                      // Absent bar
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 600),
-                        curve: Curves.easeOut,
-                        width: Sizing.w(10),
-                        height: aFrac == 0
-                            ? Sizing.h(3)
-                            : Sizing.h(barH) * aFrac,
-                        decoration: BoxDecoration(
-                            color: aFrac == 0
-                                ? const Color(0xFFEF4444).withValues(alpha: 0.2)
-                                : const Color(0xFFEF4444).withValues(alpha: 0.85),
-                            borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(4))),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: Sizing.h(6)),
-                  Text(d.label,
-                      style: TextStyle(
-                          color: sub,
-                          fontSize: Sizing.sp(10),
-                          fontWeight: FontWeight.w600)),
-                ],
+                    );
+                  }).toList(),
+                ),
               ),
-            );
-          }).toList(),
+            ],
+          ),
         ),
-      ),
-    ]);
+      ],
+    );
+  }
+
+  Widget _buildBar(int value, double height, Color color, bool isDark) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        if (value > 0)
+          Padding(
+            padding: EdgeInsets.only(bottom: Sizing.h(4)),
+            child: Text(
+              '$value',
+              style: TextStyle(
+                color: color,
+                fontSize: Sizing.sp(9),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.elasticOut,
+          width: Sizing.w(12),
+          height: height < 4 && value > 0 ? 4 : (height < 2 ? 2 : height),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                color,
+                color.withValues(alpha: 0.6),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: value > 0 ? [
+              BoxShadow(
+                color: color.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              )
+            ] : null,
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _legend(String label, Color color) {
