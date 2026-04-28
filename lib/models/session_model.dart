@@ -89,6 +89,12 @@ class ClassSession {
       subjectCode: json['subjectCode'] ?? '',
       subjectName: json['subjectName'] ?? '',
       subjectId: parseString(json['subjectId']),
+      instructorName: json['instructorName'] ??
+          json['instructorFullName'] ??
+          (json['instructor'] is Map
+              ? json['instructor']['fullName'] ?? json['instructor']['name']
+              : (json['instructor'] is String ? json['instructor'] : null)) ??
+          json['startedByName'],
       sectionName: json['sectionName'] ?? '',
       sectionId: parseString(json['sectionId']),
       scheduledRoomName: json['scheduledRoomName'] ?? '',

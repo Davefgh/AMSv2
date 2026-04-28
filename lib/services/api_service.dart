@@ -1556,6 +1556,18 @@ class ApiService {
     });
   }
 
+  static Future<String?> getCachedUserName() async {
+    final userJson = StorageService.getString(AppConstants.storageKeyUser);
+    if (userJson == null) return null;
+    try {
+      final userMap = jsonDecode(userJson);
+      final user = AppUser.fromJson(userMap);
+      return user.fullName;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _handleLogout() async {
     await NotificationHubService().stop();
     await StorageService.remove(AppConstants.storageKeyToken);
