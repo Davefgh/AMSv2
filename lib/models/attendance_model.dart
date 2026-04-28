@@ -42,6 +42,22 @@ class AttendanceRecord {
     );
   }
 
+  static List<AttendanceRecord> listFromBackendResponse(dynamic response) {
+    final List<dynamic> records;
+    if (response is List) {
+      records = response;
+    } else if (response is Map<String, dynamic>) {
+      records = response['attendanceRecords'] as List? ?? [];
+    } else {
+      records = [];
+    }
+
+    return records
+        .map((record) =>
+            AttendanceRecord.fromJson(record as Map<String, dynamic>))
+        .toList();
+  }
+
   Map<String, dynamic> toJson() {
     return {
       if (id.isNotEmpty) 'id': id,
@@ -50,6 +66,54 @@ class AttendanceRecord {
       'status': status,
       'remarks': remarks,
       if (timeOut != null) 'timeOut': timeOut!.toIso8601String(),
+    };
+  }
+}
+
+class AttendanceSummary {
+  final int totalSessions;
+  final int totalPresent;
+  final int totalLate;
+  final int totalAbsent;
+  final int totalExcused;
+  final num attendanceRate;
+  final String? averageCheckInTime;
+  final String mostFrequentStatus;
+
+  AttendanceSummary({
+    required this.totalSessions,
+    required this.totalPresent,
+    required this.totalLate,
+    required this.totalAbsent,
+    required this.totalExcused,
+    required this.attendanceRate,
+    this.averageCheckInTime,
+    required this.mostFrequentStatus,
+  });
+
+  factory AttendanceSummary.fromJson(Map<String, dynamic> json) {
+    return AttendanceSummary(
+      totalSessions: json['totalSessions'] ?? json['total'] ?? 0,
+      totalPresent: json['totalPresent'] ?? json['presentCount'] ?? 0,
+      totalLate: json['totalLate'] ?? json['lateCount'] ?? 0,
+      totalAbsent: json['totalAbsent'] ?? json['absentCount'] ?? 0,
+      totalExcused: json['totalExcused'] ?? json['excusedCount'] ?? 0,
+      attendanceRate: json['attendanceRate'] ?? 0,
+      averageCheckInTime: json['averageCheckInTime'],
+      mostFrequentStatus: json['mostFrequentStatus'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'totalSessions': totalSessions,
+      'totalPresent': totalPresent,
+      'totalLate': totalLate,
+      'totalAbsent': totalAbsent,
+      'totalExcused': totalExcused,
+      'attendanceRate': attendanceRate,
+      'averageCheckInTime': averageCheckInTime,
+      'mostFrequentStatus': mostFrequentStatus,
     };
   }
 }

@@ -888,10 +888,7 @@ class ApiService {
     validateId(studentId, 'Student');
     try {
       final response = await get('/api/attendance/student/$studentId');
-      if (response is List) {
-        return response.map((e) => AttendanceRecord.fromJson(e)).toList();
-      }
-      return [];
+      return AttendanceRecord.listFromBackendResponse(response);
     } catch (e) {
       _logger.e('getAttendanceByStudent Error: $e');
       rethrow;
@@ -903,19 +900,17 @@ class ApiService {
     validateId(sessionId, 'Session');
     try {
       final response = await get('/api/attendance/session/$sessionId');
-      if (response is List) {
-        return response.map((e) => AttendanceRecord.fromJson(e)).toList();
-      }
-      return [];
+      return AttendanceRecord.listFromBackendResponse(response);
     } catch (e) {
       _logger.e('getAttendanceBySession Error: $e');
       rethrow;
     }
   }
 
-  Future<dynamic> getAttendanceSummary() async {
+  Future<AttendanceSummary> getAttendanceSummary() async {
     try {
-      return await get('/api/attendance/summary');
+      final response = await get('/api/attendance/summary');
+      return AttendanceSummary.fromJson(response as Map<String, dynamic>);
     } catch (e) {
       _logger.e('getAttendanceSummary Error: $e');
       rethrow;
