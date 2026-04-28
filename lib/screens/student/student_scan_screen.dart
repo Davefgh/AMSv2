@@ -89,6 +89,9 @@ class _StudentScanScreenState extends State<StudentScanScreen>
     }
   }
 
+  // Track hashes already successfully scanned in this screen session
+  final Set<String> _scannedHashes = {};
+
   // ── QR detected ─────────────────────────────────────────────────────────────
   Future<void> _onDetect(BarcodeCapture capture) async {
     if (_scanState == _ScanState.processing ||
@@ -99,6 +102,19 @@ class _StudentScanScreenState extends State<StudentScanScreen>
     final barcode = capture.barcodes.firstOrNull;
     final rawValue = barcode?.rawValue;
     if (rawValue == null || rawValue.isEmpty) return;
+
+    // Local check: if we already successfully scanned this specific hash in this session
+    if (_scannedHashes.contains(rawValue)) {
+      await _cameraController.stop();
+      setState(() {
+        _scanState = _ScanState.error;
+        _statusMessage = 'Already Scanned';
+        _errorDetail = "You've already scanned this code! No need to scan again.";
+      });
+      _resultCtrl.forward(from: 0);
+      _autoReset();
+      return;
+    }
 
     await _cameraController.stop();
     setState(() {
@@ -117,23 +133,24 @@ class _StudentScanScreenState extends State<StudentScanScreen>
         throw Exception('Invalid Student ID. Please log in again.');
       }
 
-      debugPrint('Scanning QR for student ID: $scanStudentId');
-
-      debugPrint(
-          'Sending QR scan request: qrHash=$rawValue, studentId=$scanStudentId');
-
       final result = await _apiService.scanQrCode(
         qrHash: rawValue,
         studentId: scanStudentId,
       );
 
-      debugPrint('QR scan response: $result');
-
       if (result['success'] == false) {
-        throw ApiException(400, result['message'] ?? 'Check-in failed');
+        String msg = result['message'] ?? 'Check-in failed';
+        if (msg.toLowerCase().contains('already')) {
+          msg = "Sorry, you can't scan again because you've already recorded your attendance!";
+        }
+        throw ApiException(400, msg);
       }
 
       if (!mounted) return;
+
+      // Success! Add to local cache to prevent re-scan of same hash
+      _scannedHashes.add(rawValue);
+
       setState(() {
         _scanState = _ScanState.success;
         _statusMessage = result['message'] ?? 'Attendance recorded!';
@@ -143,17 +160,24 @@ class _StudentScanScreenState extends State<StudentScanScreen>
       _autoReset();
     } on ApiException catch (e) {
       if (!mounted) return;
-      debugPrint('ApiException during scan: ${e.message}');
+      
+      String friendlyMsg = e.message;
+      String statusTitle = 'Scan Failed';
+
+      if (friendlyMsg.toLowerCase().contains('already')) {
+        statusTitle = 'Already Recorded';
+        friendlyMsg = "Sorry, you can't scan again because you've already recorded your attendance for this session!";
+      }
+
       setState(() {
         _scanState = _ScanState.error;
-        _statusMessage = 'Check-in failed';
-        _errorDetail = e.message;
+        _statusMessage = statusTitle;
+        _errorDetail = friendlyMsg;
       });
       _resultCtrl.forward(from: 0);
       _autoReset();
     } catch (e) {
       if (!mounted) return;
-      debugPrint('Exception during scan: $e');
       setState(() {
         _scanState = _ScanState.error;
         _statusMessage = 'Something went wrong';
