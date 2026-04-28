@@ -643,6 +643,12 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
 
   void _showDeleteBottomSheet(
       dynamic fingerprint, bool isDark, Color textColor) {
+    if (_deleteError != null) {
+      setState(() {
+        _deleteError = null;
+      });
+    }
+
     final subtitleColor =
         isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
     final device = _getDeviceForFingerprint(fingerprint);
