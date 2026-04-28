@@ -101,18 +101,40 @@ class _TeacherReportsScreenState extends ConsumerState<TeacherReportsScreen> {
         }
       } catch (_) {}
 
-      // Fallback: if reports API unavailable, use getMySessions
+      // Fallback: if reports API unavailable, use getMySessions + attendance
       if (sessionList.isEmpty) {
         try {
           final sessions = await _api.getMySessions();
-          sessionList = sessions
-              .map((s) => {
-                    'sessionDate': s.sessionDate?.toIso8601String(),
-                    'sectionName': s.sectionName,
-                    'presentCount': 0,
-                    'absentCount': 0,
-                  })
-              .toList();
+          // Fetch attendance for each session in parallel
+          final attendanceFutures = sessions.map((s) async {
+            try {
+              return await _api.getAttendanceBySession(s.id);
+            } catch (_) {
+              return [];
+            }
+          });
+          final allAttendance = await Future.wait(attendanceFutures);
+
+          sessionList = List.generate(sessions.length, (i) {
+            final s = sessions[i];
+            final records = allAttendance[i];
+            int p = 0, a = 0;
+            for (final r in records) {
+              final st = (r.status as String).toLowerCase();
+              if (st == 'present' || st == 'late') {
+                p++;
+              } else {
+                a++;
+              }
+            }
+            return {
+              'sessionDate': s.sessionDate?.toIso8601String(),
+              'sectionName': s.sectionName,
+              'sessionId': s.id,
+              'presentCount': p,
+              'absentCount': a,
+            };
+          });
         } catch (_) {}
       }
 
@@ -171,16 +193,15 @@ class _TeacherReportsScreenState extends ConsumerState<TeacherReportsScreen> {
         } else {
           // Aggregate from session rows
           int tp = 0, ta = 0;
-          final Set<String> students = {};
           for (final s in filtered) {
             tp += (s['presentCount'] ?? s['present'] ?? 0) as int;
             ta += (s['absentCount'] ?? s['absent'] ?? 0) as int;
           }
           _presentCount = tp;
           _absentCount = ta;
-          _totalStudents = students.isEmpty ? (tp + ta) : students.length;
-          _attendanceRate =
-              (tp + ta) == 0 ? 0 : tp / (tp + ta);
+          // tp+ta = total attendance records ≈ unique students in this period
+          _totalStudents = tp + ta;
+          _attendanceRate = (tp + ta) == 0 ? 0 : tp / (tp + ta);
         }
         _dayStats = dayMap.entries
             .map((e) => _DayStat(e.key, e.value.p, e.value.a))
@@ -462,52 +483,101 @@ class _TeacherReportsScreenState extends ConsumerState<TeacherReportsScreen> {
   }
 
   Widget _buildBarChart(bool isDark, Color sub) {
-    final maxTotal =
-        _dayStats.map((d) => d.total).fold(0, (a, b) => a > b ? a : b);
+    // Use present as the max scale reference
+    final maxVal = _dayStats
+        .map((d) => d.present > d.absent ? d.present : d.absent)
+        .fold(0, (a, b) => a > b ? a : b);
+    final scale = maxVal == 0 ? 1 : maxVal; // avoid divide-by-zero
+    const double barH = 120;
+
     return Column(children: [
+      // Legend
       Row(children: [
-        _legend('Present', const Color(0xFF6366F1)),
+        _legend('Present', const Color(0xFF0EA5E9)),
         SizedBox(width: Sizing.w(16)),
         _legend('Absent', const Color(0xFFEF4444)),
       ]),
       SizedBox(height: Sizing.h(20)),
       SizedBox(
-        height: Sizing.h(160),
+        height: Sizing.h(barH + 36),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: _dayStats.map((d) {
-            final pFrac = maxTotal == 0 ? 0.0 : d.present / maxTotal;
-            final aFrac = maxTotal == 0 ? 0.0 : d.absent / maxTotal;
+            final pFrac = d.present / scale;
+            final aFrac = d.absent / scale;
             return Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: Sizing.w(4)),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    AnimatedContainer(
-                        duration: const Duration(milliseconds: 500),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Value labels
+                  if (d.present > 0 || d.absent > 0)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: Sizing.h(4)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('${d.present}',
+                              style: TextStyle(
+                                  color: const Color(0xFF0EA5E9),
+                                  fontSize: Sizing.sp(9),
+                                  fontWeight: FontWeight.w700)),
+                          Text('/',
+                              style: TextStyle(
+                                  color: sub.withValues(alpha: 0.4),
+                                  fontSize: Sizing.sp(9))),
+                          Text('${d.absent}',
+                              style: TextStyle(
+                                  color: const Color(0xFFEF4444),
+                                  fontSize: Sizing.sp(9),
+                                  fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    ),
+                  // Side-by-side bars
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Present bar
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 600),
                         curve: Curves.easeOut,
-                        height: Sizing.h(140) * pFrac,
+                        width: Sizing.w(10),
+                        height: pFrac == 0
+                            ? Sizing.h(3)
+                            : Sizing.h(barH) * pFrac,
                         decoration: BoxDecoration(
-                            color: const Color(0xFF0EA5E9),
-                            borderRadius: BorderRadius.circular(4))),
-                    SizedBox(height: Sizing.h(2)),
-                    AnimatedContainer(
-                        duration: const Duration(milliseconds: 500),
+                            color: pFrac == 0
+                                ? const Color(0xFF0EA5E9).withValues(alpha: 0.2)
+                                : const Color(0xFF0EA5E9),
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(4))),
+                      ),
+                      SizedBox(width: Sizing.w(3)),
+                      // Absent bar
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 600),
                         curve: Curves.easeOut,
-                        height: Sizing.h(140) * aFrac,
+                        width: Sizing.w(10),
+                        height: aFrac == 0
+                            ? Sizing.h(3)
+                            : Sizing.h(barH) * aFrac,
                         decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444)
-                                .withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(4))),
-                    SizedBox(height: Sizing.h(6)),
-                    Text(d.label,
-                        style: TextStyle(
-                            color: sub,
-                            fontSize: Sizing.sp(10),
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
+                            color: aFrac == 0
+                                ? const Color(0xFFEF4444).withValues(alpha: 0.2)
+                                : const Color(0xFFEF4444).withValues(alpha: 0.85),
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(4))),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: Sizing.h(6)),
+                  Text(d.label,
+                      style: TextStyle(
+                          color: sub,
+                          fontSize: Sizing.sp(10),
+                          fontWeight: FontWeight.w600)),
+                ],
               ),
             );
           }).toList(),

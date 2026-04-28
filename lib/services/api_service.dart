@@ -365,8 +365,8 @@ class ApiService {
       _logger.i('Fetching enrollments for student: $studentId');
       final response = await get('/api/StudentEnrollment/student/$studentId');
       _logger.i('Enrollment response type: ${response.runtimeType}');
-      _logger.i('Enrollment response: $response');
-      
+      // NOTE: full response body intentionally not logged (contains PII)
+
       if (response is List) {
         _logger.i('Response is a list with ${response.length} items');
         return response.map((e) => Enrollment.fromJson(e)).toList();

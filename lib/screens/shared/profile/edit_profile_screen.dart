@@ -105,7 +105,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         updateData['sectionId'] = _sectionIdController.text.trim();
       }
       
-      updateData['isRegular'] = _isRegular;
+      // isRegular is a student-only field
+      if (_isStudent) {
+        updateData['isRegular'] = _isRegular;
+      }
 
       // Add passwords only if current password is provided
       if (_currentPasswordController.text.isNotEmpty) {

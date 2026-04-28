@@ -34,6 +34,7 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
   Student? _student;
   List<Enrollment> _enrollments = [];
   List<AttendanceRecord> _attendanceRecords = [];
+  List<dynamic> _fingerprints = []; // FingerprintInfo list
 
   @override
   void initState() {
@@ -50,39 +51,35 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
 
     try {
       final student = await _apiService.getStudent(widget.studentId);
-      print('✅ Student loaded: ${student.fullName} (ID: ${student.id})');
-      
+
       List<Enrollment> enrollments = [];
       try {
-        enrollments = await _apiService.getEnrollmentsByStudent(widget.studentId);
-        print('✅ Enrollments loaded: ${enrollments.length}');
-        if (enrollments.isNotEmpty) {
-          print('First enrollment: ${enrollments.first.subjectName} - ${enrollments.first.sectionName}');
-        }
-      } catch (e) {
-        print('⚠️ Error loading enrollments: $e');
-        // Don't fail the whole screen if enrollments fail
-      }
-      
+        enrollments =
+            await _apiService.getEnrollmentsByStudent(widget.studentId);
+      } catch (_) {}
+
       List<AttendanceRecord> attendanceRecords = [];
       try {
-        attendanceRecords = await _apiService.getAttendanceByStudent(widget.studentId);
-        print('✅ Attendance records loaded: ${attendanceRecords.length}');
-      } catch (e) {
-        print('⚠️ Error loading attendance: $e');
-        // Don't fail the whole screen if attendance fails
-      }
+        attendanceRecords =
+            await _apiService.getAttendanceByStudent(widget.studentId);
+      } catch (_) {}
+
+      List<dynamic> fingerprints = [];
+      try {
+        fingerprints =
+            await _apiService.getFingerprintsByStudent(widget.studentId);
+      } catch (_) {}
 
       if (mounted) {
         setState(() {
           _student = student;
           _enrollments = enrollments;
           _attendanceRecords = attendanceRecords;
+          _fingerprints = fingerprints;
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('❌ Error loading student details: $e');
       if (mounted) {
         setState(() {
           _errorMessage = e.toString();
@@ -275,57 +272,60 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
                 : Colors.black.withValues(alpha: 0.1),
           ),
           SizedBox(height: Sizing.h(12)),
-          // Additional Info
-          Row(
-            children: [
-              Icon(Icons.school_outlined,
-                  size: Sizing.sp(16), color: subtitleColor),
-              SizedBox(width: Sizing.w(8)),
-              Expanded(
-                child: Text(
-                  widget.sectionName ?? 'CS32A',
-                  style: TextStyle(
-                    color: subtitleColor,
-                    fontSize: Sizing.sp(13),
-                    fontWeight: FontWeight.w500,
+          // Section row — use widget.sectionName if passed, otherwise
+          // fall back to the first enrollment's section, then omit
+          if (widget.sectionName != null ||
+              _enrollments.isNotEmpty) ...[
+            Row(
+              children: [
+                Icon(Icons.school_outlined,
+                    size: Sizing.sp(16), color: subtitleColor),
+                SizedBox(width: Sizing.w(8)),
+                Expanded(
+                  child: Text(
+                    widget.sectionName ??
+                        _enrollments.first.sectionName ??
+                        _enrollments.first.sectionId,
+                    style: TextStyle(
+                      color: subtitleColor,
+                      fontSize: Sizing.sp(13),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: Sizing.h(8)),
-          Row(
-            children: [
-              Icon(Icons.badge_outlined,
-                  size: Sizing.sp(16), color: subtitleColor),
-              SizedBox(width: Sizing.w(8)),
-              Expanded(
-                child: Text(
-                  'Bachelor of Science in Computer Science',
-                  style: TextStyle(
-                    color: subtitleColor,
-                    fontSize: Sizing.sp(13),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
+            SizedBox(height: Sizing.h(8)),
+          ],
         ],
       ),
     );
   }
 
   Widget _buildFingerprintSection(bool isDark, Color textColor) {
+    final hasFingerprint = _fingerprints.isNotEmpty;
+    final statusText = hasFingerprint
+        ? '${_fingerprints.length} fingerprint${_fingerprints.length > 1 ? 's' : ''} enrolled'
+        : 'No fingerprint enrolled';
+    final statusColor = hasFingerprint
+        ? Colors.greenAccent
+        : (isDark
+            ? Colors.white.withValues(alpha: 0.4)
+            : Colors.black.withValues(alpha: 0.4));
+
     return _GlassCard(
       isDark: isDark,
       child: Row(
         children: [
-          Icon(Icons.fingerprint,
-              size: Sizing.sp(24),
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.3)
-                  : Colors.black.withValues(alpha: 0.3)),
+          Icon(
+            Icons.fingerprint,
+            size: Sizing.sp(24),
+            color: hasFingerprint
+                ? Colors.greenAccent
+                : (isDark
+                    ? Colors.white.withValues(alpha: 0.3)
+                    : Colors.black.withValues(alpha: 0.3)),
+          ),
           SizedBox(width: Sizing.w(12)),
           Expanded(
             child: Column(
@@ -341,11 +341,9 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
                 ),
                 SizedBox(height: Sizing.h(4)),
                 Text(
-                  'No fingerprint enrolled',
+                  statusText,
                   style: TextStyle(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.4)
-                        : Colors.black.withValues(alpha: 0.4),
+                    color: statusColor,
                     fontSize: Sizing.sp(12),
                   ),
                 ),
@@ -360,7 +358,6 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
                 builder: (context) => FingerprintEnrollmentModal(
                   student: _student!,
                   onEnrollmentComplete: () {
-                    // Refresh the screen to show updated fingerprint status
                     _loadData();
                   },
                 ),
@@ -368,11 +365,11 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
             },
             icon: Icon(Icons.add, size: Sizing.sp(16)),
             label: Text(
-              'Enroll',
+              hasFingerprint ? 'Add More' : 'Enroll',
               style: TextStyle(fontSize: Sizing.sp(12)),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
+              backgroundColor: const Color(0xFF0EA5E9),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(
                   horizontal: Sizing.w(16), vertical: Sizing.h(8)),
