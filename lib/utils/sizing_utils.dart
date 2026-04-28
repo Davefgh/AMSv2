@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 class Sizing {
-  static late MediaQueryData _mediaQueryData;
   static double screenWidth = 375.0;
   static double screenHeight = 812.0;
 
@@ -23,16 +22,15 @@ class Sizing {
     // layout-phase dependencies that can cause "!_debugDoingThisLayout" errors.
     final view = View.of(context);
     devicePixelRatio = view.devicePixelRatio;
-    
+
     // Physical size to logical size
     final logicalSize = view.physicalSize / devicePixelRatio;
     screenWidth = logicalSize.width;
     screenHeight = logicalSize.height;
-    
+
     // We can still get padding from MediaQuery if available, but safely
     final mq = MediaQuery.maybeOf(context);
     if (mq != null) {
-      _mediaQueryData = mq;
       textScaleFactor = mq.textScaler.scale(1.0);
       _safeAreaHorizontal = mq.padding.left + mq.padding.right;
       _safeAreaVertical = mq.padding.top + mq.padding.bottom;

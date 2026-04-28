@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -81,7 +80,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white70)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -141,7 +141,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -174,8 +175,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       email = profile.email;
       roleName = profile.role.toUpperCase();
       createdAt = profile.createdAt;
-      isTeacher = profile.role.toLowerCase() == 'instructor' || 
-                  profile.role.toLowerCase() == 'teacher';
+      isTeacher = profile.role.toLowerCase() == 'instructor' ||
+          profile.role.toLowerCase() == 'teacher';
     } else {
       username = 'Unknown User';
       fullName = 'Unknown User';
@@ -270,7 +271,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               // Profile Information Card
               _buildInfoCard(profile, username, email, createdAt),
               const SizedBox(height: 16),
-              
+
               // Reports button (only for teachers)
               if (isTeacher) ...[
                 _buildActionButton(
@@ -283,7 +284,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 const SizedBox(height: 12),
               ],
-              
+
               // Actions
               _buildActionButton(
                 icon: Icons.edit_rounded,
@@ -321,7 +322,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     DateTime createdAt,
   ) {
     final dateFormat = DateFormat('MMMM dd, yyyy');
-    
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
@@ -363,7 +364,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               _buildInfoTile(
                 icon: Icons.verified_user_outlined,
                 label: 'Type',
-                value: profile.studentProfile!.isRegular ? 'Regular' : 'Irregular',
+                value:
+                    profile.studentProfile!.isRegular ? 'Regular' : 'Irregular',
               ),
             ],
           ],

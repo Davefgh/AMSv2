@@ -5,6 +5,7 @@ import '../../services/api_service.dart';
 import '../../models/student_model.dart';
 import '../../models/enrollment_model.dart';
 import '../../models/attendance_model.dart';
+import '../../models/device_model.dart';
 import '../../widgets/main_scaffold.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../widgets/fingerprint_enrollment_modal.dart';
@@ -35,6 +36,10 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
   List<Enrollment> _enrollments = [];
   List<AttendanceRecord> _attendanceRecords = [];
   List<dynamic> _fingerprints = []; // FingerprintInfo list
+  List<dynamic> _devices = []; // FingerprintDevice list
+  bool _isFingerprintExpanded = false;
+  bool _isDeletingFingerprint = false;
+  String? _deleteError;
 
   @override
   void initState() {
@@ -50,32 +55,39 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
     });
 
     try {
-      final student = await _apiService.getStudent(widget.studentId);
+      // Fetch fingerprints first to determine if we need devices
+      final fingerprints =
+          await _apiService.getFingerprintsByStudent(widget.studentId);
 
-      List<Enrollment> enrollments = [];
-      try {
-        enrollments =
-            await _apiService.getEnrollmentsByStudent(widget.studentId);
-      } catch (_) {}
+      // Prepare futures for parallel fetching
+      final futures = <Future>[
+        _apiService.getStudent(widget.studentId),
+        _apiService
+            .getEnrollmentsByStudent(widget.studentId)
+            .catchError((_) => <Enrollment>[]),
+        _apiService
+            .getAttendanceByStudent(widget.studentId)
+            .catchError((_) => <AttendanceRecord>[]),
+      ];
 
-      List<AttendanceRecord> attendanceRecords = [];
-      try {
-        attendanceRecords =
-            await _apiService.getAttendanceByStudent(widget.studentId);
-      } catch (_) {}
+      // Only fetch devices if fingerprints exist
+      if (fingerprints.isNotEmpty) {
+        futures.add(_apiService
+            .getFingerprintDevices()
+            .catchError((_) => <FingerprintDevice>[]));
+      }
 
-      List<dynamic> fingerprints = [];
-      try {
-        fingerprints =
-            await _apiService.getFingerprintsByStudent(widget.studentId);
-      } catch (_) {}
+      final results = await Future.wait(futures);
 
       if (mounted) {
         setState(() {
-          _student = student;
-          _enrollments = enrollments;
-          _attendanceRecords = attendanceRecords;
+          _student = results[0] as Student;
+          _enrollments = results[1] as List<Enrollment>;
+          _attendanceRecords = results[2] as List<AttendanceRecord>;
           _fingerprints = fingerprints;
+          _devices = fingerprints.isNotEmpty && results.length > 3
+              ? results[3] as List
+              : [];
           _isLoading = false;
         });
       }
@@ -274,8 +286,7 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
           SizedBox(height: Sizing.h(12)),
           // Section row — use widget.sectionName if passed, otherwise
           // fall back to the first enrollment's section, then omit
-          if (widget.sectionName != null ||
-              _enrollments.isNotEmpty) ...[
+          if (widget.sectionName != null || _enrollments.isNotEmpty) ...[
             Row(
               children: [
                 Icon(Icons.school_outlined,
@@ -315,72 +326,667 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
 
     return _GlassCard(
       isDark: isDark,
-      child: Row(
+      child: Column(
         children: [
-          Icon(
-            Icons.fingerprint,
-            size: Sizing.sp(24),
-            color: hasFingerprint
-                ? Colors.greenAccent
-                : (isDark
-                    ? Colors.white.withValues(alpha: 0.3)
-                    : Colors.black.withValues(alpha: 0.3)),
+          // Header row with expand/collapse
+          InkWell(
+            onTap: hasFingerprint
+                ? () {
+                    setState(() {
+                      _isFingerprintExpanded = !_isFingerprintExpanded;
+                    });
+                  }
+                : null,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: EdgeInsets.all(Sizing.w(4)),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.fingerprint,
+                    size: Sizing.sp(24),
+                    color: hasFingerprint
+                        ? Colors.greenAccent
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.3)
+                            : Colors.black.withValues(alpha: 0.3)),
+                  ),
+                  SizedBox(width: Sizing.w(12)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Fingerprint',
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: Sizing.sp(15),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: Sizing.h(4)),
+                        Text(
+                          statusText,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontSize: Sizing.sp(12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Expand/collapse icon
+                  if (hasFingerprint)
+                    Icon(
+                      _isFingerprintExpanded
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.keyboard_arrow_down_rounded,
+                      size: Sizing.sp(24),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.5)
+                          : Colors.black.withValues(alpha: 0.5),
+                    ),
+                  SizedBox(width: Sizing.w(8)),
+                  // Enroll Button
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => FingerprintEnrollmentModal(
+                          student: _student!,
+                          onEnrollmentComplete: () {
+                            _loadData();
+                          },
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.add, size: Sizing.sp(16)),
+                    label: Text(
+                      hasFingerprint ? 'Add More' : 'Enroll',
+                      style: TextStyle(fontSize: Sizing.sp(12)),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0EA5E9),
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: Sizing.w(16), vertical: Sizing.h(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Expandable content
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: _isFingerprintExpanded && hasFingerprint
+                ? Column(
+                    children: [
+                      SizedBox(height: Sizing.h(12)),
+                      Divider(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.1),
+                      ),
+                      SizedBox(height: Sizing.h(12)),
+                      _buildFingerprintList(isDark, textColor),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to get device for a fingerprint
+  dynamic _getDeviceForFingerprint(dynamic fingerprint) {
+    if (_devices.isEmpty || fingerprint.deviceId == null) return null;
+    try {
+      return _devices.firstWhere(
+        (device) => device.id == fingerprint.deviceId,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Widget _buildFingerprintList(bool isDark, Color textColor) {
+    return Column(
+      children: _fingerprints.map((fingerprint) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: Sizing.h(12)),
+          child: _buildFingerprintCard(fingerprint, isDark, textColor),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildFingerprintCard(
+      dynamic fingerprint, bool isDark, Color textColor) {
+    final subtitleColor =
+        isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
+    final device = _getDeviceForFingerprint(fingerprint);
+    final hasDeviceInfo = device != null;
+
+    // Format enrollment date
+    String formattedDate = 'Unknown date';
+    if (fingerprint.createdAt != null) {
+      final date = fingerprint.createdAt as DateTime;
+      final months = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
+      ];
+      final hour =
+          date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+      final minute = date.minute.toString().padLeft(2, '0');
+      final period = date.hour >= 12 ? 'PM' : 'AM';
+      formattedDate =
+          '${months[date.month - 1]} ${date.day}, ${date.year} at $hour:$minute $period';
+    }
+
+    return Container(
+      padding: EdgeInsets.all(Sizing.w(16)),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.03)
+            : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Fingerprint icon
+          Container(
+            padding: EdgeInsets.all(Sizing.w(10)),
+            decoration: BoxDecoration(
+              color: Colors.greenAccent.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.fingerprint,
+              size: Sizing.sp(24),
+              color: Colors.greenAccent,
+            ),
           ),
           SizedBox(width: Sizing.w(12)),
+          // Fingerprint details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Fingerprint',
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: Sizing.sp(15),
-                    fontWeight: FontWeight.bold,
+                // Status badge
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'ENROLLED',
+                    style: TextStyle(
+                      color: Colors.greenAccent,
+                      fontSize: Sizing.sp(9),
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
-                SizedBox(height: Sizing.h(4)),
-                Text(
-                  statusText,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: Sizing.sp(12),
+                SizedBox(height: Sizing.h(8)),
+                // Device information
+                if (hasDeviceInfo) ...[
+                  Row(
+                    children: [
+                      Icon(Icons.devices_rounded,
+                          size: Sizing.sp(14), color: subtitleColor),
+                      SizedBox(width: Sizing.w(6)),
+                      Expanded(
+                        child: Text(
+                          '${device.name}${device.location != null ? ' (${device.location})' : ''}',
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: Sizing.sp(13),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                ] else ...[
+                  Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded,
+                          size: Sizing.sp(14),
+                          color: Colors.orange.withValues(alpha: 0.7)),
+                      SizedBox(width: Sizing.w(6)),
+                      Expanded(
+                        child: Text(
+                          '⚠️ Device information unavailable',
+                          style: TextStyle(
+                            color: Colors.orange.withValues(alpha: 0.7),
+                            fontSize: Sizing.sp(12),
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                SizedBox(height: Sizing.h(6)),
+                // Enrollment date
+                Row(
+                  children: [
+                    Icon(Icons.access_time_rounded,
+                        size: Sizing.sp(14), color: subtitleColor),
+                    SizedBox(width: Sizing.w(6)),
+                    Expanded(
+                      child: Text(
+                        formattedDate,
+                        style: TextStyle(
+                          color: subtitleColor,
+                          fontSize: Sizing.sp(12),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          // Enroll Button
-          ElevatedButton.icon(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => FingerprintEnrollmentModal(
-                  student: _student!,
-                  onEnrollmentComplete: () {
-                    _loadData();
-                  },
-                ),
-              );
-            },
-            icon: Icon(Icons.add, size: Sizing.sp(16)),
-            label: Text(
-              hasFingerprint ? 'Add More' : 'Enroll',
-              style: TextStyle(fontSize: Sizing.sp(12)),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0EA5E9),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                  horizontal: Sizing.w(16), vertical: Sizing.h(8)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+          SizedBox(width: Sizing.w(8)),
+          // Delete button
+          InkWell(
+            onTap: _isDeletingFingerprint
+                ? null
+                : () => _showDeleteBottomSheet(fingerprint, isDark, textColor),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: EdgeInsets.all(Sizing.w(10)),
+              decoration: BoxDecoration(
+                color: Colors.redAccent.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border:
+                    Border.all(color: Colors.redAccent.withValues(alpha: 0.2)),
+              ),
+              child: Icon(
+                Icons.delete_outline_rounded,
+                color: _isDeletingFingerprint
+                    ? Colors.redAccent.withValues(alpha: 0.5)
+                    : Colors.redAccent,
+                size: Sizing.sp(18),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _showDeleteBottomSheet(
+      dynamic fingerprint, bool isDark, Color textColor) {
+    final subtitleColor =
+        isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
+    final device = _getDeviceForFingerprint(fingerprint);
+    final hasDeviceInfo = device != null;
+
+    // Format enrollment date
+    String formattedDate = 'Unknown date';
+    if (fingerprint.createdAt != null) {
+      final date = fingerprint.createdAt as DateTime;
+      final months = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
+      ];
+      final hour =
+          date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+      final minute = date.minute.toString().padLeft(2, '0');
+      final period = date.hour >= 12 ? 'PM' : 'AM';
+      formattedDate =
+          '${months[date.month - 1]} ${date.day}, ${date.year} at $hour:$minute $period';
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            padding: EdgeInsets.all(Sizing.w(24)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle bar
+                Center(
+                  child: Container(
+                    width: Sizing.w(40),
+                    height: Sizing.h(4),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.2)
+                          : Colors.black.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                SizedBox(height: Sizing.h(20)),
+                // Title
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(Sizing.w(10)),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.delete_outline_rounded,
+                        color: Colors.redAccent,
+                        size: Sizing.sp(24),
+                      ),
+                    ),
+                    SizedBox(width: Sizing.w(12)),
+                    Expanded(
+                      child: Text(
+                        'Delete Fingerprint',
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: Sizing.sp(18),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Sizing.h(20)),
+                // Fingerprint details
+                Container(
+                  padding: EdgeInsets.all(Sizing.w(16)),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (hasDeviceInfo) ...[
+                        Row(
+                          children: [
+                            Icon(Icons.devices_rounded,
+                                size: Sizing.sp(14), color: subtitleColor),
+                            SizedBox(width: Sizing.w(8)),
+                            Expanded(
+                              child: Text(
+                                '${device.name}${device.location != null ? ' (${device.location})' : ''}',
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: Sizing.sp(13),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: Sizing.h(8)),
+                      ],
+                      Row(
+                        children: [
+                          Icon(Icons.access_time_rounded,
+                              size: Sizing.sp(14), color: subtitleColor),
+                          SizedBox(width: Sizing.w(8)),
+                          Expanded(
+                            child: Text(
+                              formattedDate,
+                              style: TextStyle(
+                                color: subtitleColor,
+                                fontSize: Sizing.sp(12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: Sizing.h(16)),
+                // Warning message
+                Container(
+                  padding: EdgeInsets.all(Sizing.w(16)),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.orange.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.orange,
+                        size: Sizing.sp(20),
+                      ),
+                      SizedBox(width: Sizing.w(12)),
+                      Expanded(
+                        child: Text(
+                          'This action cannot be undone',
+                          style: TextStyle(
+                            color: isDark
+                                ? Colors.orange.shade300
+                                : Colors.orange.shade900,
+                            fontSize: Sizing.sp(13),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Error message
+                if (_deleteError != null) ...[
+                  SizedBox(height: Sizing.h(16)),
+                  Container(
+                    padding: EdgeInsets.all(Sizing.w(16)),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          color: Colors.red,
+                          size: Sizing.sp(20),
+                        ),
+                        SizedBox(width: Sizing.w(12)),
+                        Expanded(
+                          child: Text(
+                            _deleteError!,
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.red.shade300
+                                  : Colors.red.shade900,
+                              fontSize: Sizing.sp(13),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                SizedBox(height: Sizing.h(24)),
+                // Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _isDeletingFingerprint
+                            ? null
+                            : () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: textColor,
+                          side: BorderSide(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.2)
+                                : Colors.black.withValues(alpha: 0.2),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: Sizing.h(14)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize: Sizing.sp(14),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: Sizing.w(12)),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _isDeletingFingerprint
+                            ? null
+                            : () => _deleteFingerprint(
+                                fingerprint, context, setModalState),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.grey.shade300,
+                          disabledForegroundColor: Colors.grey.shade500,
+                          padding: EdgeInsets.symmetric(vertical: Sizing.h(14)),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: _isDeletingFingerprint
+                            ? SizedBox(
+                                width: Sizing.w(20),
+                                height: Sizing.w(20),
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : Text(
+                                'Delete',
+                                style: TextStyle(
+                                  fontSize: Sizing.sp(14),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Sizing.h(8)),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _deleteFingerprint(dynamic fingerprint,
+      BuildContext modalContext, StateSetter setModalState) async {
+    setState(() {
+      _isDeletingFingerprint = true;
+      _deleteError = null;
+    });
+    setModalState(() {});
+
+    try {
+      await _apiService.deleteFingerprint(fingerprint.id);
+
+      if (mounted) {
+        setState(() {
+          _isDeletingFingerprint = false;
+        });
+        setModalState(() {});
+
+        // Close bottom sheet
+        if (modalContext.mounted) {
+          Navigator.pop(modalContext);
+        }
+
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Fingerprint deleted successfully'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+
+          // Refresh data
+          await _loadData();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isDeletingFingerprint = false;
+          _deleteError =
+              'Failed to delete fingerprint. Please check your connection and try again.';
+        });
+        setModalState(() {});
+      }
+    }
   }
 
   Widget _buildSectionLabel(String label, bool isDark, Color textColor) {
@@ -391,84 +997,6 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
         fontSize: Sizing.sp(18),
         fontWeight: FontWeight.w900,
         letterSpacing: -0.2,
-      ),
-    );
-  }
-
-  Widget _buildEnrollmentCard(Enrollment enrollment, bool isDark) {
-    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
-    final subtitleColor =
-        isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: Sizing.h(12)),
-      child: _GlassCard(
-        isDark: isDark,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        enrollment.subjectName ?? 'Software Engineer 2',
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: Sizing.sp(15),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: Sizing.h(4)),
-                      Text(
-                        enrollment.subjectCode ?? enrollment.subjectId,
-                        style: TextStyle(
-                          color: const Color(0xFF38BDF8),
-                          fontSize: Sizing.sp(11),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    enrollment.enrollmentType.toUpperCase(),
-                    style: TextStyle(
-                      color: Colors.greenAccent,
-                      fontSize: Sizing.sp(9),
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: Sizing.h(12)),
-            Row(
-              children: [
-                Icon(Icons.class_outlined,
-                    size: Sizing.sp(14), color: subtitleColor),
-                SizedBox(width: Sizing.w(6)),
-                Text(
-                  enrollment.sectionName ?? enrollment.sectionId,
-                  style: TextStyle(
-                    color: subtitleColor,
-                    fontSize: Sizing.sp(12),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -746,21 +1274,6 @@ class _StudentDetailsScreenState extends ConsumerState<StudentDetailsScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(String msg) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: Sizing.h(40)),
-      child: Center(
-        child: Text(
-          msg,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.3),
-            fontSize: Sizing.sp(14),
-          ),
-        ),
       ),
     );
   }

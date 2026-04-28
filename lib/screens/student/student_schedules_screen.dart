@@ -74,7 +74,7 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
   Widget build(BuildContext context) {
     final isDark = ref.watch(appProvider).isDarkMode;
     final titleColor = isDark ? Colors.white : const Color(0xFF001F3F);
-    final subtitleColor = isDark ? Colors.white60 : const Color(0xFF001F3F).withOpacity(0.5);
+    final subtitleColor = isDark ? Colors.white60 : const Color(0xFF001F3F).withValues(alpha: 0.5);
 
     return _isLoading
         ? const SkeletonListView(itemCount: 6)
@@ -185,16 +185,16 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
                 decoration: BoxDecoration(
                   color: isSelected
                       ? const Color(0xFF38BDF8)
-                      : (isDark ? Colors.white.withOpacity(0.05) : Colors.white),
+                      : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white),
                   borderRadius: BorderRadius.circular(Sizing.r(12)),
                   border: Border.all(
                     color: isSelected
                         ? const Color(0xFF38BDF8)
-                        : (isDark ? Colors.white.withOpacity(0.1) : const Color(0xFF001F3F).withOpacity(0.08)),
+                        : (isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFF001F3F).withValues(alpha: 0.08)),
                   ),
                   boxShadow: isSelected || isDark ? [] : [
                     BoxShadow(
-                      color: const Color(0xFF001F3F).withOpacity(0.05),
+                      color: const Color(0xFF001F3F).withValues(alpha: 0.05),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     )
@@ -206,7 +206,7 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
                     style: TextStyle(
                       color: isSelected
                           ? Colors.white
-                          : (isDark ? Colors.white.withOpacity(0.7) : const Color(0xFF001F3F).withOpacity(0.7)),
+                          : (isDark ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF001F3F).withValues(alpha: 0.7)),
                       fontSize: Sizing.sp(13),
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.normal,
@@ -306,8 +306,8 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
   }
 
   Widget _buildSubjectCard(StudentSubjectDetail detail, bool isDark, Color titleColor, Color subtitleColor) {
-    final cardBg = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
-    final borderColor = isDark ? Colors.white.withOpacity(0.1) : const Color(0xFF001F3F).withOpacity(0.08);
+    final cardBg = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
+    final borderColor = isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFF001F3F).withValues(alpha: 0.08);
 
     return Container(
       margin: EdgeInsets.only(bottom: Sizing.h(16)),
@@ -319,7 +319,7 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
         border: Border.all(color: borderColor),
         boxShadow: isDark ? [] : [
           BoxShadow(
-            color: const Color(0xFF001F3F).withOpacity(0.05),
+            color: const Color(0xFF001F3F).withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           )
@@ -333,7 +333,7 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
               Container(
                 padding: EdgeInsets.all(Sizing.w(10)),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withOpacity(0.1),
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(Sizing.r(12)),
                 ),
                 child: Icon(Icons.book_rounded,
@@ -367,7 +367,7 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
                   padding: EdgeInsets.symmetric(
                       horizontal: Sizing.w(10), vertical: Sizing.h(4)),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF38BDF8).withOpacity(0.1),
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(Sizing.r(8)),
                   ),
                   child: Text(
@@ -405,12 +405,12 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
               Container(
                 padding: EdgeInsets.all(Sizing.w(6)),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF0F5FF),
+                  color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF0F5FF),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.person_outline_rounded,
                     size: Sizing.sp(14),
-                    color: const Color(0xFF38BDF8).withOpacity(0.7)),
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.7)),
               ),
               SizedBox(width: Sizing.w(8)),
               Expanded(
@@ -430,8 +430,8 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
   }
 
   Widget _buildInfoChip(IconData icon, String text, bool isDark) {
-    final chipBg = isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF0F5FF);
-    final textColor = isDark ? Colors.white70 : const Color(0xFF001F3F).withOpacity(0.7);
+    final chipBg = isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF0F5FF);
+    final textColor = isDark ? Colors.white70 : const Color(0xFF001F3F).withValues(alpha: 0.7);
 
     return Container(
       padding:
@@ -444,7 +444,7 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon,
-              size: Sizing.sp(14), color: const Color(0xFF38BDF8).withOpacity(0.7)),
+              size: Sizing.sp(14), color: const Color(0xFF38BDF8).withValues(alpha: 0.7)),
           SizedBox(width: Sizing.w(6)),
           Flexible(
             child: Text(
@@ -463,8 +463,8 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
   }
 
   Widget _buildEmptyState(bool isDark, Color titleColor, Color subtitleColor) {
-    final cardBg = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
-    final borderColor = isDark ? Colors.white.withOpacity(0.1) : const Color(0xFF001F3F).withOpacity(0.08);
+    final cardBg = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
+    final borderColor = isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFF001F3F).withValues(alpha: 0.08);
 
     return Container(
       width: double.infinity,
@@ -475,7 +475,7 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
         border: Border.all(color: borderColor),
         boxShadow: isDark ? [] : [
           BoxShadow(
-            color: const Color(0xFF001F3F).withOpacity(0.05),
+            color: const Color(0xFF001F3F).withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 3),
           )
@@ -486,7 +486,7 @@ class _StudentSchedulesScreenState extends ConsumerState<StudentSchedulesScreen>
           Icon(
             Icons.calendar_today_rounded,
             size: Sizing.sp(48),
-            color: const Color(0xFF38BDF8).withOpacity(0.3),
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
           ),
           SizedBox(height: Sizing.h(16)),
           Text(

@@ -573,6 +573,9 @@ class CachedApiService {
   ) =>
       _api.submitFingerprintEnrollmentResult(data);
 
+  Future<EnrollmentSession> cancelEnrollmentSession(String sessionId) =>
+      _api.cancelEnrollmentSession(sessionId);
+
   Future<Map<String, dynamic>> scanFingerprint(Map<String, dynamic> data) =>
       _api.scanFingerprint(data);
 }

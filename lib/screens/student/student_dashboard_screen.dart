@@ -73,7 +73,7 @@ class _StudentDashboardScreenState
     final isDark = ref.watch(appProvider).isDarkMode;
     final titleColor = isDark ? Colors.white : const Color(0xFF001F3F);
     final subtitleColor =
-        isDark ? Colors.white60 : const Color(0xFF001F3F).withOpacity(0.5);
+        isDark ? Colors.white60 : const Color(0xFF001F3F).withValues(alpha: 0.5);
 
     if (_errorMessage != null) {
       return _buildErrorState(titleColor, subtitleColor);
@@ -180,7 +180,7 @@ class _StudentDashboardScreenState
           padding: EdgeInsets.symmetric(
               horizontal: Sizing.w(10), vertical: Sizing.h(4)),
           decoration: BoxDecoration(
-            color: const Color(0xFF38BDF8).withOpacity(0.1),
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(Sizing.r(8)),
           ),
           child: Text(
@@ -197,13 +197,13 @@ class _StudentDashboardScreenState
   }
 
   Widget _buildSubjectCard(StudentSubjectDetail detail, bool isDark) {
-    final cardBg = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
+    final cardBg = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
     final borderColor = isDark
-        ? Colors.white.withOpacity(0.1)
-        : const Color(0xFF001F3F).withOpacity(0.08);
+        ? Colors.white.withValues(alpha: 0.1)
+        : const Color(0xFF001F3F).withValues(alpha: 0.08);
     final titleColor = isDark ? Colors.white : const Color(0xFF001F3F);
     final subtitleColor =
-        isDark ? Colors.white60 : const Color(0xFF001F3F).withOpacity(0.5);
+        isDark ? Colors.white60 : const Color(0xFF001F3F).withValues(alpha: 0.5);
 
     return Container(
       margin: EdgeInsets.only(bottom: Sizing.h(16)),
@@ -217,7 +217,7 @@ class _StudentDashboardScreenState
             ? []
             : [
                 BoxShadow(
-                  color: const Color(0xFF001F3F).withOpacity(0.05),
+                  color: const Color(0xFF001F3F).withValues(alpha: 0.05),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 )
@@ -231,7 +231,7 @@ class _StudentDashboardScreenState
               Container(
                 padding: EdgeInsets.all(Sizing.w(10)),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withOpacity(0.1),
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(Sizing.r(12)),
                 ),
                 child: Icon(Icons.book_rounded,
@@ -287,9 +287,9 @@ class _StudentDashboardScreenState
 
   Widget _buildInfoChip(IconData icon, String text, bool isDark) {
     final chipBg =
-        isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF0F5FF);
+        isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF0F5FF);
     final textColor =
-        isDark ? Colors.white70 : const Color(0xFF001F3F).withOpacity(0.7);
+        isDark ? Colors.white70 : const Color(0xFF001F3F).withValues(alpha: 0.7);
 
     return Container(
       padding:
@@ -303,7 +303,7 @@ class _StudentDashboardScreenState
         children: [
           Icon(icon,
               size: Sizing.sp(14),
-              color: const Color(0xFF38BDF8).withOpacity(0.7)),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.7)),
           SizedBox(width: Sizing.w(6)),
           Flexible(
             child: Text(
@@ -369,13 +369,13 @@ class _StudentDashboardScreenState
 
   Widget _buildActionCard(String title, String subtitle, IconData icon,
       Color color, bool isDark, VoidCallback onTap) {
-    final cardBg = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
+    final cardBg = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white;
     final borderColor = isDark
-        ? Colors.white.withOpacity(0.1)
-        : const Color(0xFF001F3F).withOpacity(0.08);
+        ? Colors.white.withValues(alpha: 0.1)
+        : const Color(0xFF001F3F).withValues(alpha: 0.08);
     final titleColor = isDark ? Colors.white : const Color(0xFF001F3F);
     final subtitleColor =
-        isDark ? Colors.white60 : const Color(0xFF001F3F).withOpacity(0.5);
+        isDark ? Colors.white60 : const Color(0xFF001F3F).withValues(alpha: 0.5);
 
     return GestureDetector(
       onTap: onTap,
@@ -389,7 +389,7 @@ class _StudentDashboardScreenState
               ? []
               : [
                   BoxShadow(
-                    color: const Color(0xFF001F3F).withOpacity(0.05),
+                    color: const Color(0xFF001F3F).withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   )
@@ -401,7 +401,7 @@ class _StudentDashboardScreenState
             Container(
               padding: EdgeInsets.all(Sizing.w(10)),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(Sizing.r(12)),
               ),
               child: Icon(icon, color: color, size: Sizing.sp(24)),
