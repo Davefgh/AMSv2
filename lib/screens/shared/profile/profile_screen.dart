@@ -10,6 +10,7 @@ import '../../../providers/app_provider.dart';
 import '../../../providers/notification_provider.dart';
 import '../../../services/notification_hub_service.dart';
 import '../../../utils/constants.dart';
+import '../../../config/routes/app_routes.dart';
 import '../../../widgets/skeleton_loader.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -158,6 +159,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     String email;
     String roleName;
     DateTime createdAt;
+    bool isTeacher = false;
 
     if (profile is Instructor) {
       username = profile.fullName;
@@ -165,18 +167,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       email = '';
       roleName = 'Instructor';
       createdAt = profile.createdAt;
+      isTeacher = true;
     } else if (profile is UserProfile) {
       username = profile.username;
       fullName = profile.fullName;
       email = profile.email;
       roleName = profile.role.toUpperCase();
       createdAt = profile.createdAt;
+      isTeacher = profile.role.toLowerCase() == 'instructor' || 
+                  profile.role.toLowerCase() == 'teacher';
     } else {
       username = 'Unknown User';
       fullName = 'Unknown User';
       email = '';
       roleName = 'N/A';
       createdAt = DateTime.now();
+      isTeacher = false;
     }
 
     return ListView(
@@ -264,6 +270,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               // Profile Information Card
               _buildInfoCard(profile, username, email, createdAt),
               const SizedBox(height: 16),
+              
+              // Reports button (only for teachers)
+              if (isTeacher) ...[
+                _buildActionButton(
+                  icon: Icons.analytics_outlined,
+                  label: 'Reports & Analytics',
+                  color: Colors.white,
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.teacherReports);
+                  },
+                ),
+                const SizedBox(height: 12),
+              ],
               
               // Actions
               _buildActionButton(

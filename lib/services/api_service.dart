@@ -887,6 +887,55 @@ class ApiService {
     }
   }
 
+  // --- Reports APIs ---
+
+  /// GET /api/reports/attendance-summary
+  Future<Map<String, dynamic>> getReportAttendanceSummary() async {
+    try {
+      final res = await get('/api/reports/attendance-summary');
+      return res as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('getReportAttendanceSummary Error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/reports/instructor-sessions/{id}
+  Future<List<dynamic>> getReportInstructorSessions(String instructorId) async {
+    validateId(instructorId, 'Instructor');
+    try {
+      final res = await get('/api/reports/instructor-sessions/$instructorId');
+      return res as List<dynamic>? ?? [];
+    } catch (e) {
+      _logger.e('getReportInstructorSessions Error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/reports/class-attendance/{id}
+  Future<Map<String, dynamic>> getReportClassAttendance(String classId) async {
+    validateId(classId, 'Class');
+    try {
+      final res = await get('/api/reports/class-attendance/$classId');
+      return res as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('getReportClassAttendance Error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/reports/session-attendance/{id}
+  Future<Map<String, dynamic>> getReportSessionAttendance(String sessionId) async {
+    validateId(sessionId, 'Session');
+    try {
+      final res = await get('/api/reports/session-attendance/$sessionId');
+      return res as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('getReportSessionAttendance Error: $e');
+      rethrow;
+    }
+  }
+
   // --- Session APIs ---
 
   Future<List<ClassSession>> getSessions() async {
