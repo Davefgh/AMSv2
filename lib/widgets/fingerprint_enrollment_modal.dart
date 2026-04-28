@@ -204,7 +204,8 @@ class _FingerprintEnrollmentModalState
       } catch (e) {
         if (mounted) {
           setState(() {
-            _errorMessage = 'Polling error: $e';
+            _errorMessage =
+                'Unable to check enrollment status. Please try again.';
           });
           timer.cancel();
         }
@@ -221,6 +222,9 @@ class _FingerprintEnrollmentModalState
 
   Future<void> _handleClose() async {
     if (_isMonitoring && _currentSessionId != null && !_isFinalState) {
+      _pollingTimer?.cancel();
+      _pollingTimer = null;
+
       setState(() {
         _isCancelling = true;
         _errorMessage = null;
